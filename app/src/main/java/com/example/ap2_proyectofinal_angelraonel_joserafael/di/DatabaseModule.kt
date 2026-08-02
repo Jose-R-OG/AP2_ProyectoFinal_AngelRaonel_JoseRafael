@@ -3,6 +3,7 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.di
 import android.content.Context
 import androidx.room.Room
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Auth.local.UserDao
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.local.ClienteDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.database.PrestamosDatabase
 import dagger.Module
 import dagger.Provides
@@ -29,5 +30,11 @@ object DatabaseModule {
     @Singleton
     fun provideUserDao(database: PrestamosDatabase): UserDao {
         return database.userDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideClienteDao(database: PrestamosDatabase): ClienteDao {
+        return database.clienteDao()
     }
 }
