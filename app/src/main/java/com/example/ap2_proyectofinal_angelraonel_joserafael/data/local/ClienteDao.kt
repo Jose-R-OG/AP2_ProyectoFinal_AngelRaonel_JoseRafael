@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ClienteDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCliente(cliente: ClienteEntity)
+    suspend fun insertCliente(cliente: ClienteEntity): Long
 
     @Query("SELECT * FROM clients WHERE isActive = 1 ORDER BY fullName ASC")
     fun getActiveClientes(): Flow<List<ClienteEntity>>

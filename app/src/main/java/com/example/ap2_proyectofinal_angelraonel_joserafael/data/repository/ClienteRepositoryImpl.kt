@@ -23,8 +23,8 @@ class ClienteRepositoryImpl @Inject constructor(
         return clienteDao.getClienteById(id)?.toDomain()
     }
 
-    override suspend fun saveCliente(cliente: Cliente) {
-        clienteDao.insertCliente(cliente.toEntity())
+    override suspend fun saveCliente(cliente: Cliente): Long {
+        return clienteDao.insertCliente(cliente.toEntity())
     }
 
     override suspend fun softDeleteCliente(id: Long) {

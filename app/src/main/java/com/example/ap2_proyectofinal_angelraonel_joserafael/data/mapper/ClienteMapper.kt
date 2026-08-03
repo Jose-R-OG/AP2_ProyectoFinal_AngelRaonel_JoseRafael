@@ -10,7 +10,9 @@ fun ClienteEntity.toDomain(): Cliente {
         dni = dni,
         phone = phone,
         address = address,
+        profilePhotoPath = profilePhotoPath,
         dniFrontPhotoPath = dniFrontPhotoPath,
+        dniBackPhotoPath = dniBackPhotoPath,
         isActive = isActive
     )
 }
@@ -22,7 +24,9 @@ fun Cliente.toEntity(): ClienteEntity {
         dni = dni,
         phone = phone,
         address = address,
+        profilePhotoPath = profilePhotoPath,
         dniFrontPhotoPath = dniFrontPhotoPath,
+        dniBackPhotoPath = dniBackPhotoPath,
         isActive = isActive
     )
 }
