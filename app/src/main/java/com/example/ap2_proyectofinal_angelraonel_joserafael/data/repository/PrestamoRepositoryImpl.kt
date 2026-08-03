@@ -1,8 +1,10 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.data.repository
+package com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.repository
 
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.local.PrestamoDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.mapper.toDomain
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.mapper.toEntity
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cuota
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.PrestamoRepository
 import kotlinx.coroutines.flow.Flow
@@ -13,17 +15,29 @@ class PrestamoRepositoryImpl @Inject constructor(
     private val prestamoDao: PrestamoDao
 ) : PrestamoRepository {
 
-    override fun getPrestamosByCliente(clienteId: Long): Flow<List<Prestamo>> {
-        return prestamoDao.getPrestamosByCliente(clienteId).map { entities ->
+    override suspend fun guardarPrestamo(prestamo: Prestamo): Long {
+        return prestamoDao.insertarPrestamo(prestamo.toEntity())
+    }
+
+    override suspend fun guardarCuotas(cuotas: List<Cuota>) {
+        prestamoDao.insertarCuotas(cuotas.map { it.toEntity() })
+    }
+
+    override fun obtenerTodosLosPrestamos(): Flow<List<Prestamo>> {
+        return prestamoDao.obtenerTodosLosPrestamos().map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
-    override suspend fun getPrestamoById(id: Long): Prestamo? {
-        return prestamoDao.getPrestamoById(id)?.toDomain()
+    override fun obtenerPrestamosPorEstado(estado: LoanStatus): Flow<List<Prestamo>> {
+        return prestamoDao.obtenerPrestamosPorEstado(estado).map { entities ->
+            entities.map { it.toDomain() }
+        }
     }
 
-    override suspend fun savePrestamo(prestamo: Prestamo): Long {
-        return prestamoDao.insertPrestamo(prestamo.toEntity())
+    override fun obtenerCuotasPorPrestamo(prestamoId: Long): Flow<List<Cuota>> {
+        return prestamoDao.obtenerCuotasPorPrestamo(prestamoId).map { entities ->
+            entities.map { it.toDomain() }
+        }
     }
 }
