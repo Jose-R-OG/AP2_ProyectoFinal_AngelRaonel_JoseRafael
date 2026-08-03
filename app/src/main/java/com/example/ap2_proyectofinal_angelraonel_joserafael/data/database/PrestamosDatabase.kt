@@ -7,6 +7,9 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Auth.local.User
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Auth.local.UserEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.local.ClienteDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.local.ClienteEntity
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.CuotaEntity
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.local.PrestamoDao
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.local.PrestamoEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.local.ConfigDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.local.ConfigEntity
 
@@ -14,9 +17,11 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.local
     entities = [
         UserEntity::class,
         ClienteEntity::class,
-        ConfigEntity::class
+        ConfigEntity::class,
+        PrestamoEntity::class,
+        CuotaEntity::class
     ],
-    version = 1,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -25,5 +30,6 @@ abstract class PrestamosDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun clienteDao(): ClienteDao
     abstract fun configDao(): ConfigDao
+    abstract fun prestamoDao(): PrestamoDao
 
 }

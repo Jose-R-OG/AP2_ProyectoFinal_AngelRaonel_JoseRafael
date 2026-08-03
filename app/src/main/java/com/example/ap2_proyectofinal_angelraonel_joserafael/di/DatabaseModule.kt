@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Auth.local.UserDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.local.ClienteDao
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.local.PrestamoDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.local.ConfigDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.database.PrestamosDatabase
 import dagger.Module
@@ -43,5 +44,11 @@ object DatabaseModule {
     @Singleton
     fun provideConfigDao(database: PrestamosDatabase): ConfigDao {
         return database.configDao()
+    }
+
+    @Provides
+    @Singleton
+    fun providePrestamoDao(database: PrestamosDatabase): PrestamoDao {
+        return database.prestamoDao()
     }
 }
