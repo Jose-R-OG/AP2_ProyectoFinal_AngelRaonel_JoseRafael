@@ -1,57 +1,66 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login
+package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.auth.login
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import androidx.lifecycle.viewModelScope
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.User
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login.LoginUiState
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-sealed class LoginState {
-    object Idle : LoginState()
-    object Loading : LoginState()
-    data class Success(val role: String) : LoginState()
-    data class Error(val message: String) : LoginState()
-}
 
-class LoginViewModel : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val authRepository: AuthRepository
+) : ViewModel() {
 
-    private val auth: FirebaseAuth = Firebase.auth
-    private val db: FirebaseFirestore = Firebase.firestore
+    var username by mutableStateOf("")
+    var pin by mutableStateOf("")
+    var isPinVisible by mutableStateOf(false)
 
-    private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
-    val loginState: StateFlow<LoginState> = _loginState
+    var uiState by mutableStateOf<LoginUiState>(LoginUiState.Idle)
+        private set
 
-    fun loginWithEmail(email: String, pass: String) {
-        if (email.isBlank() || pass.isBlank()) {
-            _loginState.value = LoginState.Error("Por favor completa todos los campos.")
-            return
-        }
+    fun onLoginSubmitted() {
+        if (!validateInput()) return
 
-        _loginState.value = LoginState.Loading
+        viewModelScope.launch {
+            uiState = LoginUiState.Loading
 
-        auth.signInWithEmailAndPassword(email, pass)
-            .addOnSuccessListener { authResult ->
-                val uid = authResult.user?.uid
-                if (uid != null) {
-                    checkUserRole(uid)
+            try {
+                // Invoca a tu AuthRepository real con username y pin
+                val user = authRepository.login(username.trim(), pin.trim())
+
+                if (user != null) {
+                    uiState = LoginUiState.Success(user)
+                } else {
+                    uiState = LoginUiState.Error("Usuario o PIN incorrectos")
                 }
+            } catch (e: Exception) {
+                uiState = LoginUiState.Error(e.message ?: "Error al intentar iniciar sesión")
             }
-            .addOnFailureListener {
-                _loginState.value = LoginState.Error("Credenciales incorrectas o error de conexión.")
-            }
+        }
     }
 
-    private fun checkUserRole(uid: String) {
-        db.collection("users").document(uid).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val role = document.getString("role") ?: "EMPLEADO"
-                    _loginState.value = LoginState.Success(role)
-                } else {
-                    _loginState.value = LoginState.Error("El usuario no tiene un perfil registrado.")
-                }
-            }
-            .addOnFailureListener {
-                _loginState.value = LoginState.Error("Error al consultar permisos de usuario.")
-            }
+    private fun validateInput(): Boolean {
+        if (username.isBlank()) {
+            uiState = LoginUiState.Error("Ingrese su usuario")
+            return false
+        }
+        if (pin.isBlank()) {
+            uiState = LoginUiState.Error("Ingrese su PIN")
+            return false
+        }
+        return true
+    }
+
+    fun clearError() {
+        if (uiState is LoginUiState.Error) {
+            uiState = LoginUiState.Idle
+        }
     }
 }
