@@ -11,6 +11,8 @@ data class ClienteEntity(
     val dni: String,
     val phone: String,
     val address: String,
+    val profilePhotoPath: String?,
     val dniFrontPhotoPath: String?,
+    val dniBackPhotoPath: String?,
     val isActive: Boolean
 )
