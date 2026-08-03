@@ -7,11 +7,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.RegisterClientWithLoanUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,6 +21,7 @@ class RegistroClienteViewModel @Inject constructor(
     private val registerClientWithLoanUseCase: RegisterClientWithLoanUseCase
 ) : ViewModel() {
 
+    // --- Datos del Cliente ---
     var fullName by mutableStateOf("")
     var dni by mutableStateOf("")
     var phone by mutableStateOf("")
@@ -27,10 +30,16 @@ class RegistroClienteViewModel @Inject constructor(
     var dniFrontPhotoPath by mutableStateOf<String?>(null)
     var dniBackPhotoPath by mutableStateOf<String?>(null)
 
+    // --- Datos del Préstamo ---
     var montoPrestamo by mutableStateOf("")
+    var porcentajeInteres by mutableStateOf("20") // Porcentaje por defecto (20%)
     var numCuotas by mutableStateOf("")
     var frecuenciaPago by mutableStateOf(FrecuenciaPago.DIARIO)
 
+    // ID del empleado autenticado que realiza el registro
+    var empleadoId by mutableStateOf(1L)
+
+    // --- Estado de la UI ---
     var isSaving by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
     var success by mutableStateOf(false)
@@ -41,33 +50,68 @@ class RegistroClienteViewModel @Inject constructor(
         viewModelScope.launch {
             isSaving = true
             error = null
-            
-            val cliente = Cliente(
-                fullName = fullName,
-                dni = dni,
-                phone = phone,
-                address = address,
-                profilePhotoPath = profilePhotoPath,
-                dniFrontPhotoPath = dniFrontPhotoPath,
-                dniBackPhotoPath = dniBackPhotoPath
-            )
 
-            val prestamo = Prestamo(
-                clienteId = 0, // Will be set in UseCase
-                monto = BigDecimal(montoPrestamo),
-                cuotas = numCuotas.toInt(),
-                frecuencia = frecuenciaPago,
-                interesPorcentaje = BigDecimal("20") // Default interest for now
-            )
+            try {
+                val montoDecimal = BigDecimal(montoPrestamo)
+                val porcentajeDecimal = BigDecimal(porcentajeInteres)
+                val cantidadCuotasInt = numCuotas.toInt()
 
-            val result = registerClientWithLoanUseCase(cliente, prestamo)
-            
-            if (result.isSuccess) {
-                success = true
-            } else {
-                error = result.exceptionOrNull()?.message ?: "Error desconocido"
+                // Cálculo de la fotografía financiera
+                val interesTotal = montoDecimal.multiply(porcentajeDecimal)
+                    .divide(BigDecimal("100"), 2, RoundingMode.HALF_UP)
+
+                val totalAPagar = montoDecimal.add(interesTotal)
+
+                val montoCuota = totalAPagar.divide(
+                    BigDecimal(cantidadCuotasInt), 2, RoundingMode.HALF_UP
+                )
+
+                // 1. Objeto Cliente
+                val cliente = Cliente(
+                    fullName = fullName,
+                    dni = dni,
+                    phone = phone,
+                    address = address,
+                    profilePhotoPath = profilePhotoPath,
+                    dniFrontPhotoPath = dniFrontPhotoPath,
+                    dniBackPhotoPath = dniBackPhotoPath
+                )
+
+                // 2. Objeto Prestamo según la nueva estructura del modelo
+                val prestamo = Prestamo(
+                    id = 0L,
+                    clienteId = 0L, // Se asigna automáticamente en el UseCase al insertar el cliente
+                    empleadoId = empleadoId,
+                    aprobadoPorAdminId = null,
+                    montoSolicitado = montoDecimal,
+                    porcentajeInteres = porcentajeDecimal,
+                    interesTotal = interesTotal,
+                    totalAPagar = totalAPagar,
+                    totalPagado = BigDecimal.ZERO,
+                    montoCuota = montoCuota,
+                    cantidadCuotas = cantidadCuotasInt,
+                    frecuenciaPago = frecuenciaPago,
+                    fechaCreacion = System.currentTimeMillis(),
+                    fechaInicio = null,
+                    fechaFin = null,
+                    estado = LoanStatus.PENDIENTE_REVISION,
+                    motivoRechazo = null,
+                    rutaFotoContratoFirmado = null,
+                    contratoFisicoEntregado = false
+                )
+
+                val result = registerClientWithLoanUseCase(cliente, prestamo)
+
+                if (result.isSuccess) {
+                    success = true
+                } else {
+                    error = result.exceptionOrNull()?.message ?: "Error al registrar el cliente y préstamo"
+                }
+            } catch (e: Exception) {
+                error = "Error al procesar los montos: ${e.message}"
+            } finally {
+                isSaving = false
             }
-            isSaving = false
         }
     }
 
@@ -80,14 +124,25 @@ class RegistroClienteViewModel @Inject constructor(
             error = "El DNI es obligatorio"
             return false
         }
-        if (montoPrestamo.isBlank() || montoPrestamo.toDoubleOrNull() == null) {
-            error = "Monto inválido"
+
+        val monto = montoPrestamo.toDoubleOrNull()
+        if (monto == null || monto <= 0) {
+            error = "Ingrese un monto de préstamo válido mayor a 0"
             return false
         }
-        if (numCuotas.isBlank() || numCuotas.toIntOrNull() == null) {
+
+        val porcentaje = porcentajeInteres.toDoubleOrNull()
+        if (porcentaje == null || porcentaje < 0) {
+            error = "Ingrese un porcentaje de interés válido"
+            return false
+        }
+
+        val cuotas = numCuotas.toIntOrNull()
+        if (cuotas == null || cuotas <= 0) {
             error = "Número de cuotas inválido"
             return false
         }
+
         return true
     }
 }

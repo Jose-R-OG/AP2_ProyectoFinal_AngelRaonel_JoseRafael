@@ -1,18 +1,31 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.mapper
+package com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.mapper
 
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.CuotaEntity
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.local.PrestamoEntity
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.PrestamoEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cuota
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo
 
 fun PrestamoEntity.toDomain(): Prestamo {
     return Prestamo(
-        id = id, clienteId = clienteId, empleadoId = empleadoId, aprobadoPorAdminId = aprobadoPorAdminId,
-        montoSolicitado = montoSolicitado, porcentajeInteres = porcentajeInteres, interesTotal = interesTotal,
-        totalAPagar = totalAPagar, totalPagado = totalPagado, montoCuota = montoCuota,
-        cantidadCuotas = cantidadCuotas, frecuenciaPago = frecuenciaPago, fechaCreacion = fechaCreacion,
-        fechaInicio = fechaInicio, fechaFin = fechaFin, estado = estado, motivoRechazo = motivoRechazo,
-        rutaFotoContratoFirmado = rutaFotoContratoFirmado, contratoFisicoEntregado = contratoFisicoEntregado
+        id,
+        clienteId,
+        empleadoId,
+        aprobadoPorAdminId,
+        montoSolicitado,
+        porcentajeInteres,
+        interesTotal,
+        totalAPagar,
+        totalPagado,
+        montoCuota,
+        cantidadCuotas,
+        frecuenciaPago,
+        fechaCreacion,
+        fechaInicio,
+        fechaFin,
+        estado,
+        motivoRechazo,
+        rutaFotoContratoFirmado,
+        contratoFisicoEntregado
     )
 }
 
