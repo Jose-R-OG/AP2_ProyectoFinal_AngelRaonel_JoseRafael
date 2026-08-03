@@ -101,6 +101,10 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.3.0")
 }

@@ -5,11 +5,9 @@ import androidx.lifecycle.ViewModel
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.adminregisterrequest.AdminRegisterRequest
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.storage.ktx.storage
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-
 
 sealed class RegisterState {
     object Idle : RegisterState()
@@ -20,6 +18,7 @@ sealed class RegisterState {
 
 class RegisterViewModel : ViewModel() {
 
+    // Instancias usando la API moderna de Firebase
     private val db = Firebase.firestore
     private val storage = Firebase.storage
 

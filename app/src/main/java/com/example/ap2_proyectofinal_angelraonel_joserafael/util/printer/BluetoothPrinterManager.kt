@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
-import com.github.dantsu.escposprinter.EscPosPrinter
-import com.github.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
