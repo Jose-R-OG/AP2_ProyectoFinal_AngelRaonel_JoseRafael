@@ -1,8 +1,8 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.repository
+package com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.repository
 
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.local.PrestamoDao
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.mapper.toDomain
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.mapper.toEntity
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.PrestamoDao
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.mapper.toDomain
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.mapper.toEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cuota
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo

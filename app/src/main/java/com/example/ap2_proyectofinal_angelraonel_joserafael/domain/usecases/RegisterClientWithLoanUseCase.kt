@@ -14,7 +14,7 @@ class RegisterClientWithLoanUseCase @Inject constructor(
         return try {
             val clienteId = clienteRepository.saveCliente(cliente)
             val prestamoConId = prestamo.copy(clienteId = clienteId)
-            prestamoRepository.savePrestamo(prestamoConId)
+            prestamoRepository.guardarPrestamo(prestamoConId)
             Result.success(clienteId)
         } catch (e: Exception) {
             Result.failure(e)

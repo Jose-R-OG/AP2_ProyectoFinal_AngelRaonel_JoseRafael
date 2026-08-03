@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin
+package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.form
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult

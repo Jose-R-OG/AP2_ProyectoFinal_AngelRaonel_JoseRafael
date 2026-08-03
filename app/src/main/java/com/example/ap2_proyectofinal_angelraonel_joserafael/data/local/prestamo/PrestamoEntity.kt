@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.data.Prestamo.local
+package com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
