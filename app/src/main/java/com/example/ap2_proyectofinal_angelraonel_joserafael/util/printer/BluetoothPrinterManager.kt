@@ -2,6 +2,8 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.util.printer
 
 import android.annotation.SuppressLint
 import android.content.Context
+import com.dantsu.escposprinter.EscPosPrinter
+import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.github.dantsu.escposprinter.EscPosPrinter
 import com.github.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import dagger.hilt.android.qualifiers.ApplicationContext
