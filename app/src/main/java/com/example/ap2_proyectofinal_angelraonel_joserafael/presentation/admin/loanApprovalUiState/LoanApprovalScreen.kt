@@ -82,12 +82,7 @@ fun LoanApprovalScreen(
 
     LoanApprovalContent(
         uiState = uiState,
-        onSelectRequest = { viewModel.seleccionarPrestamo(it) },
-        onCloseDetail = { viewModel.cerrarDetalle() },
-        onApprove = { viewModel.aprobarPrestamo(it, 1L) },
-        onReject = { viewModel.rechazarPrestamo(it, null) },
-        onPrintTicket = { viewModel.imprimirTicket() },
-        onDismissTicket = { viewModel.limpiarTicket() },
+        onEvent = { viewModel.onEvent(it) },
         onBackClick = onBackClick
     )
 }
@@ -96,12 +91,7 @@ fun LoanApprovalScreen(
 @Composable
 fun LoanApprovalContent(
     uiState: LoanApprovalUiState,
-    onSelectRequest: (PrestamoEntity) -> Unit,
-    onCloseDetail: () -> Unit,
-    onApprove: (PrestamoEntity) -> Unit,
-    onReject: (PrestamoEntity) -> Unit,
-    onPrintTicket: () -> Unit,
-    onDismissTicket: () -> Unit,
+    onEvent: (LoanApprovalUiEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -190,8 +180,8 @@ fun LoanApprovalContent(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         BentoStatCard("Total Pendientes", uiState.totalPendingCount.toString(), PrimaryColor, Modifier.weight(1f))
-                        BentoStatCard("Vol. Solicitado", "$${String.format(Locale.US, "%,.0f", uiState.totalRequestedVolume)}", PrimaryColor, Modifier.weight(1f))
-                        BentoStatCard("Interés Prom.", "${uiState.avgInterestRate}%", SecondaryGreen, Modifier.weight(1f))
+                        BentoStatCard("Vol. Solicitado", String.format(Locale.US, "$ %,.0f", uiState.totalRequestedVolume), PrimaryColor, Modifier.weight(1f))
+                        BentoStatCard("Interes Prom.", "${uiState.avgInterestRate}%", SecondaryGreen, Modifier.weight(1f))
                         BentoStatCard("Estado Sistema", "OK", OnTertiaryContainer, Modifier.weight(1f))
                     }
                 }
@@ -222,9 +212,9 @@ fun LoanApprovalContent(
                             uiState.pendingPrestamos.forEachIndexed { index, request ->
                                 LoanRequestRow(
                                     request = request,
-                                    onDetailClick = { onSelectRequest(request) },
-                                    onRejectClick = { onReject(request) },
-                                    onApproveClick = { onApprove(request) }
+                                    onDetailClick = { onEvent(LoanApprovalUiEvent.SelectPrestamo(request)) },
+                                    onRejectClick = { onEvent(LoanApprovalUiEvent.RejectPrestamo(request)) },
+                                    onApproveClick = { onEvent(LoanApprovalUiEvent.ApprovePrestamo(request)) }
                                 )
                                 if (index < uiState.pendingPrestamos.lastIndex) {
                                     HorizontalDivider(color = OutlineVariant.copy(alpha = 0.5f))
@@ -274,9 +264,9 @@ fun LoanApprovalContent(
                 uiState.selectedPrestamo?.let { prestamo ->
                     LoanDetailModal(
                         request = prestamo,
-                        onClose = onCloseDetail,
-                        onApprove = { onApprove(prestamo) },
-                        onReject = { onReject(prestamo) }
+                        onClose = { onEvent(LoanApprovalUiEvent.CloseDetail) },
+                        onApprove = { onEvent(LoanApprovalUiEvent.ApprovePrestamo(prestamo)) },
+                        onReject = { onEvent(LoanApprovalUiEvent.RejectPrestamo(prestamo)) }
                     )
                 }
             }
@@ -284,7 +274,7 @@ fun LoanApprovalContent(
             // Diálogo emergente de vista previa del Ticket Térmico
             uiState.ticketParaImprimir?.let { ticketTexto ->
                 AlertDialog(
-                    onDismissRequest = onDismissTicket,
+                    onDismissRequest = { onEvent(LoanApprovalUiEvent.DismissTicket) },
                     title = { Text("Pagaré Generado (Térmico)", fontWeight = FontWeight.Bold) },
                     text = {
                         Column {
@@ -307,7 +297,7 @@ fun LoanApprovalContent(
                     },
                     confirmButton = {
                         Button(
-                            onClick = onPrintTicket,
+                            onClick = { onEvent(LoanApprovalUiEvent.PrintTicket) },
                             colors = ButtonDefaults.buttonColors(containerColor = SecondaryGreen)
                         ) {
                             Icon(Icons.Default.Print, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -316,7 +306,7 @@ fun LoanApprovalContent(
                         }
                     },
                     dismissButton = {
-                        OutlinedButton(onClick = onDismissTicket) {
+                        OutlinedButton(onClick = { onEvent(LoanApprovalUiEvent.DismissTicket) }) {
                             Text("Cerrar")
                         }
                     }

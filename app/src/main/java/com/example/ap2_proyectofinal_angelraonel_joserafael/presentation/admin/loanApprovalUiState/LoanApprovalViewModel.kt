@@ -32,6 +32,17 @@ class LoanApprovalViewModel @Inject constructor(
         cargarPrestamosPendientes()
     }
 
+    fun onEvent(event: LoanApprovalUiEvent) {
+        when (event) {
+            is LoanApprovalUiEvent.SelectPrestamo -> seleccionarPrestamo(event.prestamo)
+            is LoanApprovalUiEvent.CloseDetail -> cerrarDetalle()
+            is LoanApprovalUiEvent.ApprovePrestamo -> aprobarPrestamo(event.prestamo, 1L) // AdminId 1 temporal
+            is LoanApprovalUiEvent.RejectPrestamo -> rechazarPrestamo(event.prestamo, event.motivo)
+            is LoanApprovalUiEvent.PrintTicket -> imprimirTicket()
+            is LoanApprovalUiEvent.DismissTicket -> limpiarTicket()
+        }
+    }
+
     private fun cargarPrestamosPendientes() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -69,20 +80,19 @@ class LoanApprovalViewModel @Inject constructor(
         }
     }
 
-    fun seleccionarPrestamo(prestamo: PrestamoEntity) {
+    private fun seleccionarPrestamo(prestamo: PrestamoEntity) {
         viewModelScope.launch {
             _uiState.update { it.copy(selectedPrestamo = prestamo, isDetailOpen = true) }
 
-            // Cargar cuotas asociadas al préstamo desde la base de datos
             prestamoDao.obtenerCuotasPorPrestamo(prestamo.id)
-                .catch { /* Manejo discreto de error de cuotas */ }
+                .catch { /* Manejo discreto */ }
                 .collectLatest { cuotas ->
                     _uiState.update { it.copy(selectedCuotas = cuotas) }
                 }
         }
     }
 
-    fun cerrarDetalle() {
+    private fun cerrarDetalle() {
         _uiState.update {
             it.copy(
                 selectedPrestamo = null,
@@ -92,7 +102,7 @@ class LoanApprovalViewModel @Inject constructor(
         }
     }
 
-    fun aprobarPrestamo(prestamo: PrestamoEntity, adminId: Long) {
+    private fun aprobarPrestamo(prestamo: PrestamoEntity, adminId: Long) {
         viewModelScope.launch {
             val prestamoAprobado = prestamo.copy(
                 estado = LoanStatus.APROBADO,
@@ -101,7 +111,6 @@ class LoanApprovalViewModel @Inject constructor(
             )
             prestamoDao.insertarPrestamo(prestamoAprobado)
 
-            // Generamos el ticket ajustado a la impresora térmica
             val ticketTexto = TicketContratoGenerator.generarTicketTermico(
                 prestamo = prestamoAprobado,
                 nombreAdmin = "Administrador",
@@ -120,7 +129,7 @@ class LoanApprovalViewModel @Inject constructor(
         }
     }
 
-    fun imprimirTicket() {
+    private fun imprimirTicket() {
         uiState.value.ticketParaImprimir?.let { ticket ->
             viewModelScope.launch {
                 val result = printerManager.imprimirTicket(ticket)
@@ -133,11 +142,11 @@ class LoanApprovalViewModel @Inject constructor(
         }
     }
 
-    fun limpiarTicket() {
+    private fun limpiarTicket() {
         _uiState.update { it.copy(ticketParaImprimir = null) }
     }
 
-    fun rechazarPrestamo(prestamo: PrestamoEntity, motivo: String?) {
+    private fun rechazarPrestamo(prestamo: PrestamoEntity, motivo: String?) {
         viewModelScope.launch {
             val prestamoRechazado = prestamo.copy(
                 estado = LoanStatus.RECHAZADO,
