@@ -40,4 +40,10 @@ class PrestamoRepositoryImpl @Inject constructor(
             entities.map { it.toDomain() }
         }
     }
+
+    override fun obtenerRutaDeCobro(fechaLimite: Long): Flow<List<Cuota>> {
+        return prestamoDao.obtenerRutaDeCobro(fechaLimite).map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
 }

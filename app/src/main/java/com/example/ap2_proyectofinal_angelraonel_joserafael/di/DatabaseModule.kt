@@ -7,6 +7,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.local.C
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.PrestamoDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.local.ConfigDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.database.PrestamosDatabase
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.transaccion.TransaccionDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,5 +51,11 @@ object DatabaseModule {
     @Singleton
     fun providePrestamoDao(database: PrestamosDatabase): PrestamoDao {
         return database.prestamoDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTransaccionDao(database: PrestamosDatabase): TransaccionDao {
+        return database.transaccionDao()
     }
 }

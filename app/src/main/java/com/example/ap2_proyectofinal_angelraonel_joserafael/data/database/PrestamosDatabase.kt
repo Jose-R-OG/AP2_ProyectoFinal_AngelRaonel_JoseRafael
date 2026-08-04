@@ -12,6 +12,8 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.PrestamoEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.local.ConfigDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.local.ConfigEntity
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.transaccion.TransaccionDao
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.transaccion.TransaccionEntity
 
 @Database(
     entities = [
@@ -19,9 +21,10 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.local
         ClienteEntity::class,
         ConfigEntity::class,
         PrestamoEntity::class,
-        CuotaEntity::class
+        CuotaEntity::class,
+        TransaccionEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -31,5 +34,6 @@ abstract class PrestamosDatabase : RoomDatabase() {
     abstract fun clienteDao(): ClienteDao
     abstract fun configDao(): ConfigDao
     abstract fun prestamoDao(): PrestamoDao
+    abstract fun transaccionDao(): TransaccionDao // <-- Nuevo DAO agregado
 
 }
