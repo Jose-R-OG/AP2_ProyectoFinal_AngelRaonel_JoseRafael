@@ -11,4 +11,5 @@ interface PrestamoRepository {
     fun obtenerTodosLosPrestamos(): Flow<List<Prestamo>>
     fun obtenerPrestamosPorEstado(estado: LoanStatus): Flow<List<Prestamo>>
     fun obtenerCuotasPorPrestamo(prestamoId: Long): Flow<List<Cuota>>
+    fun obtenerRutaDeCobro(fechaLimite: Long): Flow<List<Cuota>>
 }
