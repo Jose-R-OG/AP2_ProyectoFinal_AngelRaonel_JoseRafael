@@ -30,7 +30,7 @@ class GoogleAuthUiClient(
 
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
-                .setServerClientId("YOUR_WEB_CLIENT_ID.apps.googleusercontent.com")
+                .setServerClientId("384429348767-0rog4pg4shgslcduio18kc33tmocm1gm.apps.googleusercontent.com")
                 .setNonce(hashedNonce)
                 .build()
 
