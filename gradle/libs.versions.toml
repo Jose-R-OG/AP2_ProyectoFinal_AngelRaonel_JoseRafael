@@ -34,6 +34,7 @@ googleid = "1.2.0"
 google-services = "4.4.2"
 firebaseFirestoreKtx = "26.5.0"
 foundationLayout = "1.11.4"
+robolectric = "4.14.1"
 
 [libraries]
 androidx-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
@@ -84,6 +85,8 @@ googleid = { module = "com.google.android.libraries.identity.googleid:googleid",
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
