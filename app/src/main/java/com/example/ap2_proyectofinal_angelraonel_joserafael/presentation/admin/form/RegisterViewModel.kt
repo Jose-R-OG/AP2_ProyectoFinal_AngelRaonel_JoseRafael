@@ -12,18 +12,35 @@ import kotlinx.coroutines.flow.StateFlow
 sealed class RegisterState {
     object Idle : RegisterState()
     object Loading : RegisterState()
-    object Success : RegisterState()
+    data class Success(val activationCode: String, val email: String) : RegisterState()
     data class Error(val message: String) : RegisterState()
 }
 
 class RegisterViewModel : ViewModel() {
 
-    // Instancias usando la API moderna de Firebase
     private val db = Firebase.firestore
     private val storage = Firebase.storage
 
     private val _registerState = MutableStateFlow<RegisterState>(RegisterState.Idle)
     val registerState: StateFlow<RegisterState> = _registerState
+
+    fun onEvent(event: RegisterUiEvent) {
+        when (event) {
+            is RegisterUiEvent.SubmitRegistration -> {
+                submitRegistration(
+                    fullName = event.fullName,
+                    email = event.email,
+                    phone = event.phone,
+                    cedula = event.cedula,
+                    bank = event.bank,
+                    transferNum = event.transferNum,
+                    depositor = event.depositor,
+                    voucherUri = event.voucherUri
+                )
+            }
+            else -> {}
+        }
+    }
 
     fun submitRegistration(
         fullName: String, email: String, phone: String, cedula: String,
@@ -36,7 +53,6 @@ class RegisterViewModel : ViewModel() {
 
         _registerState.value = RegisterState.Loading
 
-        // 1. Subir imagen del Voucher a Firebase Storage
         val storageRef = storage.reference.child("vouchers/${System.currentTimeMillis()}.jpg")
         storageRef.putFile(voucherUri)
             .addOnSuccessListener {
@@ -56,7 +72,6 @@ class RegisterViewModel : ViewModel() {
         fullName: String, email: String, phone: String, cedula: String,
         bank: String, transferNum: String, depositor: String, voucherUrl: String
     ) {
-        // Generar un código aleatorio de activación de 6 dígitos
         val activationCode = "EF-" + (100000..999999).random()
 
         val request = AdminRegisterRequest(
@@ -72,11 +87,10 @@ class RegisterViewModel : ViewModel() {
             activationCode = activationCode
         )
 
-        // 2. Guardar en la colección 'admin_requests'
         db.collection("admin_requests").document(email)
             .set(request)
             .addOnSuccessListener {
-                _registerState.value = RegisterState.Success
+                _registerState.value = RegisterState.Success(activationCode, email)
             }
             .addOnFailureListener {
                 _registerState.value = RegisterState.Error("Error al registrar la solicitud.")

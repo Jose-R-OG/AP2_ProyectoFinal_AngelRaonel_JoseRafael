@@ -1,4 +1,6 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.form
+
+import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -22,10 +24,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccountBalance
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Person
@@ -35,11 +38,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -64,13 +67,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterAdminScreen(
-    onNavigateToLogin: () -> Unit,
-    onNavigateToActivation: (email: String) -> Unit,
+    prefilledFullName: String = "",
+    prefilledEmail: String = "",
+    onNavigateToLogin: () -> Unit = {},
+    onNavigateToActivation: (email: String) -> Unit = {},
     viewModel: RegisterViewModel = viewModel()
 ) {
     // Campos de texto
-    var fullName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
+    var fullName by remember { mutableStateOf(prefilledFullName) }
+    var email by remember { mutableStateOf(prefilledEmail) }
     var phone by remember { mutableStateOf("") }
     var cedula by remember { mutableStateOf("") }
 
@@ -94,13 +99,29 @@ fun RegisterAdminScreen(
 
     // Manejo de Estados
     LaunchedEffect(registerState) {
-        when (registerState) {
+        when (val state = registerState) {
             is RegisterState.Success -> {
-                Toast.makeText(context, "Solicitud enviada correctamente", Toast.LENGTH_SHORT).show()
-                onNavigateToActivation(email)
+                Toast.makeText(context, "Solicitud enviada. Código: ${state.activationCode}", Toast.LENGTH_LONG).show()
+
+                // Intent para abrir cliente de correo y enviar el código de activación
+                try {
+                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                        data = Uri.parse("mailto:${state.email}")
+                        putExtra(Intent.EXTRA_SUBJECT, "Código de Activación TacoBraoApp - Equity Flow")
+                        putExtra(
+                            Intent.EXTRA_TEXT,
+                            "¡Hola ${fullName}!\n\nTu registro ha sido enviado exitosamente.\n\nTu código de activación es: ${state.activationCode}\n\nConsérvalo para activar tu cuenta."
+                        )
+                    }
+                    context.startActivity(Intent.createChooser(emailIntent, "Enviar Código por Correo"))
+                } catch (e: Exception) {
+                    // Si no hay app de correo, continuar sin crash
+                }
+
+                onNavigateToActivation(state.email)
             }
             is RegisterState.Error -> {
-                Toast.makeText(context, (registerState as RegisterState.Error).message, Toast.LENGTH_LONG).show()
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
             }
             else -> {}
         }
@@ -124,7 +145,7 @@ fun RegisterAdminScreen(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+                modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp)
             ) {
                 Icon(Icons.Default.AccountBalance, contentDescription = null, tint = Color.Black, modifier = Modifier.size(28.dp))
                 Spacer(modifier = Modifier.width(8.dp))
@@ -133,12 +154,36 @@ fun RegisterAdminScreen(
 
             Text("Registrar Empresa", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             Text(
-                "Establezca sus credenciales administrativas para comenzar a gestionar solicitudes y tarifas.",
+                "Complete la información de su empresa y adjunte el comprobante para habilitar su cuenta.",
                 fontSize = 14.sp,
                 color = Color(0xFF45464D),
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
+                modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
             )
+
+            // Badge si fue cargado mediante Google Auth
+            if (prefilledEmail.isNotEmpty()) {
+                Surface(
+                    color = Color(0xFFE8F5E9),
+                    shape = RoundedCornerShape(20.dp),
+                    border = BorderStroke(1.dp, Color(0xFF00714D)),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF00714D), modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Verificado con Google: $prefilledEmail",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF00714D)
+                        )
+                    }
+                }
+            }
 
             // --- TARJETA FORMULARIO ---
             Card(
@@ -173,7 +218,7 @@ fun RegisterAdminScreen(
 
                     OutlinedTextField(
                         value = phone, onValueChange = { phone = it },
-                        label = { Text("Teléfono") },
+                        label = { Text("Teléfono de Contacto") },
                         trailingIcon = { Icon(Icons.Default.Call, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
                     )
@@ -184,7 +229,6 @@ fun RegisterAdminScreen(
                     OutlinedTextField(
                         value = cedula,
                         onValueChange = { input ->
-                            // Formateo automático: 001-0000000-0
                             val digits = input.filter { it.isDigit() }.take(11)
                             cedula = when {
                                 digits.length > 10 -> "${digits.substring(0, 3)}-${digits.substring(3, 10)}-${digits.substring(10)}"
@@ -198,7 +242,7 @@ fun RegisterAdminScreen(
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
                     )
 
-                    Divider(modifier = Modifier.padding(vertical = 20.dp), color = Color(0xFFC6C6CD))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 20.dp), color = Color(0xFFC6C6CD))
 
                     // 2. SECCIÓN DE PAGO / BANCO
                     Card(
@@ -228,7 +272,7 @@ fun RegisterAdminScreen(
                             readOnly = true,
                             label = { Text("Seleccionar Banco") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedBankMenu) },
-                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(8.dp)
                         )
                         ExposedDropdownMenu(
@@ -334,10 +378,17 @@ fun RegisterAdminScreen(
                     // Botón de Enviar
                     Button(
                         onClick = {
-                            viewModel.submitRegistration(
-                                fullName, email, phone, cedula,
-                                selectedBank, transferNumber, depositorName,
-                                voucherUri
+                            viewModel.onEvent(
+                                RegisterUiEvent.SubmitRegistration(
+                                    fullName = fullName,
+                                    email = email,
+                                    phone = phone,
+                                    cedula = cedula,
+                                    bank = selectedBank,
+                                    transferNum = transferNumber,
+                                    depositor = depositorName,
+                                    voucherUri = voucherUri
+                                )
                             )
                         },
                         enabled = termsAccepted && registerState !is RegisterState.Loading,
@@ -350,7 +401,7 @@ fun RegisterAdminScreen(
                         } else {
                             Text("Registrar Cuenta", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Icon(Icons.Default.ArrowForward, contentDescription = null)
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                         }
                     }
                 }

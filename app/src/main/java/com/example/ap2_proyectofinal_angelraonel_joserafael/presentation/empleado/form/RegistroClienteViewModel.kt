@@ -44,6 +44,25 @@ class RegistroClienteViewModel @Inject constructor(
     var error by mutableStateOf<String?>(null)
     var success by mutableStateOf(false)
 
+    fun onEvent(event: RegistroClienteUiEvent) {
+        when (event) {
+            is RegistroClienteUiEvent.FullNameChanged -> fullName = event.value
+            is RegistroClienteUiEvent.DniChanged -> dni = event.value
+            is RegistroClienteUiEvent.PhoneChanged -> phone = event.value
+            is RegistroClienteUiEvent.AddressChanged -> address = event.value
+            is RegistroClienteUiEvent.ProfilePhotoChanged -> profilePhotoPath = event.path
+            is RegistroClienteUiEvent.DniFrontPhotoChanged -> dniFrontPhotoPath = event.path
+            is RegistroClienteUiEvent.DniBackPhotoChanged -> dniBackPhotoPath = event.path
+            is RegistroClienteUiEvent.MontoChanged -> montoPrestamo = event.value
+            is RegistroClienteUiEvent.PorcentajeChanged -> porcentajeInteres = event.value
+            is RegistroClienteUiEvent.CuotasChanged -> numCuotas = event.value
+            is RegistroClienteUiEvent.FrecuenciaChanged -> frecuenciaPago = event.frecuencia
+            is RegistroClienteUiEvent.EmpleadoIdChanged -> empleadoId = event.id
+            is RegistroClienteUiEvent.SaveCliente -> onSaveCliente()
+            is RegistroClienteUiEvent.ClearError -> error = null
+        }
+    }
+
     fun onSaveCliente() {
         if (!validate()) return
 
