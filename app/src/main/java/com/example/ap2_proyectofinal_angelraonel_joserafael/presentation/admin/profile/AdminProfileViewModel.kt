@@ -44,6 +44,13 @@ class AdminProfileViewModel @Inject constructor(
         }
     }
 
+    fun onEvent(event: AdminProfileUiEvent) {
+        when (event) {
+            is AdminProfileUiEvent.LoadProfile -> cargarDatosAdministrador()
+            is AdminProfileUiEvent.Logout -> logout(event.onLogoutSuccess)
+        }
+    }
+
     fun logout(onLogoutSuccess: () -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoggedOut = true) }
