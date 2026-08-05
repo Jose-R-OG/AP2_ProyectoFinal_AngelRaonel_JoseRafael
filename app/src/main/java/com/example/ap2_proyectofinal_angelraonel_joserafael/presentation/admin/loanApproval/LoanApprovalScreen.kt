@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.loanApprovalUiState
+package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.loanApproval
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

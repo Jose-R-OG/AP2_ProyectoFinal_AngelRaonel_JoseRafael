@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.loanApprovalUiState
+package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.loanApproval
 
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.CuotaEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.PrestamoEntity
