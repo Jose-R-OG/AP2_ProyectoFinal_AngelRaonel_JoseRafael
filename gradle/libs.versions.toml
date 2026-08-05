@@ -24,6 +24,7 @@ roomRuntime = "2.8.4"
 kotlinxDatetime = "0.8.0"
 desugar_jdk_libs = "2.1.5"
 roomTesting = "2.6.0"
+turbine = "1.2.1"
 uiTestJunit4 = "1.5.4"
 uiTestManifest = "1.5.4"
 
@@ -82,6 +83,7 @@ kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "ko
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
