@@ -252,7 +252,6 @@ fun CierreCajaScreen(
                 }
             }
 
-            // Card 3: Desglose por Método
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
