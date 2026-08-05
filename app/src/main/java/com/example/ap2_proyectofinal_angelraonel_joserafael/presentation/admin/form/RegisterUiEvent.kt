@@ -6,14 +6,14 @@ import android.net.Uri
 sealed class RegisterUiEvent {
     data class SubmitRegistration(
         val fullName: String,
+        val username: String,
         val email: String,
         val phone: String,
         val cedula: String,
         val bank: String,
         val transferNum: String,
         val depositor: String,
-        val voucherUri: Uri?
+        val voucherUri: Uri?,
+        val pin: String
     ) : RegisterUiEvent()
-
-    data class RegisterWithGoogle(val context: Context) : RegisterUiEvent()
 }

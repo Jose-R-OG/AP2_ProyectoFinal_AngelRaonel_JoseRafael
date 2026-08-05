@@ -1,15 +1,20 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.activation.ActivationCodeScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.dashboard.AdminDashboardScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.empleado.EmployeeManagementScreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.empleado.EmployeeViewModel
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.form.RegisterAdminScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.loanApproval.LoanApprovalScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.profile.AdminProfileSettingsScreen
@@ -23,8 +28,8 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.emplead
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
-    var googleName by remember { mutableStateOf("") }
-    var googleEmail by remember { mutableStateOf("") }
+    var registeredEmail by remember { mutableStateOf("") }
+    var activationCodeSent by remember { mutableStateOf("") }
 
     NavHost(
         navController = navController,
@@ -42,9 +47,7 @@ fun AppNavigation(navController: NavHostController) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 },
-                onNavigateToRegisterAdmin = { name, email ->
-                    googleName = name
-                    googleEmail = email
+                onNavigateToRegisterAdmin = {
                     navController.navigate(Routes.REGISTER_ADMIN)
                 }
             )
@@ -54,9 +57,11 @@ fun AppNavigation(navController: NavHostController) {
             AdminDashboardScreen(
                 onAddEmployee = { navController.navigate(Routes.EMPLOYEE_MANAGEMENT) },
                 onNuevoCliente = { navController.navigate(Routes.REGISTRO_CLIENTE) },
-                onRealizarCobro = { navController.navigate(Routes.EMPLEADO_HOME) },
+                onRealizarCobro = { navController.navigate(Routes.REALIZAR_COBRO) },
                 onAdjustTariffs = { navController.navigate(Routes.ADJUST_TARIFFS) },
-                onViewAllMovements = { }
+                onViewAllMovements = { },
+                onNavigateToLoans = { navController.navigate(Routes.LOAN_APPROVAL) },
+                onNavigateToProfile = { navController.navigate(Routes.ADMIN_PROFILE) }
             )
         }
 
@@ -67,7 +72,10 @@ fun AppNavigation(navController: NavHostController) {
                 onVerRutaClick = { },
                 onCierreCajaClick = { navController.navigate(Routes.CIERRE_CAJA) },
                 onVerTodosCobrosClick = { },
-                onNavigateToAdminDashboard = { navController.navigate(Routes.ADMIN_HOME) }
+                onNavigateToAdminDashboard = { navController.navigate(Routes.ADMIN_HOME) },
+                onNavigateToClients = { /* Podría navegar a una lista de clientes si existe */ },
+                onNavigateToLoans = { /* Podría navegar a una lista de préstamos */ },
+                onNavigateToProfile = { navController.navigate(Routes.EMPLEADO_PERFIL) }
             )
         }
 
@@ -101,7 +109,12 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(Routes.EMPLOYEE_MANAGEMENT) {
+            val viewModel: EmployeeViewModel = hiltViewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
             EmployeeManagementScreen(
+                uiState = uiState,
+                onEvent = viewModel::onEvent,
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -131,12 +144,22 @@ fun AppNavigation(navController: NavHostController) {
 
         composable(Routes.REGISTER_ADMIN) {
             RegisterAdminScreen(
-                prefilledFullName = googleName,
-                prefilledEmail = googleEmail,
                 onNavigateToLogin = { navController.popBackStack() },
-                onNavigateToActivation = { _ ->
-                    navController.navigate(Routes.LOAN_APPROVAL) {
-                        popUpTo(Routes.REGISTER_ADMIN) { inclusive = true }
+                onNavigateToActivation = { email, code ->
+                    registeredEmail = email
+                    activationCodeSent = code
+                    navController.navigate(Routes.ACTIVATION_CODE)
+                }
+            )
+        }
+
+        composable(Routes.ACTIVATION_CODE) {
+            ActivationCodeScreen(
+                email = registeredEmail,
+                expectedCode = activationCodeSent,
+                onActivationSuccess = {
+                    navController.navigate(Routes.ADMIN_HOME) {
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )

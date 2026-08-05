@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.mapper.toEmployee
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.User
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.empleado.GetEmployeesUseCase
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.empleado.ToggleEmployeeStatusUseCase
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,6 +49,8 @@ class EmployeeViewModel @Inject constructor(
             is EmployeeUiEvent.OpenAddModal -> openAddModal()
             is EmployeeUiEvent.CloseModal -> closeModal()
             is EmployeeUiEvent.NameChanged -> onNameChange(event.name)
+            is EmployeeUiEvent.UsernameChanged -> onUsernameChange(event.username)
+            is EmployeeUiEvent.PinChanged -> onPinChange(event.pin)
             is EmployeeUiEvent.PhoneChanged -> onPhoneChange(event.phone)
             is EmployeeUiEvent.RouteSelected -> onRouteSelected(event.route)
             is EmployeeUiEvent.SaveEmployee -> saveEmployee()
@@ -65,6 +67,8 @@ class EmployeeViewModel @Inject constructor(
             it.copy(
                 isAddModalOpen = false,
                 newEmployeeName = "",
+                newEmployeeUsername = "",
+                newEmployeePin = "1234",
                 newEmployeePhone = "",
                 newEmployeeRoute = ""
             )
@@ -72,7 +76,21 @@ class EmployeeViewModel @Inject constructor(
     }
 
     fun onNameChange(newValue: String) {
-        _uiState.update { it.copy(newEmployeeName = newValue) }
+        _uiState.update { 
+            val autoUsername = newValue.lowercase().replace(" ", "")
+            it.copy(
+                newEmployeeName = newValue,
+                newEmployeeUsername = if (it.newEmployeeUsername.isBlank()) autoUsername else it.newEmployeeUsername
+            ) 
+        }
+    }
+
+    fun onUsernameChange(newValue: String) {
+        _uiState.update { it.copy(newEmployeeUsername = newValue) }
+    }
+
+    fun onPinChange(newValue: String) {
+        _uiState.update { it.copy(newEmployeePin = newValue) }
     }
 
     fun onPhoneChange(newValue: String) {
@@ -90,17 +108,23 @@ class EmployeeViewModel @Inject constructor(
             return
         }
 
+        val finalUsername = currentState.newEmployeeUsername.ifBlank {
+            currentState.newEmployeeName.lowercase().replace(" ", "")
+        }
+        val finalPin = currentState.newEmployeePin.ifBlank { "1234" }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
 
             val newUser = User(
                 nombreCompleto = currentState.newEmployeeName,
-                username = currentState.newEmployeeName.lowercase().replace(" ", "."),
-                identificacion = "TEMP-" + System.currentTimeMillis(),
+                username = finalUsername,
+                identificacion = "EMP-" + System.currentTimeMillis().toString().takeLast(6),
                 telefono = currentState.newEmployeePhone,
-                pin = "1234",
+                pin = finalPin,
                 role = UserRole.EMPLEADO,
-                isActive = true
+                isActive = true,
+                route = currentState.newEmployeeRoute
             )
 
             authRepository.registerUser(newUser)
@@ -110,6 +134,8 @@ class EmployeeViewModel @Inject constructor(
                     isSaving = false,
                     isAddModalOpen = false,
                     newEmployeeName = "",
+                    newEmployeeUsername = "",
+                    newEmployeePin = "1234",
                     newEmployeePhone = "",
                     newEmployeeRoute = ""
                 )

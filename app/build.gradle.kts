@@ -9,11 +9,7 @@ plugins {
 
 android {
     namespace = "com.example.ap2_proyectofinal_angelraonel_joserafael"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.ap2_proyectofinal_angelraonel_joserafael"
@@ -99,8 +95,6 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
-
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")

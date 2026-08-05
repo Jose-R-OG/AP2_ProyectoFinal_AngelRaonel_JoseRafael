@@ -32,35 +32,10 @@ class LoginViewModel @Inject constructor(
             is LoginUiEvent.OnPinChanged -> pin = event.pin
             is LoginUiEvent.TogglePinVisibility -> isPinVisible = !isPinVisible
             is LoginUiEvent.SubmitLogin -> onLoginSubmitted()
-            is LoginUiEvent.OnGoogleSignInClick -> performGoogleSignIn(event.context)
-            is LoginUiEvent.OnGoogleSignInResult -> {
-                viewModelScope.launch {
-                    authRepository.registerUser(event.user)
-                    uiState = LoginUiState.Success(event.user)
-                }
-            }
             is LoginUiEvent.ClearError -> clearError()
         }
     }
 
-    private fun performGoogleSignIn(context: Context) {
-        viewModelScope.launch {
-            uiState = LoginUiState.Loading
-            val googleClient = com.example.ap2_proyectofinal_angelraonel_joserafael.util.auth.GoogleAuthUiClient(context)
-            val result = googleClient.signIn()
-            if (result.isSuccess) {
-                val user = result.getOrNull()
-                if (user != null) {
-                    authRepository.registerUser(user)
-                    uiState = LoginUiState.Success(user)
-                } else {
-                    uiState = LoginUiState.Error("Error al procesar el usuario de Google")
-                }
-            } else {
-                uiState = LoginUiState.Error(result.exceptionOrNull()?.message ?: "Cancelado o error en Google Sign-In")
-            }
-        }
-    }
 
     fun onLoginSubmitted() {
         if (!validateInput()) return

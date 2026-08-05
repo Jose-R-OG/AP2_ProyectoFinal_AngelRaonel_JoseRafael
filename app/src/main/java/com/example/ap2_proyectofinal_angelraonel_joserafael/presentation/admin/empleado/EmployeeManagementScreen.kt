@@ -26,7 +26,9 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.outlined.Notifications
@@ -61,6 +63,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -85,6 +88,8 @@ fun EmployeeManagementScreen(
     onOpenModal: () -> Unit = { onEvent(EmployeeUiEvent.OpenAddModal) },
     onCloseModal: () -> Unit = { onEvent(EmployeeUiEvent.CloseModal) },
     onNameChange: (String) -> Unit = { onEvent(EmployeeUiEvent.NameChanged(it)) },
+    onUsernameChange: (String) -> Unit = { onEvent(EmployeeUiEvent.UsernameChanged(it)) },
+    onPinChange: (String) -> Unit = { onEvent(EmployeeUiEvent.PinChanged(it)) },
     onPhoneChange: (String) -> Unit = { onEvent(EmployeeUiEvent.PhoneChanged(it)) },
     onRouteSelected: (String) -> Unit = { onEvent(EmployeeUiEvent.RouteSelected(it)) },
     onSaveEmployee: () -> Unit = { onEvent(EmployeeUiEvent.SaveEmployee) },
@@ -135,7 +140,7 @@ fun EmployeeManagementScreen(
                     ) {
                         Column {
                             Text("Directorio de Empleados", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
-                            Text("Gestiona los cobradores de campo y sus rutas asignadas.", fontSize = 14.sp, color = OnSurfaceVariant)
+                            Text("Gestiona los cobradores de campo y sus credenciales de acceso.", fontSize = 14.sp, color = OnSurfaceVariant)
                         }
                         Button(
                             onClick = onOpenModal,
@@ -207,6 +212,8 @@ fun EmployeeManagementScreen(
             uiState = uiState,
             onCloseModal = onCloseModal,
             onNameChange = onNameChange,
+            onUsernameChange = onUsernameChange,
+            onPinChange = onPinChange,
             onPhoneChange = onPhoneChange,
             onRouteSelected = onRouteSelected,
             onSaveEmployee = onSaveEmployee
@@ -358,6 +365,8 @@ private fun AddEmployeeDialog(
     uiState: EmployeeUiState,
     onCloseModal: () -> Unit,
     onNameChange: (String) -> Unit,
+    onUsernameChange: (String) -> Unit,
+    onPinChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
     onRouteSelected: (String) -> Unit,
     onSaveEmployee: () -> Unit
@@ -381,7 +390,7 @@ private fun AddEmployeeDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Agregar Empleado", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
+                    Text("Registrar Nuevo Empleado", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
                     IconButton(onClick = onCloseModal) {
                         Icon(Icons.Default.Close, contentDescription = "Cerrar")
                     }
@@ -392,6 +401,28 @@ private fun AddEmployeeDialog(
                     onValueChange = onNameChange,
                     label = { Text("Nombre Completo") },
                     placeholder = { Text("Ej. Juan Pérez") },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = uiState.newEmployeeUsername,
+                    onValueChange = onUsernameChange,
+                    label = { Text("Usuario de Acceso") },
+                    placeholder = { Text("Ej. jperez") },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = uiState.newEmployeePin,
+                    onValueChange = onPinChange,
+                    label = { Text("PIN de Acceso (4 dígitos)") },
+                    placeholder = { Text("1234") },
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -401,6 +432,7 @@ private fun AddEmployeeDialog(
                     onValueChange = onPhoneChange,
                     label = { Text("Número de Teléfono") },
                     placeholder = { Text("809-000-0000") },
+                    leadingIcon = { Icon(Icons.Default.Call, contentDescription = null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -460,7 +492,7 @@ private fun AddEmployeeDialog(
                         if (uiState.isSaving) {
                             CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White)
                         } else {
-                            Text("Guardar")
+                            Text("Guardar Empleado")
                         }
                     }
                 }

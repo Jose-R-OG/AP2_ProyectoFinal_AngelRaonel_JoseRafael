@@ -61,7 +61,7 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     onNavigateToAdminHome: () -> Unit,
     onNavigateToEmpleadoHome: () -> Unit,
-    onNavigateToRegisterAdmin: (fullName: String, email: String) -> Unit = { _, _ -> },
+    onNavigateToRegisterAdmin: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val surfaceColor = Color(0xFFF8F9FF)
@@ -226,41 +226,6 @@ fun LoginScreen(
                         }
                     }
 
-                    // Botón Continuar / Registrar con Google (Firebase Auth)
-                    OutlinedButton(
-                        onClick = {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                val googleClient = GoogleAuthUiClient(context)
-                                val result = googleClient.signIn()
-                                if (result.isSuccess) {
-                                    val user = result.getOrNull()
-                                    if (user != null) {
-                                        onNavigateToRegisterAdmin(user.nombreCompleto, user.email ?: "")
-                                    }
-                                } else {
-                                    viewModel.onEvent(LoginUiEvent.OnGoogleSignInClick(context))
-                                }
-                            }
-                        },
-                        enabled = viewModel.uiState !is LoginUiState.Loading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFC6C6CD)),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = primaryBlack)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "🌐", fontSize = 18.sp)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Continuar con Google",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = primaryBlack
-                            )
-                        }
-                    }
 
                     // Opción para Crear Cuenta / Registrar Empresa
                     Row(
@@ -272,7 +237,7 @@ fun LoginScreen(
                             text = "¿No tienes una cuenta?",
                             style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF76777D))
                         )
-                        TextButton(onClick = { onNavigateToRegisterAdmin("", "") }) {
+                        TextButton(onClick = { onNavigateToRegisterAdmin() }) {
                             Text(
                                 text = "Registrar Empresa",
                                 style = MaterialTheme.typography.bodyMedium.copy(

@@ -84,6 +84,9 @@ fun EmpleadoDashboardScreen(
     onCierreCajaClick: () -> Unit = {},
     onVerTodosCobrosClick: () -> Unit = {},
     onNavigateToAdminDashboard: () -> Unit = {},
+    onNavigateToClients: () -> Unit = {},
+    onNavigateToLoans: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
     viewModel: EmpleadoDashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -153,19 +156,28 @@ fun EmpleadoDashboardScreen(
                     icon = { Icon(Icons.Default.Group, contentDescription = "Clientes") },
                     label = { Text("Clients", fontSize = 11.sp) },
                     selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 }
+                    onClick = { 
+                        selectedTab = 1
+                        onNavigateToClients()
+                    }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Payments, contentDescription = "Loans") },
                     label = { Text("Loans", fontSize = 11.sp) },
                     selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 }
+                    onClick = { 
+                        selectedTab = 2
+                        onNavigateToLoans()
+                    }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
                     label = { Text("Profile", fontSize = 11.sp) },
                     selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 }
+                    onClick = { 
+                        selectedTab = 3
+                        onNavigateToProfile()
+                    }
                 )
             }
         },

@@ -13,7 +13,8 @@ fun UserEntity.toDomain(): User {
         email = email,
         pin = pin,
         role = role,
-        isActive = isActive
+        isActive = isActive,
+        route = route
     )
 }
 
@@ -27,6 +28,7 @@ fun User.toEntity(): UserEntity {
         email = email,
         pin = pin,
         role = role,
-        isActive = isActive
+        isActive = isActive,
+        route = route
     )
 }

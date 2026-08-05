@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
@@ -44,6 +46,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -59,23 +62,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterAdminScreen(
-    prefilledFullName: String = "",
-    prefilledEmail: String = "",
     onNavigateToLogin: () -> Unit = {},
-    onNavigateToActivation: (email: String) -> Unit = {},
-    viewModel: RegisterViewModel = viewModel()
+    onNavigateToActivation: (email: String, code: String) -> Unit = { _, _ -> },
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
     // Campos de texto
-    var fullName by remember { mutableStateOf(prefilledFullName) }
-    var email by remember { mutableStateOf(prefilledEmail) }
+    var fullName by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var pin by remember { mutableStateOf("") }
+    var isPinVisible by remember { mutableStateOf(false) }
     var phone by remember { mutableStateOf("") }
     var cedula by remember { mutableStateOf("") }
 
@@ -101,24 +108,24 @@ fun RegisterAdminScreen(
     LaunchedEffect(registerState) {
         when (val state = registerState) {
             is RegisterState.Success -> {
-                Toast.makeText(context, "Solicitud enviada. Código: ${state.activationCode}", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Solicitud enviada. Código enviado al correo: ${state.activationCode}", Toast.LENGTH_LONG).show()
 
-                // Intent para abrir cliente de correo y enviar el código de activación
+                // Intent para abrir cliente de correo con el código de activación
                 try {
                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:${state.email}")
                         putExtra(Intent.EXTRA_SUBJECT, "Código de Activación TacoBraoApp - Equity Flow")
                         putExtra(
                             Intent.EXTRA_TEXT,
-                            "¡Hola ${fullName}!\n\nTu registro ha sido enviado exitosamente.\n\nTu código de activación es: ${state.activationCode}\n\nConsérvalo para activar tu cuenta."
+                            "¡Hola ${fullName}!\n\nTu registro ha sido enviado exitosamente.\n\nTu código de activación es: ${state.activationCode}\n\nConsérvalo para verificar tu cuenta."
                         )
                     }
                     context.startActivity(Intent.createChooser(emailIntent, "Enviar Código por Correo"))
                 } catch (e: Exception) {
-                    // Si no hay app de correo, continuar sin crash
+                    // Continuar si no hay app de correo por defecto
                 }
 
-                onNavigateToActivation(state.email)
+                onNavigateToActivation(state.email, state.activationCode)
             }
             is RegisterState.Error -> {
                 Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
@@ -154,36 +161,12 @@ fun RegisterAdminScreen(
 
             Text("Registrar Empresa", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             Text(
-                "Complete la información de su empresa y adjunte el comprobante para habilitar su cuenta.",
+                "Complete la información de su empresa, defina su PIN y adjunte el comprobante para habilitar su cuenta.",
                 fontSize = 14.sp,
                 color = Color(0xFF45464D),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
             )
-
-            // Badge si fue cargado mediante Google Auth
-            if (prefilledEmail.isNotEmpty()) {
-                Surface(
-                    color = Color(0xFFE8F5E9),
-                    shape = RoundedCornerShape(20.dp),
-                    border = BorderStroke(1.dp, Color(0xFF00714D)),
-                    modifier = Modifier.padding(bottom = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF00714D), modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Verificado con Google: $prefilledEmail",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF00714D)
-                        )
-                    }
-                }
-            }
 
             // --- TARJETA FORMULARIO ---
             Card(
@@ -208,10 +191,38 @@ fun RegisterAdminScreen(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
+                        value = username, onValueChange = { username = it },
+                        label = { Text("Usuario (Login)") },
+                        trailingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
                         value = email, onValueChange = { email = it },
                         label = { Text("Correo Electrónico") },
                         trailingIcon = { Icon(Icons.Default.Mail, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Nuevo Campo: PIN / Contraseña de Acceso
+                    OutlinedTextField(
+                        value = pin, onValueChange = { pin = it },
+                        label = { Text("PIN / Contraseña de Acceso") },
+                        placeholder = { Text("Mínimo 4 dígitos") },
+                        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                        trailingIcon = {
+                            IconButton(onClick = { isPinVisible = !isPinVisible }) {
+                                Icon(Icons.Default.Lock, contentDescription = "Mostrar/Ocultar PIN")
+                            }
+                        },
+                        visualTransformation = if (isPinVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        singleLine = true
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -261,7 +272,7 @@ fun RegisterAdminScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Dropdown Banco
+                    // Dropdown Banco con .menuAnchor() para interacción perfecta
                     ExposedDropdownMenuBox(
                         expanded = expandedBankMenu,
                         onExpandedChange = { expandedBankMenu = !expandedBankMenu }
@@ -272,7 +283,7 @@ fun RegisterAdminScreen(
                             readOnly = true,
                             label = { Text("Seleccionar Banco") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedBankMenu) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.menuAnchor().fillMaxWidth(),
                             shape = RoundedCornerShape(8.dp)
                         )
                         ExposedDropdownMenu(
@@ -381,13 +392,15 @@ fun RegisterAdminScreen(
                             viewModel.onEvent(
                                 RegisterUiEvent.SubmitRegistration(
                                     fullName = fullName,
+                                    username = username,
                                     email = email,
                                     phone = phone,
                                     cedula = cedula,
                                     bank = selectedBank,
                                     transferNum = transferNumber,
                                     depositor = depositorName,
-                                    voucherUri = voucherUri
+                                    voucherUri = voucherUri,
+                                    pin = pin
                                 )
                             )
                         },

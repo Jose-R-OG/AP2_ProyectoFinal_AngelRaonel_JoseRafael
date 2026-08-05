@@ -44,7 +44,9 @@ fun AdminDashboardScreen(
     onNuevoCliente: () -> Unit = {},
     onRealizarCobro: () -> Unit = {},
     onAdjustTariffs: () -> Unit = {},
-    onViewAllMovements: () -> Unit = {}
+    onViewAllMovements: () -> Unit = {},
+    onNavigateToLoans: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {}
 ) {
     var selectedItem by remember { mutableIntStateOf(0) }
 
@@ -113,7 +115,10 @@ fun AdminDashboardScreen(
                     icon = { Icon(Icons.Outlined.RequestQuote, contentDescription = "Préstamos") },
                     label = { Text("Préstamos") },
                     selected = selectedItem == 1,
-                    onClick = { selectedItem = 1 }
+                    onClick = { 
+                        selectedItem = 1
+                        onNavigateToLoans()
+                    }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Outlined.DirectionsRun, contentDescription = "Rutas") },
@@ -125,7 +130,10 @@ fun AdminDashboardScreen(
                     icon = { Icon(Icons.Outlined.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
                     selected = selectedItem == 3,
-                    onClick = { selectedItem = 3 }
+                    onClick = { 
+                        selectedItem = 3
+                        onNavigateToProfile()
+                    }
                 )
             }
         },

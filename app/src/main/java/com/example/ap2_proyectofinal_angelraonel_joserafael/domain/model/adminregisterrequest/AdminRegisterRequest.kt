@@ -3,6 +3,7 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.adminr
 data class AdminRegisterRequest(
     val uid: String = "",
     val fullName: String = "",
+    val username: String = "",
     val email: String = "",
     val phone: String = "",
     val cedula: String = "",
@@ -10,6 +11,7 @@ data class AdminRegisterRequest(
     val transferNumber: String = "",
     val depositorName: String = "",
     val voucherUrl: String = "",
+    val pin: String = "",
     val status: String = "PENDIENTE",
     val activationCode: String = "",
     val createdAt: Long = System.currentTimeMillis()

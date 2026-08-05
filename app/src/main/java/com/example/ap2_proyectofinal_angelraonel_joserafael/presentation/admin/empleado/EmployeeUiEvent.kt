@@ -4,6 +4,8 @@ sealed class EmployeeUiEvent {
     data object OpenAddModal : EmployeeUiEvent()
     data object CloseModal : EmployeeUiEvent()
     data class NameChanged(val name: String) : EmployeeUiEvent()
+    data class UsernameChanged(val username: String) : EmployeeUiEvent()
+    data class PinChanged(val pin: String) : EmployeeUiEvent()
     data class PhoneChanged(val phone: String) : EmployeeUiEvent()
     data class RouteSelected(val route: String) : EmployeeUiEvent()
     data object SaveEmployee : EmployeeUiEvent()

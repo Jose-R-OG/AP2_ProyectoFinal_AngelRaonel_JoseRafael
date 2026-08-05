@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.User
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -15,11 +17,15 @@ import java.security.MessageDigest
 import java.util.UUID
 
 class GoogleAuthUiClient(
-    private val context: Context,
-    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val context: Context
 ) {
-    private val credentialManager = CredentialManager.create(context)
+    // Lazy initialization to avoid calling Google services unless needed
+    private val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+    private val credentialManager: CredentialManager by lazy { CredentialManager.create(context) }
 
+    /**
+     * Inicia el flujo de Google Sign-In solo cuando el usuario lo solicita explícitamente.
+     */
     suspend fun signIn(): Result<User> {
         return try {
             val rawNonce = UUID.randomUUID().toString()
@@ -30,7 +36,7 @@ class GoogleAuthUiClient(
 
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
-                .setServerClientId("YOUR_WEB_CLIENT_ID.apps.googleusercontent.com")
+                .setServerClientId("384429348767-0rog4pg4shgslcduio18kc33tmocm1gm.apps.googleusercontent.com")
                 .setNonce(hashedNonce)
                 .build()
 
@@ -59,53 +65,39 @@ class GoogleAuthUiClient(
                         username = firebaseUser.email ?: "google_user",
                         identificacion = firebaseUser.uid,
                         telefono = firebaseUser.phoneNumber ?: "S/D",
-                        pin = "0000",
+                        pin = "0000", // PIN por defecto para usuarios Google
                         role = UserRole.ADMINISTRADOR,
                         isActive = true,
                         email = firebaseUser.email
                     )
                     Result.success(user)
                 } else {
-                    getFallbackGoogleUser()
+                    Result.failure(Exception("Error al obtener perfil de Firebase"))
                 }
             } else {
-                getFallbackGoogleUser()
+                Result.failure(Exception("Tipo de credencial no soportado"))
             }
+        } catch (e: NoCredentialException) {
+            Result.failure(Exception("No se encontraron cuentas de Google en este dispositivo."))
+        } catch (e: GetCredentialException) {
+            Result.failure(Exception("Error de autenticación de Google: ${e.message}"))
         } catch (e: Exception) {
-            // Si falta google-services.json o el Web Client ID en entorno de desarrollo,
-            // cae de manera inteligente al usuario Google pre-autenticado para permitir pruebas y pre-llenar registro.
-            getFallbackGoogleUser()
+            Result.failure(e)
         }
     }
 
-    private fun getFallbackGoogleUser(): Result<User> {
-        val firebaseUser = firebaseAuth.currentUser
-        val user = User(
-            id = 0L,
-            nombreCompleto = firebaseUser?.displayName ?: "Usuario Google",
-            username = firebaseUser?.email ?: "usuario.google@gmail.com",
-            identificacion = firebaseUser?.uid ?: "GOOG-DEV-9812",
-            telefono = firebaseUser?.phoneNumber ?: "809-555-0199",
-            pin = "0000",
-            role = UserRole.ADMINISTRADOR,
-            isActive = true,
-            email = firebaseUser?.email ?: "usuario.google@gmail.com"
-        )
-        return Result.success(user)
-    }
-
     fun getSignedInUser(): User? {
-        val firebaseUser = firebaseAuth.currentUser
+        val firebaseUser = try { firebaseAuth.currentUser } catch (e: Exception) { null } ?: return null
         return User(
             id = 0L,
-            nombreCompleto = firebaseUser?.displayName ?: "Usuario Google",
-            username = firebaseUser?.email ?: "usuario.google@gmail.com",
-            identificacion = firebaseUser?.uid ?: "GOOG-DEV-9812",
-            telefono = firebaseUser?.phoneNumber ?: "809-555-0199",
+            nombreCompleto = firebaseUser.displayName ?: "Usuario Google",
+            username = firebaseUser.email ?: "",
+            identificacion = firebaseUser.uid,
+            telefono = firebaseUser.phoneNumber ?: "S/D",
             pin = "0000",
             role = UserRole.ADMINISTRADOR,
             isActive = true,
-            email = firebaseUser?.email ?: "usuario.google@gmail.com"
+            email = firebaseUser.email
         )
     }
 

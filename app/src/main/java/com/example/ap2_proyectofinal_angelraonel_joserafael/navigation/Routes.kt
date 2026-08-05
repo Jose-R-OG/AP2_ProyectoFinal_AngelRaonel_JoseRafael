@@ -13,4 +13,5 @@ object Routes {
     const val CIERRE_CAJA = "cierre_caja_screen"
     const val REALIZAR_COBRO = "realizar_cobro_screen"
     const val EMPLEADO_PERFIL = "empleado_perfil_screen"
+    const val ACTIVATION_CODE = "activation_code_screen"
 }
