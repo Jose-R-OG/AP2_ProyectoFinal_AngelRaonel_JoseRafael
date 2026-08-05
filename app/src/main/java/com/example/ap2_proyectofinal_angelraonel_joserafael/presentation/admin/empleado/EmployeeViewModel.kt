@@ -44,6 +44,18 @@ class EmployeeViewModel @Inject constructor(
         }
     }
 
+    fun onEvent(event: EmployeeUiEvent) {
+        when (event) {
+            is EmployeeUiEvent.OpenAddModal -> openAddModal()
+            is EmployeeUiEvent.CloseModal -> closeModal()
+            is EmployeeUiEvent.NameChanged -> onNameChange(event.name)
+            is EmployeeUiEvent.PhoneChanged -> onPhoneChange(event.phone)
+            is EmployeeUiEvent.RouteSelected -> onRouteSelected(event.route)
+            is EmployeeUiEvent.SaveEmployee -> saveEmployee()
+            is EmployeeUiEvent.ToggleStatus -> toggleEmployeeStatus(event.employeeId)
+        }
+    }
+
     fun openAddModal() {
         _uiState.update { it.copy(isAddModalOpen = true) }
     }

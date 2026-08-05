@@ -81,13 +81,14 @@ private val ErrorColor = Color(0xFFBA1A1A)
 @Composable
 fun EmployeeManagementScreen(
     uiState: EmployeeUiState = EmployeeUiState(),
-    onOpenModal: () -> Unit = {},
-    onCloseModal: () -> Unit = {},
-    onNameChange: (String) -> Unit = {},
-    onPhoneChange: (String) -> Unit = {},
-    onRouteSelected: (String) -> Unit = {},
-    onSaveEmployee: () -> Unit = {},
-    onToggleStatus: (String) -> Unit = {},
+    onEvent: (EmployeeUiEvent) -> Unit = {},
+    onOpenModal: () -> Unit = { onEvent(EmployeeUiEvent.OpenAddModal) },
+    onCloseModal: () -> Unit = { onEvent(EmployeeUiEvent.CloseModal) },
+    onNameChange: (String) -> Unit = { onEvent(EmployeeUiEvent.NameChanged(it)) },
+    onPhoneChange: (String) -> Unit = { onEvent(EmployeeUiEvent.PhoneChanged(it)) },
+    onRouteSelected: (String) -> Unit = { onEvent(EmployeeUiEvent.RouteSelected(it)) },
+    onSaveEmployee: () -> Unit = { onEvent(EmployeeUiEvent.SaveEmployee) },
+    onToggleStatus: (String) -> Unit = { onEvent(EmployeeUiEvent.ToggleStatus(it)) },
     onBackClick: () -> Unit = {}
 ) {
     Scaffold(
