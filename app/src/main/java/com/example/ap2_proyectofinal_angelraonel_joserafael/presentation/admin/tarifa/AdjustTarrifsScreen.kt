@@ -74,10 +74,11 @@ private val OnErrorContainer = Color(0xFF93000A)
 @Composable
 fun AdjustTariffsScreen(
     uiState: TariffsUiState = TariffsUiState(),
-    onFourWeeksChange: (String) -> Unit = {},
-    onSixWeeksChange: (String) -> Unit = {},
-    onTwelveWeeksChange: (String) -> Unit = {},
-    onSaveClick: () -> Unit = {},
+    onEvent: (TariffsUiEvent) -> Unit = {},
+    onFourWeeksChange: (String) -> Unit = { onEvent(TariffsUiEvent.FourWeeksChanged(it)) },
+    onSixWeeksChange: (String) -> Unit = { onEvent(TariffsUiEvent.SixWeeksChanged(it)) },
+    onTwelveWeeksChange: (String) -> Unit = { onEvent(TariffsUiEvent.TwelveWeeksChanged(it)) },
+    onSaveClick: () -> Unit = { onEvent(TariffsUiEvent.SaveTariffs) },
     onBackClick: () -> Unit = {}
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
