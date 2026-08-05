@@ -39,6 +39,11 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -103,8 +108,11 @@ dependencies {
 
     implementation(platform(libs.firebase.bom.v3312))
 
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.storage)
-    implementation(libs.coil.compose)
-    implementation(libs.escpos.thermalprinter.android)
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.3.0")
+    testImplementation(libs.turbine)
+
+    testImplementation(libs.robolectric)
 }
