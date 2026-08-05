@@ -106,7 +106,7 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation(platform(libs.firebase.bom.v3312))
 
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
