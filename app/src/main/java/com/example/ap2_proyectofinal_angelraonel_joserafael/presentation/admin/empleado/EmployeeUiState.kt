@@ -21,6 +21,8 @@ data class EmployeeUiState(
 
     val isAddModalOpen: Boolean = false,
     val newEmployeeName: String = "",
+    val newEmployeeUsername: String = "",
+    val newEmployeePin: String = "1234",
     val newEmployeePhone: String = "",
     val newEmployeeRoute: String = "",
     val availableRoutes: List<String> = listOf("Zona Norte", "Centro", "Zona Sur", "Zona Este"),

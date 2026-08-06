@@ -2,84 +2,90 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.adminregisterrequest.AdminRegisterRequest
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.storage
+import androidx.lifecycle.viewModelScope
+import android.util.Log
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.adminrequest.AdminRegisterRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed class RegisterState {
     object Idle : RegisterState()
     object Loading : RegisterState()
-    object Success : RegisterState()
+    data class Success(val activationCode: String, val email: String) : RegisterState()
     data class Error(val message: String) : RegisterState()
 }
 
-class RegisterViewModel : ViewModel() {
-
-    // Instancias usando la API moderna de Firebase
-    private val db = Firebase.firestore
-    private val storage = Firebase.storage
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
+    private val repository: AdminRegisterRepository
+) : ViewModel() {
 
     private val _registerState = MutableStateFlow<RegisterState>(RegisterState.Idle)
     val registerState: StateFlow<RegisterState> = _registerState
 
+    fun onEvent(event: RegisterUiEvent) {
+        when (event) {
+            is RegisterUiEvent.SubmitRegistration -> {
+                submitRegistration(
+                    fullName = event.fullName,
+                    username = event.username,
+                    email = event.email,
+                    phone = event.phone,
+                    cedula = event.cedula,
+                    bank = event.bank,
+                    transferNum = event.transferNum,
+                    depositor = event.depositor,
+                    voucherUri = event.voucherUri,
+                    pin = event.pin
+                )
+            }
+        }
+    }
+
     fun submitRegistration(
-        fullName: String, email: String, phone: String, cedula: String,
-        bank: String, transferNum: String, depositor: String, voucherUri: Uri?
+        fullName: String, username: String, email: String, phone: String, cedula: String,
+        bank: String, transferNum: String, depositor: String, voucherUri: Uri?, pin: String
     ) {
-        if (fullName.isBlank() || email.isBlank() || cedula.isBlank() || voucherUri == null) {
-            _registerState.value = RegisterState.Error("Por favor complete los campos obligatorios y adjunte el voucher.")
+        val missingFields = mutableListOf<String>()
+        if (fullName.isBlank()) missingFields.add("Nombre")
+        if (username.isBlank()) missingFields.add("Usuario")
+        if (email.isBlank()) missingFields.add("Email")
+        if (cedula.isBlank()) missingFields.add("Cédula")
+        if (pin.isBlank()) missingFields.add("PIN")
+        if (voucherUri == null) missingFields.add("Comprobante (Voucher)")
+        if (bank.isBlank()) missingFields.add("Banco")
+
+        if (missingFields.isNotEmpty()) {
+            _registerState.value = RegisterState.Error("Faltan campos obligatorios: ${missingFields.joinToString(", ")}")
             return
         }
 
         _registerState.value = RegisterState.Loading
 
-        // 1. Subir imagen del Voucher a Firebase Storage
-        val storageRef = storage.reference.child("vouchers/${System.currentTimeMillis()}.jpg")
-        storageRef.putFile(voucherUri)
-            .addOnSuccessListener {
-                storageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-                    saveRegistrationData(
-                        fullName, email, phone, cedula,
-                        bank, transferNum, depositor, downloadUrl.toString()
-                    )
-                }
+        viewModelScope.launch {
+            val result = repository.submitRegistration(
+                fullName = fullName,
+                username = username,
+                email = email,
+                phone = phone,
+                cedula = cedula,
+                bank = bank,
+                transferNum = transferNum,
+                depositor = depositor,
+                voucherUri = voucherUri!!,
+                pin = pin
+            )
+            
+            result.onSuccess { activationCode ->
+                Log.d("RegisterViewModel", "Registro exitoso. Código: $activationCode")
+                _registerState.value = RegisterState.Success(activationCode, email)
+            }.onFailure { e ->
+                Log.e("RegisterViewModel", "Error al enviar registro", e)
+                _registerState.value = RegisterState.Error(e.message ?: "Error al enviar la solicitud.")
             }
-            .addOnFailureListener {
-                _registerState.value = RegisterState.Error("Error al subir el comprobante de pago.")
-            }
-    }
-
-    private fun saveRegistrationData(
-        fullName: String, email: String, phone: String, cedula: String,
-        bank: String, transferNum: String, depositor: String, voucherUrl: String
-    ) {
-        // Generar un código aleatorio de activación de 6 dígitos
-        val activationCode = "EF-" + (100000..999999).random()
-
-        val request = AdminRegisterRequest(
-            fullName = fullName,
-            email = email,
-            phone = phone,
-            cedula = cedula,
-            selectedBank = bank,
-            transferNumber = transferNum,
-            depositorName = depositor,
-            voucherUrl = voucherUrl,
-            status = "PENDIENTE",
-            activationCode = activationCode
-        )
-
-        // 2. Guardar en la colección 'admin_requests'
-        db.collection("admin_requests").document(email)
-            .set(request)
-            .addOnSuccessListener {
-                _registerState.value = RegisterState.Success
-            }
-            .addOnFailureListener {
-                _registerState.value = RegisterState.Error("Error al registrar la solicitud.")
-            }
+        }
     }
 }

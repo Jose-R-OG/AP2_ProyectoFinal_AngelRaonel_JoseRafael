@@ -44,7 +44,9 @@ fun AdminDashboardScreen(
     onNuevoCliente: () -> Unit = {},
     onRealizarCobro: () -> Unit = {},
     onAdjustTariffs: () -> Unit = {},
-    onViewAllMovements: () -> Unit = {}
+    onViewAllMovements: () -> Unit = {},
+    onNavigateToLoans: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {}
 ) {
     var selectedItem by remember { mutableIntStateOf(0) }
 
@@ -113,7 +115,10 @@ fun AdminDashboardScreen(
                     icon = { Icon(Icons.Outlined.RequestQuote, contentDescription = "Préstamos") },
                     label = { Text("Préstamos") },
                     selected = selectedItem == 1,
-                    onClick = { selectedItem = 1 }
+                    onClick = { 
+                        selectedItem = 1
+                        onNavigateToLoans()
+                    }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Outlined.DirectionsRun, contentDescription = "Rutas") },
@@ -125,7 +130,10 @@ fun AdminDashboardScreen(
                     icon = { Icon(Icons.Outlined.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
                     selected = selectedItem == 3,
-                    onClick = { selectedItem = 3 }
+                    onClick = { 
+                        selectedItem = 3
+                        onNavigateToProfile()
+                    }
                 )
             }
         },
@@ -224,8 +232,8 @@ fun AdminDashboardScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        QuickActionButton("Add Employee", Icons.Default.PersonAdd, Modifier.weight(1f), onAddEmployee)
-                        QuickActionButton("Adjust Tariffs", Icons.Default.PriceChange, Modifier.weight(1f), onAdjustTariffs)
+                        QuickActionButton("Nuevo Empleado", Icons.Default.PersonAdd, Modifier.weight(1f), onAddEmployee)
+                        QuickActionButton("Ajustar Tarifas", Icons.Default.PriceChange, Modifier.weight(1f), onAdjustTariffs)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -233,7 +241,7 @@ fun AdminDashboardScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         QuickActionButton("Nuevo Cliente", Icons.Default.PersonAddAlt, Modifier.weight(1f), onNuevoCliente)
-                        QuickActionButton("Realizar Cobro", Icons.Default.Payments, Modifier.weight(1f), onRealizarCobro)
+                        QuickActionButton("Modo Cobrador", Icons.Default.Payments, Modifier.weight(1f), onRealizarCobro)
                     }
                 }
 

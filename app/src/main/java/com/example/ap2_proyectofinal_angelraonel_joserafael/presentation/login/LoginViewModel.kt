@@ -1,5 +1,6 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.auth.login
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,6 +25,17 @@ class LoginViewModel @Inject constructor(
 
     var uiState by mutableStateOf<LoginUiState>(LoginUiState.Idle)
         private set
+
+    fun onEvent(event: LoginUiEvent) {
+        when (event) {
+            is LoginUiEvent.OnUsernameChanged -> username = event.username
+            is LoginUiEvent.OnPinChanged -> pin = event.pin
+            is LoginUiEvent.TogglePinVisibility -> isPinVisible = !isPinVisible
+            is LoginUiEvent.SubmitLogin -> onLoginSubmitted()
+            is LoginUiEvent.ClearError -> clearError()
+        }
+    }
+
 
     fun onLoginSubmitted() {
         if (!validateInput()) return

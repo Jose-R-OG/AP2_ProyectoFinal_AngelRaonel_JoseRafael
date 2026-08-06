@@ -109,7 +109,7 @@ fun RegistroClienteConCuotas(
         },
         bottomBar = {
             Button(
-                onClick = { viewModel.onSaveCliente() },
+                onClick = { viewModel.onEvent(RegistroClienteUiEvent.SaveCliente) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -135,7 +135,7 @@ fun RegistroClienteConCuotas(
             // Profile Photo Picker
             ProfilePhotoPicker(
                 photoPath = viewModel.profilePhotoPath,
-                onPhotoPicked = { viewModel.profilePhotoPath = it }
+                onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.ProfilePhotoChanged(it)) }
             )
 
             Spacer(Modifier.height(24.dp))
@@ -152,7 +152,7 @@ fun RegistroClienteConCuotas(
                     
                     FormTextField(
                         value = viewModel.fullName,
-                        onValueChange = { viewModel.fullName = it },
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.FullNameChanged(it)) },
                         label = "Nombre Completo",
                         placeholder = "Ej. Juan Pérez",
                         icon = Icons.Default.Person
@@ -160,7 +160,7 @@ fun RegistroClienteConCuotas(
 
                     FormTextField(
                         value = viewModel.dni,
-                        onValueChange = { viewModel.dni = it },
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.DniChanged(it)) },
                         label = "Número de Identificación (DNI/ID)",
                         placeholder = "000-0000000-0",
                         icon = Icons.Default.AccountBox
@@ -180,13 +180,13 @@ fun RegistroClienteConCuotas(
                             modifier = Modifier.weight(1f),
                             label = "Parte Frontal",
                             photoPath = viewModel.dniFrontPhotoPath,
-                            onPhotoPicked = { viewModel.dniFrontPhotoPath = it }
+                            onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.DniFrontPhotoChanged(it)) }
                         )
                         IdPhotoBox(
                             modifier = Modifier.weight(1f),
                             label = "Parte Trasera",
                             photoPath = viewModel.dniBackPhotoPath,
-                            onPhotoPicked = { viewModel.dniBackPhotoPath = it }
+                            onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.DniBackPhotoChanged(it)) }
                         )
                     }
                     Text(
@@ -198,7 +198,7 @@ fun RegistroClienteConCuotas(
 
                     FormTextField(
                         value = viewModel.phone,
-                        onValueChange = { viewModel.phone = it },
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.PhoneChanged(it)) },
                         label = "Teléfono de Contacto",
                         placeholder = "+1 (555) 000-0000",
                         icon = Icons.Default.Phone,
@@ -207,7 +207,7 @@ fun RegistroClienteConCuotas(
 
                     FormTextField(
                         value = viewModel.address,
-                        onValueChange = { viewModel.address = it },
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.AddressChanged(it)) },
                         label = "Dirección",
                         placeholder = "Calle, Número, Ciudad...",
                         icon = Icons.Default.LocationOn
@@ -218,7 +218,7 @@ fun RegistroClienteConCuotas(
 
                     FormTextField(
                         value = viewModel.montoPrestamo,
-                        onValueChange = { viewModel.montoPrestamo = it },
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.MontoChanged(it)) },
                         label = "Monto del Préstamo Inicial",
                         placeholder = "$ 0.00",
                         icon = Icons.Default.Add,
@@ -227,7 +227,7 @@ fun RegistroClienteConCuotas(
 
                     FormTextField(
                         value = viewModel.numCuotas,
-                        onValueChange = { viewModel.numCuotas = it },
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.CuotasChanged(it)) },
                         label = "Número de Cuotas",
                         placeholder = "Ej. 12",
                         icon = Icons.Default.List,
@@ -236,7 +236,7 @@ fun RegistroClienteConCuotas(
 
                     FrecuenciaDropdown(
                         selected = viewModel.frecuenciaPago,
-                        onSelected = { viewModel.frecuenciaPago = it }
+                        onSelected = { viewModel.onEvent(RegistroClienteUiEvent.FrecuenciaChanged(it)) }
                     )
                 }
             }
@@ -254,8 +254,8 @@ fun RegistroClienteConCuotas(
 
     viewModel.error?.let { err ->
         AlertDialog(
-            onDismissRequest = { viewModel.error = null },
-            confirmButton = { TextButton(onClick = { viewModel.error = null }) { Text("OK") } },
+            onDismissRequest = { viewModel.onEvent(RegistroClienteUiEvent.ClearError) },
+            confirmButton = { TextButton(onClick = { viewModel.onEvent(RegistroClienteUiEvent.ClearError) }) { Text("OK") } },
             title = { Text("Error") },
             text = { Text(err) }
         )

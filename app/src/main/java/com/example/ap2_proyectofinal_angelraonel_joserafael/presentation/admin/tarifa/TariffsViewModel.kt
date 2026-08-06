@@ -46,6 +46,15 @@ class TariffsViewModel @Inject constructor(
         }
     }
 
+    fun onEvent(event: TariffsUiEvent) {
+        when (event) {
+            is TariffsUiEvent.FourWeeksChanged -> onFourWeeksChange(event.value)
+            is TariffsUiEvent.SixWeeksChanged -> onSixWeeksChange(event.value)
+            is TariffsUiEvent.TwelveWeeksChanged -> onTwelveWeeksChange(event.value)
+            is TariffsUiEvent.SaveTariffs -> saveTariffs()
+        }
+    }
+
     fun onFourWeeksChange(newValue: String) {
         _uiState.update { it.copy(fourWeeksRate = newValue) }
     }

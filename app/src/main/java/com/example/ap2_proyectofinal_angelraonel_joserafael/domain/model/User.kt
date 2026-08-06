@@ -9,5 +9,6 @@ data class User(
     val email: String? = null,
     val pin: String,
     val role: UserRole,
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
+    val route: String? = null
 )

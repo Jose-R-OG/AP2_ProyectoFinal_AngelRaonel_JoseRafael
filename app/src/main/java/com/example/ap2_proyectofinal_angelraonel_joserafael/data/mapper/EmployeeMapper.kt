@@ -8,7 +8,7 @@ fun User.toEmployee(): Employee {
         id = id.toString(),
         name = nombreCompleto,
         phone = telefono,
-        route = "SIN ASIGNAR",
+        route = route ?: "SIN ASIGNAR",
         clientsAssigned = 0,
         isActive = isActive,
         photoUrl = null

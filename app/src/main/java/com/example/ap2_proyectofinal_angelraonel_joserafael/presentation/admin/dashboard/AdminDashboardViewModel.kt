@@ -53,6 +53,12 @@ class AdminDashboardViewModel @Inject constructor(
         }
     }
 
+    fun onEvent(event: AdminDashboardUiEvent) {
+        when (event) {
+            is AdminDashboardUiEvent.Refresh -> loadDashboardData()
+        }
+    }
+
     fun onRefresh() {
         loadDashboardData()
     }

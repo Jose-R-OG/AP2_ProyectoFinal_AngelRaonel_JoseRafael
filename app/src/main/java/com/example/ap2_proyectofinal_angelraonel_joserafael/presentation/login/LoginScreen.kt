@@ -4,12 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +30,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -38,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -48,17 +52,22 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login.LoginUiState
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.auth.GoogleAuthUiClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
     onNavigateToAdminHome: () -> Unit,
     onNavigateToEmpleadoHome: () -> Unit,
+    onNavigateToRegisterAdmin: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val surfaceColor = Color(0xFFF8F9FF)
     val primaryBlack = Color(0xFF000000)
     val primaryGreen = Color(0xFF006C49)
-
+    val context = LocalContext.current
 
     LaunchedEffect(viewModel.uiState) {
         when (val state = viewModel.uiState) {
@@ -103,7 +112,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "¡Bienvenido!",
+                text = "¡Bienvenido a TacoBraoApp!",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -118,7 +127,6 @@ fun LoginScreen(
                 ),
                 modifier = Modifier.padding(top = 4.dp, bottom = 28.dp)
             )
-
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -142,7 +150,7 @@ fun LoginScreen(
                         Spacer(modifier = Modifier.height(6.dp))
                         OutlinedTextField(
                             value = viewModel.username,
-                            onValueChange = { viewModel.username = it },
+                            onValueChange = { viewModel.onEvent(LoginUiEvent.OnUsernameChanged(it)) },
                             placeholder = { Text("Ej. jperez") },
                             leadingIcon = {
                                 Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF76777D))
@@ -168,15 +176,15 @@ fun LoginScreen(
                         Spacer(modifier = Modifier.height(6.dp))
                         OutlinedTextField(
                             value = viewModel.pin,
-                            onValueChange = { viewModel.pin = it },
+                            onValueChange = { viewModel.onEvent(LoginUiEvent.OnPinChanged(it)) },
                             placeholder = { Text("••••") },
                             leadingIcon = {
                                 Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF76777D))
                             },
                             trailingIcon = {
-                                IconButton(onClick = { viewModel.isPinVisible = !viewModel.isPinVisible }) {
+                                IconButton(onClick = { viewModel.onEvent(LoginUiEvent.TogglePinVisibility) }) {
                                     Icon(
-                                        imageVector = if (viewModel.isPinVisible) Icons.Default.Lock else Icons.Default.Lock,
+                                        imageVector = Icons.Default.Lock,
                                         contentDescription = "Mostrar/Ocultar PIN"
                                     )
                                 }
@@ -196,7 +204,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Button(
-                        onClick = { viewModel.onLoginSubmitted() },
+                        onClick = { viewModel.onEvent(LoginUiEvent.SubmitLogin) },
                         enabled = viewModel.uiState !is LoginUiState.Loading,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -217,6 +225,28 @@ fun LoginScreen(
                             )
                         }
                     }
+
+
+                    // Opción para Crear Cuenta / Registrar Empresa
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "¿No tienes una cuenta?",
+                            style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF76777D))
+                        )
+                        TextButton(onClick = { onNavigateToRegisterAdmin() }) {
+                            Text(
+                                text = "Registrar Empresa",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = primaryGreen
+                                )
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -225,9 +255,9 @@ fun LoginScreen(
     if (viewModel.uiState is LoginUiState.Error) {
         val errorMessage = (viewModel.uiState as LoginUiState.Error).message
         AlertDialog(
-            onDismissRequest = { viewModel.clearError() },
+            onDismissRequest = { viewModel.onEvent(LoginUiEvent.ClearError) },
             confirmButton = {
-                TextButton(onClick = { viewModel.clearError() }) {
+                TextButton(onClick = { viewModel.onEvent(LoginUiEvent.ClearError) }) {
                     Text("OK", color = primaryGreen)
                 }
             },

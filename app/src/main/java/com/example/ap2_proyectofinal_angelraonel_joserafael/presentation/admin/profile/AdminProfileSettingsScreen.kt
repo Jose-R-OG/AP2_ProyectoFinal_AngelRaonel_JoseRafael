@@ -42,11 +42,12 @@ private val ErrorContainer = Color(0xFFFFDAD6)
 @Composable
 fun AdminProfileSettingsScreen(
     uiState: AdminProfileUiState = AdminProfileUiState(),
+    onEvent: (AdminProfileUiEvent) -> Unit = {},
     onChangePasswordClick: () -> Unit = {},
     onSecuritySettingsClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onHelpSupportClick: () -> Unit = {},
-    onLogoutClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = { onEvent(AdminProfileUiEvent.Logout {}) },
     onBackClick: () -> Unit = {}
 ) {
     Scaffold(

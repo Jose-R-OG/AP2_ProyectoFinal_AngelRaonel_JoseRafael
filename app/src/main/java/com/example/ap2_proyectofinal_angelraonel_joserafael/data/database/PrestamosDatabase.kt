@@ -7,6 +7,8 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Auth.local.User
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Auth.local.UserEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.local.ClienteDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.local.ClienteEntity
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.adminrequest.AdminRegisterRequestDao
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.adminrequest.AdminRegisterRequestEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.CuotaEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.PrestamoDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.PrestamoEntity
@@ -22,9 +24,10 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.transacci
         ConfigEntity::class,
         PrestamoEntity::class,
         CuotaEntity::class,
-        TransaccionEntity::class
+        TransaccionEntity::class,
+        AdminRegisterRequestEntity::class
     ],
-    version = 5,
+    version = 9,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -34,6 +37,7 @@ abstract class PrestamosDatabase : RoomDatabase() {
     abstract fun clienteDao(): ClienteDao
     abstract fun configDao(): ConfigDao
     abstract fun prestamoDao(): PrestamoDao
-    abstract fun transaccionDao(): TransaccionDao // <-- Nuevo DAO agregado
+    abstract fun transaccionDao(): TransaccionDao
+    abstract fun adminRegisterRequestDao(): AdminRegisterRequestDao
 
 }

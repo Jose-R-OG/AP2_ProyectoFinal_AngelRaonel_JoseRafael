@@ -9,11 +9,7 @@ plugins {
 
 android {
     namespace = "com.example.ap2_proyectofinal_angelraonel_joserafael"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.ap2_proyectofinal_angelraonel_joserafael"
@@ -58,7 +54,6 @@ dependencies {
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.firebase.firestore.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
@@ -106,6 +101,10 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.3.0")
     implementation(platform(libs.firebase.bom.v3312))
 
     implementation(libs.google.firebase.firestore)
