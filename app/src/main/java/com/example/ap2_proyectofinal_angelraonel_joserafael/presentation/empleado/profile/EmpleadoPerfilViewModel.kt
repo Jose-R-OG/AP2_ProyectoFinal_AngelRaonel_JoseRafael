@@ -3,6 +3,7 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.emplea
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,33 +12,39 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class EmpleadoPerfilUiState(
-    val name: String = "Carlos Alberto",
-    val roleTitle: String = "Agente de Cobranza",
-    val activeRouteText: String = "Ruta: Sector B-2",
-    val agentId: String = "#402",
-    val email: String = "carlos.alberto@tacobrao.app",
-    val phone: String = "+1 809-555-0123",
-    val avatarUrl: String? = null,
-    val isDarkMode: Boolean = false,
-    val showLogoutDialog: Boolean = false,
-    val isLoggedOut: Boolean = false
-)
 
-sealed class EmpleadoPerfilUiEvent {
-    data class ToggleDarkMode(val enabled: Boolean) : EmpleadoPerfilUiEvent()
-    data object ShowLogoutDialog : EmpleadoPerfilUiEvent()
-    data object DismissLogoutDialog : EmpleadoPerfilUiEvent()
-    data object ConfirmLogout : EmpleadoPerfilUiEvent()
-}
 
 @HiltViewModel
 class EmpleadoPerfilViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EmpleadoPerfilUiState())
     val uiState: StateFlow<EmpleadoPerfilUiState> = _uiState.asStateFlow()
+
+    init {
+        cargarDatosEmpleado()
+    }
+
+    private fun cargarDatosEmpleado() {
+        viewModelScope.launch {
+            sessionManager.currentUserId.collect { userId ->
+                val user = userId?.let { authRepository.getUserById(it) }
+                if (user != null) {
+                    _uiState.update {
+                        it.copy(
+                            name = user.nombreCompleto,
+                            roleTitle = user.role.name,
+                            agentId = "#${user.id}",
+                            email = user.email ?: user.username,
+                            phone = user.telefono
+                        )
+                    }
+                }
+            }
+        }
+    }
 
     fun onEvent(event: EmpleadoPerfilUiEvent) {
         when (event) {
@@ -50,6 +57,7 @@ class EmpleadoPerfilViewModel @Inject constructor(
 
     private fun logout() {
         viewModelScope.launch {
+            sessionManager.clearSession()
             _uiState.update { it.copy(showLogoutDialog = false, isLoggedOut = true) }
         }
     }

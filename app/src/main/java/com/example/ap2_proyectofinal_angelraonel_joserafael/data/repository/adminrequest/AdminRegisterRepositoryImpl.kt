@@ -39,7 +39,7 @@ class AdminRegisterRepositoryImpl @Inject constructor(
                 return Result.failure(Exception("No se pudo guardar el comprobante localmente. Verifique que seleccionó un archivo válido."))
             }
 
-            val activationCode = "EF-" + (100000..999999).random()
+            val activationCode = "EF" + (100000..999999).random()
             
             val entity = AdminRegisterRequestEntity(
                 email = email,
@@ -64,6 +64,10 @@ class AdminRegisterRepositoryImpl @Inject constructor(
             Log.e("AdminRegisterRepo", "Excepción durante registro", e)
             Result.failure(e)
         }
+    }
+
+    override suspend fun getRequestByEmail(email: String): AdminRegisterRequest? {
+        return dao.getRequestByEmail(email)?.toDomain()
     }
 
     override fun getAllRequests(): Flow<List<AdminRegisterRequest>> {

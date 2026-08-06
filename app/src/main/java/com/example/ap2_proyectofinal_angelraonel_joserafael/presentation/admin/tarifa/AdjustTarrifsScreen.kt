@@ -46,6 +46,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,7 +57,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 private val SurfaceColor = Color(0xFFF8F9FF)
 private val PrimaryColor = Color(0xFF000000)
@@ -70,17 +72,28 @@ private val OutlineVariant = Color(0xFFC6C6CD)
 private val ErrorContainer = Color(0xFFFFDAD6)
 private val OnErrorContainer = Color(0xFF93000A)
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdjustTariffsScreen(
-    uiState: TariffsUiState = TariffsUiState(),
-    onEvent: (TariffsUiEvent) -> Unit = {},
-    onFourWeeksChange: (String) -> Unit = { onEvent(TariffsUiEvent.FourWeeksChanged(it)) },
-    onSixWeeksChange: (String) -> Unit = { onEvent(TariffsUiEvent.SixWeeksChanged(it)) },
-    onTwelveWeeksChange: (String) -> Unit = { onEvent(TariffsUiEvent.TwelveWeeksChanged(it)) },
-    onSaveClick: () -> Unit = { onEvent(TariffsUiEvent.SaveTariffs) },
+    viewModel: TariffsViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {}
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    AdjustTariffsContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onBackClick = onBackClick
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AdjustTariffsContent(
+    uiState: TariffsUiState = TariffsUiState(),
+    onEvent: (TariffsUiEvent) -> Unit = {},
+    onBackClick: () -> Unit = {}
+) {
+    val onSaveClick: () -> Unit = { onEvent(TariffsUiEvent.SaveTariffs) }
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
@@ -118,7 +131,6 @@ fun AdjustTariffsScreen(
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Header Sección
                 item {
                     Column(modifier = Modifier.padding(vertical = 8.dp)) {
                         Text(
@@ -137,7 +149,6 @@ fun AdjustTariffsScreen(
                     }
                 }
 
-                // Panel Bento: Políticas de Interés
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -194,7 +205,6 @@ fun AdjustTariffsScreen(
                     }
                 }
 
-                // Inputs del Tarifario
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -207,33 +217,59 @@ fun AdjustTariffsScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             TariffInputRow(
-                                code = "04",
-                                title = "4 Semanas",
-                                subtitle = "Frecuencia Mensual Corta",
+                                code = "D",
+                                title = "Diario",
+                                subtitle = "Frecuencia Diaria",
+                                value = uiState.dailyRate,
+                                onValueChange = { onEvent(TariffsUiEvent.DailyRateChanged(it)) }
+                            )
+
+                            TariffInputRow(
+                                code = "Q",
+                                title = "Quincenal",
+                                subtitle = "Frecuencia Bi-mensual",
+                                value = uiState.biweeklyRate,
+                                onValueChange = { onEvent(TariffsUiEvent.BiweeklyRateChanged(it)) }
+                            )
+
+                            TariffInputRow(
+                                code = "M",
+                                title = "Mensual",
+                                subtitle = "Frecuencia Mensual Estándar",
+                                value = uiState.monthlyRate,
+                                onValueChange = { onEvent(TariffsUiEvent.MonthlyRateChanged(it)) }
+                            )
+
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = OutlineVariant.copy(alpha = 0.5f))
+
+                            TariffInputRow(
+                                code = "S4",
+                                title = "Semanal (4 semanas)",
+                                subtitle = "Préstamo a Corto Plazo",
                                 value = uiState.fourWeeksRate,
-                                onValueChange = onFourWeeksChange
+                                onValueChange = { onEvent(TariffsUiEvent.FourWeeksChanged(it)) }
                             )
 
                             TariffInputRow(
-                                code = "06",
-                                title = "6 Semanas",
-                                subtitle = "Frecuencia Intermedia",
+                                code = "S6",
+                                title = "Semanal (6 semanas)",
+                                subtitle = "Préstamo Intermedio",
                                 value = uiState.sixWeeksRate,
-                                onValueChange = onSixWeeksChange
+                                onValueChange = { onEvent(TariffsUiEvent.SixWeeksChanged(it)) }
                             )
 
                             TariffInputRow(
-                                code = "12",
-                                title = "12 Semanas",
-                                subtitle = "Frecuencia Trimestral",
+                                code = "S12",
+                                title = "Semanal (12 semanas)",
+                                subtitle = "Préstamo Extendido",
                                 value = uiState.twelveWeeksRate,
-                                onValueChange = onTwelveWeeksChange
+                                onValueChange = { onEvent(TariffsUiEvent.TwelveWeeksChanged(it)) }
                             )
 
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = "* Los cambios requieren permisos de Super Admin para ser efectivos globalmente.",
+                                text = "* Los cambios requieren permisos de Admin para ser efectivos globalmente.",
                                 fontSize = 11.sp,
                                 fontStyle = FontStyle.Italic,
                                 color = OnSurfaceVariant
@@ -268,7 +304,6 @@ fun AdjustTariffsScreen(
                     }
                 }
 
-                // Resumen de Rentabilidad
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -318,7 +353,6 @@ fun AdjustTariffsScreen(
             }
         }
 
-        // Toast de Notificación Flotante
         AnimatedVisibility(
             visible = uiState.showSuccessToast,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
@@ -354,7 +388,6 @@ fun AdjustTariffsScreen(
     }
 }
 
-// Subcomponente de Filas de Input
 @Composable
 private fun TariffInputRow(
     code: String,
@@ -411,7 +444,7 @@ private fun TariffInputRow(
                 trailingIcon = {
                     Text("%", fontWeight = FontWeight.Bold, color = OnSurfaceVariant, fontSize = 14.sp)
                 },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
@@ -424,7 +457,6 @@ private fun TariffInputRow(
     }
 }
 
-// Subcomponente de Métrica
 @Composable
 private fun MetricRow(label: String, value: String, isSecondary: Boolean = false) {
     Row(

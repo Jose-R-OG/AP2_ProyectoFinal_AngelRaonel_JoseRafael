@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AdminProfileViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AdminProfileUiState())
@@ -29,20 +31,19 @@ class AdminProfileViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            // Obtenemos los usuarios y filtramos el primer administrador encontrado
-            authRepository.getAllActiveUsers()
-                .map { usuarios -> usuarios.firstOrNull { it.role == UserRole.ADMINISTRADOR } }
-                .collect { admin ->
-                    _uiState.update {
-                        it.copy(
-                            currentUser = admin,
-                            adminName = admin?.nombreCompleto ?: "System Admin",
-                            adminEmail = admin?.email ?: admin?.username ?: "admin@equityflow.dr",
-                            roleBadge = admin?.role?.name ?: "Full Access",
-                            isLoading = false
-                        )
-                    }
+            sessionManager.currentUserId.collect { userId ->
+                val admin = userId?.let { authRepository.getUserById(it) }
+
+                _uiState.update {
+                    it.copy(
+                        currentUser = admin,
+                        adminName = admin?.nombreCompleto ?: "System Admin",
+                        adminEmail = admin?.email ?: admin?.username ?: "admin@equityflow.dr",
+                        roleBadge = admin?.role?.name ?: "Full Access",
+                        isLoading = false
+                    )
                 }
+            }
         }
     }
 
@@ -55,6 +56,7 @@ class AdminProfileViewModel @Inject constructor(
 
     fun logout(onLogoutSuccess: () -> Unit) {
         viewModelScope.launch {
+            sessionManager.clearSession()
             _uiState.update { it.copy(isLoggedOut = true) }
             onLogoutSuccess()
         }

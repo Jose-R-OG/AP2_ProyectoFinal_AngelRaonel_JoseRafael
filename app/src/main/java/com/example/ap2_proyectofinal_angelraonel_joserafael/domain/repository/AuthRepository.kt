@@ -8,4 +8,5 @@ interface AuthRepository {
     suspend fun registerUser(user: User)
     suspend fun hasAnyUser(): Boolean
     fun getAllActiveUsers(): Flow<List<User>>
+    suspend fun getUserById(userId: Long): User?
 }

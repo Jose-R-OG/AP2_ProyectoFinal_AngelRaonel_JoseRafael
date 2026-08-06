@@ -1,7 +1,6 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,13 +17,15 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.e
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.form.RegisterAdminScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.loanApproval.LoanApprovalScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.profile.AdminProfileSettingsScreen
-import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.tarifa.AdjustTariffsScreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.tarifa.AdjustTariffsContent
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.auth.login.LoginScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.cierre.CierreCajaScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.cobro.DetallePrestamoCobroScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.dashboard.EmpleadoDashboardScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.form.RegistroClienteConCuotas
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.profile.EmpleadoPerfilScreen
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -85,7 +86,13 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        composable(Routes.REALIZAR_COBRO) {
+        composable(
+            route = "${Routes.REALIZAR_COBRO}?prestamoId={prestamoId}",
+            arguments = listOf(navArgument("prestamoId") {
+                type = NavType.LongType
+                defaultValue = -1L
+            })
+        ) {
             DetallePrestamoCobroScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
@@ -126,7 +133,7 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(Routes.ADJUST_TARIFFS) {
-            AdjustTariffsScreen(
+            AdjustTariffsContent(
                 onBackClick = { navController.popBackStack() }
             )
         }
