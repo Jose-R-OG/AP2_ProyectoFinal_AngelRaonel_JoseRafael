@@ -108,10 +108,10 @@ dependencies {
 
     implementation(platform(libs.firebase.bom.v3312))
 
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-storage")
-    implementation("io.coil-kt:coil-compose:2.5.0")
-    implementation("com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.3.0")
+    implementation(libs.google.firebase.firestore)
+    implementation(libs.google.firebase.storage)
+    implementation(libs.coil.compose.v270)
+    implementation(libs.escpos.thermalprinter.android)
     testImplementation(libs.turbine)
 
     testImplementation(libs.robolectric)
