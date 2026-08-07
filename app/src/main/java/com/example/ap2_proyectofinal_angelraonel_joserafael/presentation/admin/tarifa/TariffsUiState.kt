@@ -7,9 +7,12 @@ data class TariffItem(
 )
 
 data class TariffsUiState(
-    val fourWeeksRate: String = "24",
-    val sixWeeksRate: String = "36",
-    val twelveWeeksRate: String = "92",
+    val dailyRate: String = "",
+    val biweeklyRate: String = "",
+    val monthlyRate: String = "",
+    val fourWeeksRate: String = "",
+    val sixWeeksRate: String = "",
+    val twelveWeeksRate: String = "",
     val projectedNetMargin: String = "18.4%",
     val averageMarketRate: String = "42.0%",
     val riskScore: String = "MODERADO",

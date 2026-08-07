@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.User
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login.LoginUiState
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     var username by mutableStateOf("")
@@ -44,10 +46,10 @@ class LoginViewModel @Inject constructor(
             uiState = LoginUiState.Loading
 
             try {
-                // Invoca a tu AuthRepository real con username y pin
                 val user = authRepository.login(username.trim(), pin.trim())
 
                 if (user != null) {
+                    sessionManager.saveUserId(user.id)
                     uiState = LoginUiState.Success(user)
                 } else {
                     uiState = LoginUiState.Error("Usuario o PIN incorrectos")

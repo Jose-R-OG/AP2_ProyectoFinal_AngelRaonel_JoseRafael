@@ -16,7 +16,9 @@ interface AdminRegisterRepository {
         depositor: String,
         voucherUri: Uri,
         pin: String
-    ): Result<String> // Return activation code
-    
+    ): Result<String>
+
+    suspend fun getRequestByEmail(email: String): AdminRegisterRequest?
+
     fun getAllRequests(): Flow<List<AdminRegisterRequest>>
 }

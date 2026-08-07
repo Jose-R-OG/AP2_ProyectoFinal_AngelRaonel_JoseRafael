@@ -46,4 +46,8 @@ class PrestamoRepositoryImpl @Inject constructor(
             entities.map { it.toDomain() }
         }
     }
+
+    override suspend fun obtenerPrestamoPorId(prestamoId: Long): Prestamo? {
+        return prestamoDao.obtenerPrestamoPorId(prestamoId)?.toDomain()
+    }
 }

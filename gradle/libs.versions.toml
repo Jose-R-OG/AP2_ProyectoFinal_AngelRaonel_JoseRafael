@@ -31,6 +31,7 @@ roomTesting = "2.6.0"
 turbine = "1.2.1"
 uiTestJunit4 = "1.5.4"
 uiTestManifest = "1.5.4"
+datastorePreferences = "1.1.7"
 
 credentials = "1.6.0"
 firebaseBom = "34.15.0"
@@ -86,6 +87,7 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }

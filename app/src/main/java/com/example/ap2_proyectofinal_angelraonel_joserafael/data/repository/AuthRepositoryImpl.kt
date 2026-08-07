@@ -20,13 +20,11 @@ class AuthRepositoryImpl @Inject constructor(
     private val db = Firebase.firestore
 
     override suspend fun login(username: String, pin: String): User? {
-        // 1. Buscar primero en la base de datos local (Room)
         val localUser = userDao.login(username, pin)
         if (localUser != null) {
             return localUser.toDomain()
         }
 
-        // 2. Fallback: Buscar en Firestore si el usuario fue registrado en la nube o en otro dispositivo
         return try {
             val querySnapshot = db.collection("usuarios")
                 .whereEqualTo("username", username)
@@ -54,7 +52,6 @@ class AuthRepositoryImpl @Inject constructor(
                     route = doc.getString("route")
                 )
 
-                // Guardar en Room local para accesos futuros sin conexión
                 userDao.insertUser(remoteUser.toEntity())
                 remoteUser
             } else {
@@ -66,10 +63,8 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun registerUser(user: User) {
-        // 1. Guardar en Room Local
         userDao.insertUser(user.toEntity())
 
-        // 2. Sincronizar en Firestore para persistencia en nube
         try {
             val userMap = hashMapOf(
                 "nombreCompleto" to user.nombreCompleto,
@@ -96,5 +91,9 @@ class AuthRepositoryImpl @Inject constructor(
         return userDao.getAllActiveUsers().map { entities ->
             entities.map { it.toDomain() }
         }
+    }
+
+    override suspend fun getUserById(userId: Long): User? {
+        return userDao.getUserById(userId)?.toDomain()
     }
 }

@@ -25,7 +25,9 @@ interface PrestamoDao {
     @Query("SELECT * FROM prestamos WHERE estado = :estado ORDER BY fechaCreacion ASC")
     fun obtenerPrestamosPorEstado(estado: LoanStatus): Flow<List<PrestamoEntity>>
 
-    // Obtiene las cuotas que no se han pagado y ya vencieron o vencen en la fecha indicada
     @Query("SELECT * FROM cuotas WHERE estaPagada = 0 AND fechaVencimiento <= :fechaLimite ORDER BY fechaVencimiento ASC")
     fun obtenerRutaDeCobro(fechaLimite: Long): Flow<List<CuotaEntity>>
+
+    @Query("SELECT * FROM prestamos WHERE id = :prestamoId LIMIT 1")
+    suspend fun obtenerPrestamoPorId(prestamoId: Long): PrestamoEntity?
 }

@@ -2,13 +2,15 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases
 
 import android.content.Context
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cuota
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.ClienteRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.PrestamoRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.storage.FileStorageUtil
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Calendar
 import javax.inject.Inject
-
 import androidx.core.net.toUri
 
 class RegisterClientWithLoanUseCase @Inject constructor(
@@ -18,7 +20,6 @@ class RegisterClientWithLoanUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(cliente: Cliente, prestamo: Prestamo): Result<Long> {
         return try {
-            // Guardar fotos localmente si son URIs de contenido
             val localProfilePath = cliente.profilePhotoPath?.let { path ->
                 if (path.startsWith("content://")) FileStorageUtil.saveFileToInternalStorage(context, path.toUri(), "clients/profiles") else path
             }
@@ -37,10 +38,38 @@ class RegisterClientWithLoanUseCase @Inject constructor(
 
             val clienteId = clienteRepository.saveCliente(updatedCliente)
             val prestamoConId = prestamo.copy(clienteId = clienteId)
-            prestamoRepository.guardarPrestamo(prestamoConId)
+            val prestamoId = prestamoRepository.guardarPrestamo(prestamoConId)
+
+            val cuotas = generarCuotas(prestamoId, prestamoConId)
+            prestamoRepository.guardarCuotas(cuotas)
+
             Result.success(clienteId)
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    private fun generarCuotas(prestamoId: Long, prestamo: Prestamo): List<Cuota> {
+        val fechaInicio = prestamo.fechaInicio ?: System.currentTimeMillis()
+        val calendar = Calendar.getInstance().apply { timeInMillis = fechaInicio }
+        val cuotas = mutableListOf<Cuota>()
+
+        for (numero in 1..prestamo.cantidadCuotas) {
+            when (prestamo.frecuenciaPago) {
+                FrecuenciaPago.DIARIO -> calendar.add(Calendar.DAY_OF_YEAR, 1)
+                FrecuenciaPago.SEMANAL -> calendar.add(Calendar.WEEK_OF_YEAR, 1)
+                FrecuenciaPago.QUINCENAL -> calendar.add(Calendar.DAY_OF_YEAR, 15)
+                FrecuenciaPago.MENSUAL -> calendar.add(Calendar.MONTH, 1)
+            }
+            cuotas.add(
+                Cuota(
+                    prestamoId = prestamoId,
+                    numeroCuota = numero,
+                    fechaVencimiento = calendar.timeInMillis,
+                    montoEsperado = prestamo.montoCuota
+                )
+            )
+        }
+        return cuotas
     }
 }
