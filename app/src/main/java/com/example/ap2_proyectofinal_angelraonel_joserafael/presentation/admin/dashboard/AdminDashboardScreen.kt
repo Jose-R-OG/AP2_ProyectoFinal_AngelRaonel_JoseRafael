@@ -103,40 +103,6 @@ fun AdminDashboardScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
             )
         },
-        bottomBar = {
-            NavigationBar(containerColor = SurfaceColor) {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio") },
-                    selected = selectedItem == 0,
-                    onClick = { selectedItem = 0 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Outlined.RequestQuote, contentDescription = "Préstamos") },
-                    label = { Text("Préstamos") },
-                    selected = selectedItem == 1,
-                    onClick = { 
-                        selectedItem = 1
-                        onNavigateToLoans()
-                    }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Outlined.DirectionsRun, contentDescription = "Rutas") },
-                    label = { Text("Rutas") },
-                    selected = selectedItem == 2,
-                    onClick = { selectedItem = 2 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Outlined.Person, contentDescription = "Perfil") },
-                    label = { Text("Perfil") },
-                    selected = selectedItem == 3,
-                    onClick = { 
-                        selectedItem = 3
-                        onNavigateToProfile()
-                    }
-                )
-            }
-        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onNuevoCliente() },

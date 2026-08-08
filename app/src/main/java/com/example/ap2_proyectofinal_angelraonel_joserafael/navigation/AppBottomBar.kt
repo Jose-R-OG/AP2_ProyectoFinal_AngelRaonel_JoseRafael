@@ -7,21 +7,36 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
-fun AppBottomBar(navController: NavController) {
-    val items = listOf(
-        Screen.Dashboard,
-        Screen.Rutas,
-        Screen.Clientes,
-        Screen.Perfil
-    )
+fun AppBottomBar(navController: NavController, isAdmin: Boolean) {
+    val items = if (isAdmin) {
+        listOf(
+            Screen.AdminDashboard,
+            Screen.Clientes,
+            Screen.Prestamos,
+            Screen.Rutas,
+            Screen.AdminPerfil
+        )
+    } else {
+        listOf(
+            Screen.EmpleadoDashboard,
+            Screen.Clientes,
+            Screen.Rutas,
+            Screen.EmpleadoPerfil
+        )
+    }
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    // No mostrar la barra si estamos en Login o Registro
+    if (currentRoute == Routes.LOGIN || currentRoute == Routes.REGISTER_ADMIN || currentRoute == Routes.ACTIVATION_CODE) {
+        return
+    }
 
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.primary
     ) {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
-
         items.forEach { screen ->
             NavigationBarItem(
                 icon = { Icon(screen.icon, contentDescription = screen.title) },
@@ -37,14 +52,7 @@ fun AppBottomBar(navController: NavController) {
                             restoreState = true
                         }
                     }
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    indicatorColor = MaterialTheme.colorScheme.primaryContainer
-                )
+                }
             )
         }
     }

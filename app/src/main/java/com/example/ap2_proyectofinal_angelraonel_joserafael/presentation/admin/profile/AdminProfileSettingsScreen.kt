@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,6 +22,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 // Color Tokens según la paleta HTML
 private val SurfaceColor = Color(0xFFF8F9FF)
@@ -41,13 +44,42 @@ private val ErrorContainer = Color(0xFFFFDAD6)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminProfileSettingsScreen(
+    viewModel: AdminProfileViewModel = hiltViewModel(),
+    onChangePasswordClick: () -> Unit = {},
+    onSecuritySettingsClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    onHelpSupportClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = { },
+    onBackClick: () -> Unit = {}
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    AdminProfileContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onChangePasswordClick = onChangePasswordClick,
+        onSecuritySettingsClick = onSecuritySettingsClick,
+        onNotificationsClick = onNotificationsClick,
+        onHelpSupportClick = onHelpSupportClick,
+        onLogoutClick = {
+            viewModel.onEvent(AdminProfileUiEvent.Logout {
+                onLogoutClick()
+            })
+        },
+        onBackClick = onBackClick
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AdminProfileContent(
     uiState: AdminProfileUiState = AdminProfileUiState(),
     onEvent: (AdminProfileUiEvent) -> Unit = {},
     onChangePasswordClick: () -> Unit = {},
     onSecuritySettingsClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onHelpSupportClick: () -> Unit = {},
-    onLogoutClick: () -> Unit = { onEvent(AdminProfileUiEvent.Logout {}) },
+    onLogoutClick: () -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
     Scaffold(
@@ -158,16 +190,27 @@ fun AdminProfileSettingsScreen(
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Column {
-                        Text(
-                            text = uiState.adminName,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = OnSurfaceColor
+                        OutlinedTextField(
+                            value = uiState.adminName,
+                            onValueChange = { onEvent(AdminProfileUiEvent.UpdateName(it)) },
+                            label = { Text("Nombre Completo") },
+                            modifier = Modifier.fillMaxWidth(),
+                            textStyle = LocalTextStyle.current.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = Color.Transparent,
+                                focusedBorderColor = SecondaryColor
+                            )
                         )
-                        Text(
-                            text = uiState.adminEmail,
-                            fontSize = 13.sp,
-                            color = OnSurfaceVariant
+                        OutlinedTextField(
+                            value = uiState.adminEmail,
+                            onValueChange = { onEvent(AdminProfileUiEvent.UpdateEmail(it)) },
+                            label = { Text("Email/Usuario") },
+                            modifier = Modifier.fillMaxWidth(),
+                            textStyle = LocalTextStyle.current.copy(fontSize = 13.sp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = Color.Transparent,
+                                focusedBorderColor = SecondaryColor
+                            )
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -176,11 +219,13 @@ fun AdminProfileSettingsScreen(
                                 containerColor = SecondaryContainer.copy(alpha = 0.4f),
                                 contentColor = SecondaryColor
                             )
-                            BadgeChip(
-                                text = uiState.locationBadge,
-                                containerColor = PrimaryContainer.copy(alpha = 0.1f),
-                                contentColor = OnPrimaryContainer
-                            )
+                        }
+                        Button(
+                            onClick = { onEvent(AdminProfileUiEvent.SaveProfile) },
+                            modifier = Modifier.padding(top = 8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = SecondaryColor)
+                        ) {
+                            Text("Guardar Cambios")
                         }
                     }
                 }

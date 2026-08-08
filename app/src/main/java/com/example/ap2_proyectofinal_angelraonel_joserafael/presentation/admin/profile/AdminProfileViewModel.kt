@@ -3,13 +3,12 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,19 +29,17 @@ class AdminProfileViewModel @Inject constructor(
     private fun cargarDatosAdministrador() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
+            val userId = sessionManager.currentUserId.first()
+            val admin = userId?.let { authRepository.getUserById(it) }
 
-            sessionManager.currentUserId.collect { userId ->
-                val admin = userId?.let { authRepository.getUserById(it) }
-
-                _uiState.update {
-                    it.copy(
-                        currentUser = admin,
-                        adminName = admin?.nombreCompleto ?: "System Admin",
-                        adminEmail = admin?.email ?: admin?.username ?: "admin@equityflow.dr",
-                        roleBadge = admin?.role?.name ?: "Full Access",
-                        isLoading = false
-                    )
-                }
+            _uiState.update {
+                it.copy(
+                    currentUser = admin,
+                    adminName = admin?.nombreCompleto ?: "",
+                    adminEmail = admin?.email ?: "",
+                    roleBadge = admin?.role?.name ?: "ADMIN",
+                    isLoading = false
+                )
             }
         }
     }
@@ -50,14 +47,28 @@ class AdminProfileViewModel @Inject constructor(
     fun onEvent(event: AdminProfileUiEvent) {
         when (event) {
             is AdminProfileUiEvent.LoadProfile -> cargarDatosAdministrador()
+            is AdminProfileUiEvent.UpdateName -> _uiState.update { it.copy(adminName = event.name) }
+            is AdminProfileUiEvent.UpdateEmail -> _uiState.update { it.copy(adminEmail = event.email) }
+            is AdminProfileUiEvent.SaveProfile -> saveProfile()
             is AdminProfileUiEvent.Logout -> logout(event.onLogoutSuccess)
+        }
+    }
+
+    private fun saveProfile() {
+        val currentUser = _uiState.value.currentUser ?: return
+        viewModelScope.launch {
+            val updatedUser = currentUser.copy(
+                nombreCompleto = _uiState.value.adminName,
+                email = _uiState.value.adminEmail
+            )
+            authRepository.registerUser(updatedUser)
+            _uiState.update { it.copy(currentUser = updatedUser) }
         }
     }
 
     fun logout(onLogoutSuccess: () -> Unit) {
         viewModelScope.launch {
             sessionManager.clearSession()
-            _uiState.update { it.copy(isLoggedOut = true) }
             onLogoutSuccess()
         }
     }

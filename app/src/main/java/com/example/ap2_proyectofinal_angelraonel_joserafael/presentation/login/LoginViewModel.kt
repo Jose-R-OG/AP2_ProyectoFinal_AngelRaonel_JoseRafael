@@ -49,7 +49,7 @@ class LoginViewModel @Inject constructor(
                 val user = authRepository.login(username.trim(), pin.trim())
 
                 if (user != null) {
-                    sessionManager.saveUserId(user.id)
+                    sessionManager.saveSession(user.id, user.role)
                     uiState = LoginUiState.Success(user)
                 } else {
                     uiState = LoginUiState.Error("Usuario o PIN incorrectos")

@@ -10,23 +10,36 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.activation.ActivationCodeScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.dashboard.AdminDashboardScreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.dashboard.AdminDashboardViewModel
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.empleado.EmployeeManagementScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.empleado.EmployeeViewModel
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.form.RegisterAdminScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.loanApproval.LoanApprovalScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.profile.AdminProfileSettingsScreen
-import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.tarifa.AdjustTariffsContent
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.tarifa.AdjustTariffsScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.auth.login.LoginScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.cierre.CierreCajaScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.cobro.DetallePrestamoCobroScreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.clients.ClientListScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.dashboard.EmpleadoDashboardScreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.dashboard.EmpleadoDashboardViewModel
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.form.RegistroClienteConCuotas
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.profile.EmpleadoPerfilScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(navController: NavHostController) {
     var registeredEmail by remember { mutableStateOf("") }
@@ -55,7 +68,11 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(Routes.ADMIN_HOME) {
+            val viewModel: AdminDashboardViewModel = hiltViewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
             AdminDashboardScreen(
+                uiState = uiState,
                 onAddEmployee = { navController.navigate(Routes.EMPLOYEE_MANAGEMENT) },
                 onNuevoCliente = { navController.navigate(Routes.REGISTRO_CLIENTE) },
                 onRealizarCobro = { navController.navigate(Routes.REALIZAR_COBRO) },
@@ -67,17 +84,37 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(Routes.EMPLEADO_HOME) {
+            val viewModel: EmpleadoDashboardViewModel = hiltViewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
             EmpleadoDashboardScreen(
+                uiState = uiState,
                 onNuevoClienteClick = { navController.navigate(Routes.REGISTRO_CLIENTE) },
                 onRealizarCobroClick = { navController.navigate(Routes.REALIZAR_COBRO) },
-                onVerRutaClick = { },
+                onVerRutaClick = { navController.navigate(Routes.ROUTES_LIST) },
                 onCierreCajaClick = { navController.navigate(Routes.CIERRE_CAJA) },
                 onVerTodosCobrosClick = { },
                 onNavigateToAdminDashboard = { navController.navigate(Routes.ADMIN_HOME) },
-                onNavigateToClients = { /* Podría navegar a una lista de clientes si existe */ },
-                onNavigateToLoans = { /* Podría navegar a una lista de préstamos */ },
+                onNavigateToClients = { navController.navigate(Routes.CLIENT_LIST) },
+                onNavigateToLoans = { navController.navigate(Routes.LOAN_APPROVAL) },
                 onNavigateToProfile = { navController.navigate(Routes.EMPLEADO_PERFIL) }
             )
+        }
+
+        composable(Routes.CLIENT_LIST) {
+            ClientListScreen(
+                onAddClientClick = { navController.navigate(Routes.REGISTRO_CLIENTE) },
+                onClientClick = { /* Ver detalle */ }
+            )
+        }
+
+        composable(Routes.ROUTES_LIST) {
+            // Pantalla de rutas (Placeholder funcional)
+            Scaffold(topBar = { TopAppBar(title = { Text("Rutas") }) }) { p ->
+                Box(Modifier.padding(p).fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Gestión de Rutas en Desarrollo")
+                }
+            }
         }
 
         composable(Routes.REGISTRO_CLIENTE) {
@@ -133,7 +170,7 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(Routes.ADJUST_TARIFFS) {
-            AdjustTariffsContent(
+            AdjustTariffsScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }

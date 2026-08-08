@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.combine
 import java.math.BigDecimal
 import javax.inject.Inject
 
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
+
 class DashboardRepositoryImpl @Inject constructor(
     private val prestamoDao: PrestamoDao,
     private val clienteDao: ClienteDao,
@@ -20,14 +23,16 @@ class DashboardRepositoryImpl @Inject constructor(
         return combine(
             prestamoDao.obtenerTodosLosPrestamos(),
             userDao.getAllActiveUsers(),
-            // Aquí podrías agregar más flows como cuotas para calcular lo recaudado hoy
         ) { prestamos, users ->
+            val pending = prestamos.count { it.estado == LoanStatus.PENDIENTE_REVISION }
+            val totalEmpl = users.count { it.role == UserRole.EMPLEADO }
+            
             DashboardMetrics(
-                totalCollectedToday = BigDecimal.ZERO, // Implementar lógica real con cobros/cuotas
+                totalCollectedToday = BigDecimal.ZERO,
                 collectedPercentage = 0f,
-                activeEmployees = users.size,
-                totalEmployees = users.size, // Ajustar si hay lógica de empleados activos/totales
-                pendingApprovals = 0,
+                activeEmployees = totalEmpl,
+                totalEmployees = totalEmpl,
+                pendingApprovals = pending,
                 recentMovements = emptyList()
             )
         }

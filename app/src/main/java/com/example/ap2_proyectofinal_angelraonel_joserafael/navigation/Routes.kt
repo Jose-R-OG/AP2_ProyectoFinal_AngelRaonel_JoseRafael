@@ -14,4 +14,6 @@ object Routes {
     const val REALIZAR_COBRO = "realizar_cobro_screen"
     const val EMPLEADO_PERFIL = "empleado_perfil_screen"
     const val ACTIVATION_CODE = "activation_code_screen"
+    const val CLIENT_LIST = "client_list_screen"
+    const val ROUTES_LIST = "routes_list_screen"
 }

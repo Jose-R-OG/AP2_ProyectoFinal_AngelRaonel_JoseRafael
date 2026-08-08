@@ -92,7 +92,8 @@ class RegistroClienteViewModel @Inject constructor(
                 }
 
                 val todosLosTarifarios = tarifarioRepository.getActiveTarifarios().first()
-                
+                val userRole = sessionManager.currentUserRole.first()
+
                 val tarifario = if (frecuenciaPago == FrecuenciaPago.SEMANAL) {
                     // Para semanal, buscar coincidencia exacta de duración (4, 6, 12)
                     todosLosTarifarios.find { it.frecuencia == FrecuenciaPago.SEMANAL && it.duracion == cuotas }
@@ -124,9 +125,16 @@ class RegistroClienteViewModel @Inject constructor(
                     isActive = true
                 )
 
+                // Si es Admin, el préstamo se crea directamente como ACTIVO (Auto-aprobado)
+                val estadoInicial = if (userRole == com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole.ADMINISTRADOR) {
+                    LoanStatus.ACTIVO
+                } else {
+                    LoanStatus.PENDIENTE_REVISION
+                }
+
                 val nuevoPrestamo = Prestamo(
                     clienteId = 0L,
-                    empleadoId = empleadoId,
+                    empleadoId = empleadoId ?: 0L,
                     montoSolicitado = monto,
                     porcentajeInteres = tarifario.porcentajeInteres,
                     interesTotal = interesTotal,
@@ -134,7 +142,8 @@ class RegistroClienteViewModel @Inject constructor(
                     montoCuota = montoCuota,
                     cantidadCuotas = cuotas,
                     frecuenciaPago = frecuenciaPago,
-                    estado = LoanStatus.PENDIENTE_REVISION
+                    estado = estadoInicial,
+                    fechaInicio = if (estadoInicial == LoanStatus.ACTIVO) System.currentTimeMillis() else null
                 )
 
                 val result = registerClientWithLoanUseCase(nuevoCliente, nuevoPrestamo)

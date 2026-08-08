@@ -78,6 +78,7 @@ private val AdminBadgeText = Color(0xFFE65100)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmpleadoDashboardScreen(
+    uiState: EmpleadoDashboardUiState = EmpleadoDashboardUiState(),
     onNuevoClienteClick: () -> Unit = {},
     onRealizarCobroClick: () -> Unit = {},
     onVerRutaClick: () -> Unit = {},
@@ -86,10 +87,8 @@ fun EmpleadoDashboardScreen(
     onNavigateToAdminDashboard: () -> Unit = {},
     onNavigateToClients: () -> Unit = {},
     onNavigateToLoans: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {},
-    viewModel: EmpleadoDashboardViewModel = hiltViewModel()
+    onNavigateToProfile: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
 
     Scaffold(
@@ -143,43 +142,6 @@ fun EmpleadoDashboardScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
             )
-        },
-        bottomBar = {
-            NavigationBar(containerColor = Color.White) {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home", fontSize = 11.sp) },
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Group, contentDescription = "Clientes") },
-                    label = { Text("Clients", fontSize = 11.sp) },
-                    selected = selectedTab == 1,
-                    onClick = { 
-                        selectedTab = 1
-                        onNavigateToClients()
-                    }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Payments, contentDescription = "Loans") },
-                    label = { Text("Loans", fontSize = 11.sp) },
-                    selected = selectedTab == 2,
-                    onClick = { 
-                        selectedTab = 2
-                        onNavigateToLoans()
-                    }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("Profile", fontSize = 11.sp) },
-                    selected = selectedTab == 3,
-                    onClick = { 
-                        selectedTab = 3
-                        onNavigateToProfile()
-                    }
-                )
-            }
         },
         containerColor = SurfaceColor
     ) { paddingValues ->
