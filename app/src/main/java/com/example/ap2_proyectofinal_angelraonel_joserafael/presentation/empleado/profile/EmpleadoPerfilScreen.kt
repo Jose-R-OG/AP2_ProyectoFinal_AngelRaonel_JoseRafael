@@ -1,5 +1,6 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.profile
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -35,6 +36,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,6 +49,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -62,18 +65,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 
 private val SurfaceColor = Color(0xFFF8F9FF)
 private val PrimaryBlack = Color(0xFF000000)
 private val SecondaryGreen = Color(0xFF006C49)
 private val LightBlueIconBg = Color(0xFFEFF4FF)
 private val LightBlueBadgeBg = Color(0xFFEFF4FF)
-private val OnSurfaceVariant = Color(0xFF45464D)
+private val OnSurfaceVariant = Color(0xFF30323A)
 private val OutlineVariant = Color(0xFFC6C6CD)
 private val RedDanger = Color(0xFFC62828)
 private val RedDangerBg = Color(0xFFFFEBEE)
@@ -82,12 +88,16 @@ private val RedDangerBg = Color(0xFFFFEBEE)
 @Composable
 fun EmpleadoPerfilScreen(
     onNavigateBack: () -> Unit = {},
+    onNavigateToClients: () -> Unit = {},
+    onNavigateToCobros: () -> Unit = {},
+    onNavigateToRoutes: () -> Unit = {},
     onLogoutSuccess: () -> Unit = {},
     viewModel: EmpleadoPerfilViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedTab by remember { mutableIntStateOf(3) }
-
+    val context = LocalContext.current
+    var showHelpDialog by remember { androidx.compose.runtime.mutableStateOf(false) }
+    var showReportDialog by remember { androidx.compose.runtime.mutableStateOf(false) }
     LaunchedEffect(uiState.isLoggedOut) {
         if (uiState.isLoggedOut) {
             onLogoutSuccess()
@@ -118,32 +128,15 @@ fun EmpleadoPerfilScreen(
             )
         },
         bottomBar = {
-            NavigationBar(containerColor = Color.White) {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home", fontSize = 11.sp) },
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0; onNavigateBack() }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.AltRoute, contentDescription = "Routes") },
-                    label = { Text("Routes", fontSize = 11.sp) },
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Group, contentDescription = "Clients") },
-                    label = { Text("Clients", fontSize = 11.sp) },
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("Profile", fontSize = 11.sp) },
-                    selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 }
-                )
-            }
+            RoleBottomBar(
+                isAdmin = false,
+                selectedTab = PrimaryTab.PROFILE,
+                onHome = onNavigateBack,
+                onClients = onNavigateToClients,
+                onLoans = onNavigateToCobros,
+                onRoutes = onNavigateToRoutes,
+                onProfile = {}
+            )
         },
         containerColor = SurfaceColor
     ) { paddingValues ->
@@ -317,7 +310,7 @@ fun EmpleadoPerfilScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { }
+                                .clickable { showHelpDialog = true }
                                 .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
@@ -335,7 +328,7 @@ fun EmpleadoPerfilScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { }
+                                .clickable { showReportDialog = true }
                                 .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
@@ -379,6 +372,44 @@ fun EmpleadoPerfilScreen(
         ConfirmarCerrarSesionDialog(
             onConfirm = { viewModel.onEvent(EmpleadoPerfilUiEvent.ConfirmLogout) },
             onDismiss = { viewModel.onEvent(EmpleadoPerfilUiEvent.DismissLogoutDialog) }
+        )
+    }
+
+    if (showHelpDialog) {
+        AlertDialog(
+            onDismissRequest = { showHelpDialog = false },
+            title = { Text("Ayuda rápida") },
+            text = {
+                Text("Usa Cobros para seleccionar clientes asignados, Rutas para ver vencimientos del día, Clientes para consultar expedientes y Cierre para cuadrar e imprimir el turno.")
+            },
+            confirmButton = {
+                TextButton(onClick = { showHelpDialog = false }) { Text("Entendido") }
+            }
+        )
+    }
+
+    if (showReportDialog) {
+        AlertDialog(
+            onDismissRequest = { showReportDialog = false },
+            title = { Text("Reportar un problema") },
+            text = { Text("Se abrirá el menú de compartir con una plantilla para describir el problema y enviarla por el canal que prefieras.") },
+            confirmButton = {
+                Button(onClick = {
+                    val reportIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_SUBJECT, "Reporte de problema - TacoBraoApp")
+                        putExtra(
+                            Intent.EXTRA_TEXT,
+                            "Usuario: ${uiState.name} (${uiState.agentId})\nRuta: ${uiState.activeRouteText}\n\nDescripción del problema:\n"
+                        )
+                    }
+                    context.startActivity(Intent.createChooser(reportIntent, "Compartir reporte"))
+                    showReportDialog = false
+                }) { Text("Compartir reporte") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showReportDialog = false }) { Text("Cancelar") }
+            }
         )
     }
 }

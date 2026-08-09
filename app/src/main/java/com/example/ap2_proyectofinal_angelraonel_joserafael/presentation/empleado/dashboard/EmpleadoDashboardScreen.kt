@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AltRoute
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
@@ -28,13 +29,12 @@ import androidx.compose.material.icons.filled.PendingActions
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PointOfSale
-import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -61,6 +61,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 
 // --- PALETA DE COLORES (Mockup TacoBraoApp) ---
 private val SurfaceColor = Color(0xFFF8F9FF)
@@ -69,7 +71,7 @@ private val SecondaryGreen = Color(0xFF006C49)
 private val GreenBadgeBg = Color(0xFF6CF8BB).copy(alpha = 0.35f)
 private val GreenBadgeText = Color(0xFF006C49)
 private val LightBlueActionBg = Color(0xFFE3EEFF)
-private val OnSurfaceVariant = Color(0xFF45464D)
+private val OnSurfaceVariant = Color(0xFF30323A)
 private val OutlineVariant = Color(0xFFC6C6CD)
 private val SuccessBadgeBg = Color(0xFFE8F5E9)
 private val AdminBadgeBg = Color(0xFFFFF3E0)
@@ -78,7 +80,6 @@ private val AdminBadgeText = Color(0xFFE65100)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmpleadoDashboardScreen(
-    uiState: EmpleadoDashboardUiState = EmpleadoDashboardUiState(),
     onNuevoClienteClick: () -> Unit = {},
     onRealizarCobroClick: () -> Unit = {},
     onVerRutaClick: () -> Unit = {},
@@ -87,10 +88,11 @@ fun EmpleadoDashboardScreen(
     onNavigateToAdminDashboard: () -> Unit = {},
     onNavigateToClients: () -> Unit = {},
     onNavigateToLoans: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {}
+    onNavigateToProfile: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {},
+    viewModel: EmpleadoDashboardViewModel = hiltViewModel()
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-
+    val uiState by viewModel.uiState.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -132,15 +134,32 @@ fun EmpleadoDashboardScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Notifications,
-                            contentDescription = "Notificaciones",
-                            tint = PrimaryBlack
-                        )
+                    androidx.compose.material3.BadgedBox(
+                        badge = {
+                            if (uiState.unreadNotifications > 0) {
+                                androidx.compose.material3.Badge {
+                                    Text(uiState.unreadNotifications.toString())
+                                }
+                            }
+                        }
+                    ) {
+                        androidx.compose.material3.IconButton(onClick = onNavigateToNotifications) {
+                            Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
+            )
+        },
+        bottomBar = {
+            RoleBottomBar(
+                isAdmin = false,
+                selectedTab = PrimaryTab.HOME,
+                onHome = {},
+                onClients = onNavigateToClients,
+                onLoans = onNavigateToLoans,
+                onRoutes = onVerRutaClick,
+                onProfile = onNavigateToProfile
             )
         },
         containerColor = SurfaceColor
@@ -214,47 +233,12 @@ fun EmpleadoDashboardScreen(
                     }
                 }
 
-                // Tarjeta Principal: Total Recaudado Hoy
+                // Resumen del día: esperado, cobrado y pendiente
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant.copy(alpha = 0.7f))
-                    ) {
-                        Column(modifier = Modifier.padding(20.dp)) {
-                            Text(
-                                text = "Total Recaudado Hoy",
-                                fontSize = 13.sp,
-                                color = OnSurfaceVariant,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = uiState.totalCollectedToday,
-                                    fontSize = 32.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = PrimaryBlack
-                                )
-                                Surface(
-                                    color = GreenBadgeBg,
-                                    shape = RoundedCornerShape(20.dp)
-                                ) {
-                                    Text(
-                                        text = uiState.collectionPercentageChange,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = GreenBadgeText,
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                                    )
-                                }
-                            }
-                        }
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        DailyAmountCard("Total a cobrar", uiState.totalToCollectToday, Icons.Default.Payments, Color(0xFF1565C0))
+                        DailyAmountCard("Cobrado", uiState.totalCollectedToday, Icons.Default.CheckCircle, SecondaryGreen)
+                        DailyAmountCard("Pendiente", uiState.pendingAmountToday, Icons.Default.PendingActions, Color(0xFFBA1A1A))
                     }
                 }
 
@@ -350,6 +334,7 @@ fun EmpleadoDashboardScreen(
                                 containerColor = PrimaryBlack,
                                 contentColor = Color.White,
                                 modifier = Modifier.weight(1f),
+                                enabled = uiState.canCreateClients,
                                 onClick = onNuevoClienteClick
                             )
 
@@ -360,6 +345,7 @@ fun EmpleadoDashboardScreen(
                                 containerColor = SecondaryGreen,
                                 contentColor = Color.White,
                                 modifier = Modifier.weight(1f),
+                                enabled = uiState.canCollectPayments,
                                 onClick = onRealizarCobroClick
                             )
                         }
@@ -375,6 +361,7 @@ fun EmpleadoDashboardScreen(
                                 containerColor = LightBlueActionBg,
                                 contentColor = Color(0xFF1565C0),
                                 modifier = Modifier.weight(1f),
+                                enabled = uiState.canViewRoute,
                                 onClick = onVerRutaClick
                             )
 
@@ -385,6 +372,7 @@ fun EmpleadoDashboardScreen(
                                 containerColor = LightBlueActionBg,
                                 contentColor = Color(0xFFC62828),
                                 modifier = Modifier.weight(1f),
+                                enabled = uiState.canCloseCash,
                                 onClick = onCierreCajaClick
                             )
                         }
@@ -424,13 +412,22 @@ fun EmpleadoDashboardScreen(
                         border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant.copy(alpha = 0.5f))
                     ) {
                         Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                            uiState.recentCobros.forEachIndexed { index, cobro ->
-                                RecentCobroRow(cobro)
-                                if (index < uiState.recentCobros.size - 1) {
-                                    androidx.compose.material3.HorizontalDivider(
-                                        color = OutlineVariant.copy(alpha = 0.3f),
-                                        modifier = Modifier.padding(horizontal = 16.dp)
-                                    )
+                            if (uiState.recentCobros.isEmpty()) {
+                                Text(
+                                    text = "No hay cobros registrados hoy.",
+                                    modifier = Modifier.padding(20.dp),
+                                    fontSize = 13.sp,
+                                    color = OnSurfaceVariant
+                                )
+                            } else {
+                                uiState.recentCobros.forEachIndexed { index, cobro ->
+                                    RecentCobroRow(cobro, onVerTodosCobrosClick)
+                                    if (index < uiState.recentCobros.size - 1) {
+                                        androidx.compose.material3.HorizontalDivider(
+                                            color = OutlineVariant.copy(alpha = 0.3f),
+                                            modifier = Modifier.padding(horizontal = 16.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -450,14 +447,15 @@ private fun ActionButtonLarge(
     containerColor: Color,
     contentColor: Color,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     Card(
         modifier = modifier
             .height(115.dp)
-            .clickable { onClick() },
+            .clickable(enabled = enabled) { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
+        colors = CardDefaults.cardColors(containerColor = if (enabled) containerColor else Color(0xFFE0E0E0))
     ) {
         Column(
             modifier = Modifier
@@ -469,7 +467,7 @@ private fun ActionButtonLarge(
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                tint = contentColor,
+                tint = if (enabled) contentColor else OnSurfaceVariant,
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.height(10.dp))
@@ -477,17 +475,36 @@ private fun ActionButtonLarge(
                 text = label,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = contentColor
+                color = if (enabled) contentColor else OnSurfaceVariant
             )
+            if (!enabled) Text("Sin permiso", fontSize = 10.sp, color = OnSurfaceVariant)
         }
     }
 }
 
 @Composable
-private fun RecentCobroRow(cobro: RecentCobroItem) {
+private fun DailyAmountCard(label: String, value: String, icon: ImageVector, accent: Color) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+    ) {
+        Row(Modifier.fillMaxWidth().padding(18.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column { Text(label, color = OnSurfaceVariant); Spacer(Modifier.height(8.dp)); Text(value, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = accent) }
+            Surface(color = accent.copy(alpha = 0.12f), shape = RoundedCornerShape(12.dp)) {
+                Icon(icon, null, tint = accent, modifier = Modifier.padding(12.dp).size(26.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecentCobroRow(cobro: RecentCobroItem, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically

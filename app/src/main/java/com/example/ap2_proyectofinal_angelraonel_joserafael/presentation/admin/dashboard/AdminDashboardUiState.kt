@@ -2,7 +2,12 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.
 
 data class AdminDashboardUiState(
     val adminAvatarUrl: String? = null,
+    val businessName: String = "TacoBrao",
+    val businessLogoUrl: String? = null,
+    val unreadNotifications: Int = 0,
     val totalCollectedToday: String = "$ 0.00",
+    val capitalInStreet: String = "RD$ 0.00",
+    val outstandingPortfolio: String = "RD$ 0.00",
     val collectedPercentage: String = "0%",
     val activeEmployees: Int = 0,
     val totalEmployees: Int = 0,

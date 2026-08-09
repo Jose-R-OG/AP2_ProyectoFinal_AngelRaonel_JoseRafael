@@ -17,24 +17,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBalance
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,11 +58,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.PrestamoEntity
 import java.util.Locale
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatusHistory
+import coil.compose.AsyncImage
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
 
-// Paleta Equity Flow
+// Paleta TacoBrao
 private val SurfaceColor = Color(0xFFF8F9FF)
 private val PrimaryColor = Color(0xFF000000)
-private val OnSurfaceVariant = Color(0xFF45464D)
+private val OnSurfaceVariant = Color(0xFF30323A)
 private val SecondaryGreen = Color(0xFF006C49)
 private val SecondaryContainer = Color(0xFF6CF8BB)
 private val OnSecondaryContainer = Color(0xFF00714D)
@@ -76,14 +84,22 @@ private val ErrorColor = Color(0xFFBA1A1A)
 @Composable
 fun LoanApprovalScreen(
     viewModel: LoanApprovalViewModel = hiltViewModel(),
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onHome: () -> Unit = {},
+    onClients: () -> Unit = {},
+    onRoutes: () -> Unit = {},
+    onProfile: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LoanApprovalContent(
         uiState = uiState,
         onEvent = { viewModel.onEvent(it) },
-        onBackClick = onBackClick
+        onBackClick = onBackClick,
+        onHome = onHome,
+        onClients = onClients,
+        onRoutes = onRoutes,
+        onProfile = onProfile
     )
 }
 
@@ -92,7 +108,11 @@ fun LoanApprovalScreen(
 fun LoanApprovalContent(
     uiState: LoanApprovalUiState,
     onEvent: (LoanApprovalUiEvent) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onHome: () -> Unit = {},
+    onClients: () -> Unit = {},
+    onRoutes: () -> Unit = {},
+    onProfile: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -101,7 +121,7 @@ fun LoanApprovalContent(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AccountBalance, contentDescription = null, tint = PrimaryColor)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Equity Flow", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = PrimaryColor)
+                        Text("TacoBrao", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = PrimaryColor)
                     }
                 },
                 navigationIcon = {
@@ -110,6 +130,17 @@ fun LoanApprovalContent(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
+            )
+        },
+        bottomBar = {
+            RoleBottomBar(
+                isAdmin = true,
+                selectedTab = PrimaryTab.LOANS,
+                onHome = onHome,
+                onClients = onClients,
+                onLoans = {},
+                onRoutes = onRoutes,
+                onProfile = onProfile
             )
         },
         containerColor = SurfaceColor
@@ -129,7 +160,7 @@ fun LoanApprovalContent(
                 item {
                     Column(modifier = Modifier.padding(top = 8.dp)) {
                         Text(
-                            text = "COLA DE REVISIÓN",
+                            text = "GESTIÓN DE PRÉSTAMOS",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = OnTertiaryContainer,
@@ -141,31 +172,10 @@ fun LoanApprovalContent(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Solicitudes Pendientes", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                OutlinedButton(
-                                    onClick = { },
-                                    shape = RoundedCornerShape(8.dp),
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                                ) {
-                                    Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Filtros", fontSize = 12.sp)
-                                }
-                                Button(
-                                    onClick = { },
-                                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
-                                    shape = RoundedCornerShape(8.dp),
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                                ) {
-                                    Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Exportar CSV", fontSize = 12.sp)
-                                }
-                            }
+                            Text("Préstamos", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
                         }
                         Text(
-                            text = "Revisa y modera las solicitudes de préstamo enviadas por los agentes de campo.",
+                            text = "Consulta préstamos activos, rechazados y solicitudes en espera.",
                             fontSize = 14.sp,
                             color = OnSurfaceVariant,
                             modifier = Modifier.padding(top = 4.dp)
@@ -173,52 +183,92 @@ fun LoanApprovalContent(
                     }
                 }
 
-                // Bento Dashboard Stats
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        BentoStatCard("Total Pendientes", uiState.totalPendingCount.toString(), PrimaryColor, Modifier.weight(1f))
-                        BentoStatCard("Vol. Solicitado", String.format(Locale.US, "$ %,.0f", uiState.totalRequestedVolume), PrimaryColor, Modifier.weight(1f))
-                        BentoStatCard("Interes Prom.", "${uiState.avgInterestRate}%", SecondaryGreen, Modifier.weight(1f))
-                        BentoStatCard("Estado Sistema", "OK", OnTertiaryContainer, Modifier.weight(1f))
+                        LoanListTab.entries.forEach { tab ->
+                            FilterChip(
+                                selected = uiState.selectedTab == tab,
+                                onClick = { onEvent(LoanApprovalUiEvent.SelectTab(tab)) },
+                                label = {
+                                    Text(
+                                        when (tab) {
+                                            LoanListTab.ACTIVOS -> "Activos"
+                                            LoanListTab.RECHAZADOS -> "Rechazados"
+                                            LoanListTab.EN_ESPERA -> "En espera"
+                                        },
+                                        fontSize = 12.sp
+                                    )
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
+                // Bento Dashboard Stats
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            BentoStatCard("Total pendientes", uiState.totalPendingCount.toString(), PrimaryColor, Modifier.weight(1f))
+                            BentoStatCard("Volumen solicitado", String.format(Locale.US, "$ %,.0f", uiState.totalRequestedVolume), PrimaryColor, Modifier.weight(1f))
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            BentoStatCard("Interés promedio", "${uiState.avgInterestRate}%", SecondaryGreen, Modifier.weight(1f))
+                            BentoStatCard("Estado", "OPERATIVO", OnTertiaryContainer, Modifier.weight(1f))
+                        }
                     }
                 }
 
                 // Table / Card List Container
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
-                    ) {
-                        Column {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(SurfaceContainerLow)
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("CLIENTE Y EMPLEADO", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant, modifier = Modifier.weight(2f))
-                                Text("MONTO", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant, modifier = Modifier.weight(1f))
-                                Text("TÉRMINOS", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant, modifier = Modifier.weight(1f))
-                                Text("ACCIONES", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant, modifier = Modifier.weight(1.5f))
-                            }
-
-                            uiState.pendingPrestamos.forEachIndexed { index, request ->
-                                LoanRequestRow(
+                    if (uiState.isLoading) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(36.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = SecondaryGreen)
+                        }
+                    } else if (uiState.errorMessage != null) {
+                        Text(
+                            uiState.errorMessage.orEmpty(),
+                            modifier = Modifier.fillMaxWidth().padding(20.dp),
+                            color = ErrorColor
+                        )
+                    } else if (uiState.pendingPrestamos.isEmpty()) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+                        ) {
+                            Text(
+                                when (uiState.selectedTab) {
+                                    LoanListTab.ACTIVOS -> "No hay préstamos activos o aprobados."
+                                    LoanListTab.RECHAZADOS -> "No hay préstamos rechazados."
+                                    LoanListTab.EN_ESPERA -> "No hay solicitudes pendientes de revisión."
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                                color = OnSurfaceVariant
+                            )
+                        }
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            uiState.pendingPrestamos.forEach { request ->
+                                LoanRequestCompactCard(
                                     request = request,
+                                    client = uiState.clientSummaries[request.clienteId],
                                     onDetailClick = { onEvent(LoanApprovalUiEvent.SelectPrestamo(request)) },
                                     onRejectClick = { onEvent(LoanApprovalUiEvent.RejectPrestamo(request)) },
                                     onApproveClick = { onEvent(LoanApprovalUiEvent.ApprovePrestamo(request)) }
                                 )
-                                if (index < uiState.pendingPrestamos.lastIndex) {
-                                    HorizontalDivider(color = OutlineVariant.copy(alpha = 0.5f))
-                                }
                             }
                         }
                     }
@@ -238,23 +288,6 @@ fun LoanApprovalContent(
                             fontSize = 12.sp,
                             color = OnSurfaceVariant
                         )
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            IconButton(onClick = {}, modifier = Modifier.size(32.dp)) {
-                                Icon(Icons.Default.ChevronLeft, contentDescription = null)
-                            }
-                            Button(
-                                onClick = {},
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
-                                contentPadding = PaddingValues(0.dp),
-                                modifier = Modifier.size(32.dp),
-                                shape = RoundedCornerShape(4.dp)
-                            ) {
-                                Text("1", fontSize = 12.sp)
-                            }
-                            IconButton(onClick = {}, modifier = Modifier.size(32.dp)) {
-                                Icon(Icons.Default.ChevronRight, contentDescription = null)
-                            }
-                        }
                     }
                 }
             }
@@ -264,6 +297,8 @@ fun LoanApprovalContent(
                 uiState.selectedPrestamo?.let { prestamo ->
                     LoanDetailModal(
                         request = prestamo,
+                        client = uiState.clientSummaries[prestamo.clienteId],
+                        history = uiState.historyByLoan[prestamo.id].orEmpty(),
                         onClose = { onEvent(LoanApprovalUiEvent.CloseDetail) },
                         onApprove = { onEvent(LoanApprovalUiEvent.ApprovePrestamo(prestamo)) },
                         onReject = { onEvent(LoanApprovalUiEvent.RejectPrestamo(prestamo)) }
@@ -328,6 +363,57 @@ fun BentoStatCard(title: String, value: String, valueColor: Color, modifier: Mod
             Text(title, fontSize = 11.sp, color = OnSurfaceVariant, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(4.dp))
             Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = valueColor)
+        }
+    }
+}
+
+@Composable
+private fun LoanRequestCompactCard(
+    request: PrestamoEntity,
+    client: LoanClientSummary?,
+    onDetailClick: () -> Unit,
+    onRejectClick: () -> Unit,
+    onApproveClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onDetailClick),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Column(Modifier.weight(1f)) {
+                    Text(client?.name ?: "Cliente #${request.clienteId}", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                    Text("Registrado por empleado #${request.empleadoId}", fontSize = 12.sp, color = OnSurfaceVariant)
+                }
+                Text(
+                    String.format(Locale.US, "RD$ %,.2f", request.montoSolicitado),
+                    fontWeight = FontWeight.Bold,
+                    color = SecondaryGreen
+                )
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("${request.cantidadCuotas} cuotas · ${request.frecuenciaPago.name.lowercase()}", fontSize = 12.sp)
+                Text("${request.porcentajeInteres}% interés", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
+            request.diaPagoDescripcion?.let { Text("Día elegido: $it", fontSize = 12.sp, color = OnSurfaceVariant) }
+            OutlinedButton(onClick = onDetailClick, modifier = Modifier.fillMaxWidth()) { Text("Ver expediente") }
+            Text("Estado: ${request.estado.displayName()}", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            if (request.estado == LoanStatus.PENDIENTE_REVISION) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = onRejectClick,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = ErrorColor)
+                    ) { Text("Rechazar") }
+                    Button(
+                        onClick = onApproveClick,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = SecondaryGreen)
+                    ) { Text("Aprobar") }
+                }
+            }
         }
     }
 }
@@ -419,6 +505,8 @@ fun LoanRequestRow(
 @Composable
 fun LoanDetailModal(
     request: PrestamoEntity,
+    client: LoanClientSummary?,
+    history: List<LoanStatusHistory>,
     onClose: () -> Unit,
     onApprove: () -> Unit,
     onReject: () -> Unit
@@ -449,7 +537,9 @@ fun LoanDetailModal(
                         .padding(20.dp),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column {
+                    Column(
+                        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())
+                    ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -471,17 +561,32 @@ fun LoanDetailModal(
                                     .background(SecondaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("CL", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = OnSecondaryContainer)
+                                Text(
+                                    client?.name?.split(" ")?.mapNotNull { it.firstOrNull() }
+                                        ?.joinToString("")?.take(2)?.uppercase() ?: "CL",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = OnSecondaryContainer
+                                )
                             }
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
-                                Text("Cliente #${request.clienteId}", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
-                                Text("Score Crediticio: ", fontSize = 13.sp, color = OnSurfaceVariant)
-                                Text("850 (EXCELENTE)", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = SecondaryGreen)
+                                Text(client?.name ?: "Cliente #${request.clienteId}", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
+                                Text("Cédula: ${client?.dni?.ifBlank { "No registrada" } ?: "No registrada"}", fontSize = 13.sp, color = OnSurfaceVariant)
+                                Text(client?.phone?.ifBlank { "Teléfono no registrado" } ?: "Teléfono no registrado", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = SecondaryGreen)
                             }
                         }
 
                         Spacer(modifier = Modifier.height(20.dp))
+
+                        client?.profilePhotoPath?.let { path ->
+                            AsyncImage(
+                                model = if (path.startsWith("/")) File(path) else path,
+                                contentDescription = "Foto del cliente",
+                                modifier = Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(12.dp))
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
 
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -507,8 +612,8 @@ fun LoanDetailModal(
                                         Text("Duración", fontSize = 11.sp, color = OnSurfaceVariant)
                                         Text("${request.cantidadCuotas} Cuotas", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                                     }
-                                    Column {
-                                        Text("Pago Mensual Estimado", fontSize = 11.sp, color = OnSurfaceVariant)
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        Text("Monto por cuota", fontSize = 11.sp, color = OnSurfaceVariant)
                                         Text("$${request.montoCuota}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
                                     }
                                 }
@@ -520,8 +625,42 @@ fun LoanDetailModal(
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text("METADATOS DE APLICACIÓN", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
                             MetadataRow("Agente Cobrador", "Empleado #${request.empleadoId}")
-                            MetadataRow("Fecha de Envío", "Reciente")
-                            MetadataRow("Nivel de Riesgo", "BAJO")
+                            MetadataRow(
+                                "Fecha de envío",
+                                java.text.SimpleDateFormat("dd/MM/yyyy", Locale("es", "DO"))
+                                    .format(java.util.Date(request.fechaCreacion))
+                            )
+                            MetadataRow("Dirección", client?.address?.ifBlank { "No registrada" } ?: "No registrada")
+                            MetadataRow("Zona", client?.zone?.ifBlank { "Sin asignar" } ?: "Sin asignar")
+                            MetadataRow("Día de pago", request.diaPagoDescripcion ?: "Según frecuencia")
+                            MetadataRow("Estado", request.estado.displayName())
+                        }
+
+                        if (client?.dniFrontPhotoPath != null || client?.dniBackPhotoPath != null) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text("DOCUMENTOS DEL CLIENTE", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listOf(client.dniFrontPhotoPath, client.dniBackPhotoPath).forEachIndexed { index, path ->
+                                    path?.let {
+                                        AsyncImage(
+                                            model = if (it.startsWith("/")) File(it) else it,
+                                            contentDescription = if (index == 0) "Cédula frontal" else "Cédula posterior",
+                                            modifier = Modifier.weight(1f).height(110.dp).clip(RoundedCornerShape(8.dp))
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("HISTORIAL DE DECISIONES", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
+                        history.sortedByDescending { it.changedAt }.forEach { item ->
+                            MetadataRow(
+                                item.status.displayName(),
+                                SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("es", "DO")).format(Date(item.changedAt))
+                            )
+                            Text("Registrado por usuario #${item.changedByUserId}", fontSize = 11.sp, color = OnSurfaceVariant)
+                            item.note?.let { Text(it, fontSize = 12.sp, color = OnSurfaceVariant) }
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -540,9 +679,8 @@ fun LoanDetailModal(
                         }
                     }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    if (request.estado == LoanStatus.PENDIENTE_REVISION) Row(
+                        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Button(
                             onClick = onReject,
@@ -565,6 +703,15 @@ fun LoanDetailModal(
             }
         }
     }
+}
+
+private fun LoanStatus.displayName(): String = when (this) {
+    LoanStatus.BORRADOR -> "Borrador"
+    LoanStatus.PENDIENTE_REVISION -> "En revisión"
+    LoanStatus.APROBADO -> "Aprobado · pendiente de firma"
+    LoanStatus.RECHAZADO -> "Rechazado"
+    LoanStatus.ACTIVO -> "Activo"
+    LoanStatus.FINALIZADO -> "Finalizado"
 }
 
 @Composable

@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Percent
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -45,6 +46,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -70,6 +72,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import androidx.compose.material.icons.filled.QrCodeScanner
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.components.DniScannerDialog
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,10 +83,11 @@ fun RegistroClienteConCuotas(
     viewModel: RegistroClienteViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
+    var showDniScanner by remember { mutableStateOf(false) }
 
     // Colors adapted from the provided Tailwind config
     val surfaceColor = Color(0xFFF8F9FF)
-    val onSurfaceVariant = Color(0xFF45464D)
+    val onSurfaceVariant = Color(0xFF30323A)
     val outlineVariant = Color(0xFFC6C6CD)
     val primaryBlack = Color(0xFF000000)
     val secondaryGreen = Color(0xFF006C49)
@@ -110,6 +115,7 @@ fun RegistroClienteConCuotas(
         bottomBar = {
             Button(
                 onClick = { viewModel.onEvent(RegistroClienteUiEvent.SaveCliente) },
+                enabled = !viewModel.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -117,9 +123,17 @@ fun RegistroClienteConCuotas(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = primaryBlack)
             ) {
-                Icon(Icons.Default.Check, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Guardar Cliente", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                if (viewModel.isLoading) {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        modifier = Modifier.size(22.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(Icons.Default.Check, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(if (viewModel.isExistingClient) "Solicitar nuevo préstamo" else "Guardar Cliente", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
             }
         },
         containerColor = surfaceColor
@@ -155,7 +169,8 @@ fun RegistroClienteConCuotas(
                         onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.FullNameChanged(it)) },
                         label = "Nombre Completo",
                         placeholder = "Ej. Juan Pérez",
-                        icon = Icons.Default.Person
+                        icon = Icons.Default.Person,
+                        supportingText = "${viewModel.fullName.length}/80 caracteres"
                     )
 
                     FormTextField(
@@ -163,7 +178,17 @@ fun RegistroClienteConCuotas(
                         onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.DniChanged(it)) },
                         label = "Número de Identificación (DNI/ID)",
                         placeholder = "000-0000000-0",
-                        icon = Icons.Default.AccountBox
+                        icon = Icons.Default.AccountBox,
+                        supportingText = "${viewModel.dni.length}/11 dígitos",
+                        trailingIcon = {
+                            IconButton(onClick = { showDniScanner = true }) {
+                                Icon(
+                                    Icons.Default.QrCodeScanner,
+                                    contentDescription = "Escanear Cédula",
+                                    tint = Color(0xFF006C49)
+                                )
+                            }
+                        }
                     )
 
                     Spacer(Modifier.height(16.dp))
@@ -202,7 +227,8 @@ fun RegistroClienteConCuotas(
                         label = "Teléfono de Contacto",
                         placeholder = "+1 (555) 000-0000",
                         icon = Icons.Default.Phone,
-                        keyboardType = KeyboardType.Phone
+                        keyboardType = KeyboardType.Phone,
+                        supportingText = "${viewModel.phone.length}/10 dígitos"
                     )
 
                     FormTextField(
@@ -210,8 +236,22 @@ fun RegistroClienteConCuotas(
                         onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.AddressChanged(it)) },
                         label = "Dirección",
                         placeholder = "Calle, Número, Ciudad...",
-                        icon = Icons.Default.LocationOn
+                        icon = Icons.Default.LocationOn,
+                        supportingText = "${viewModel.address.length}/160 caracteres"
                     )
+
+                    Text("Zona de cobro", style = MaterialTheme.typography.labelMedium, color = Color(0xFF30323A))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        listOf("Zona Norte", "Zona Sur", "Zona Este").forEach { zone ->
+                            OutlinedButton(
+                                onClick = { viewModel.onEvent(RegistroClienteUiEvent.ZoneChanged(zone)) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = if (viewModel.zone == zone) Color(0xFFE5F7EF) else Color.Transparent
+                                )
+                            ) { Text(zone.removePrefix("Zona "), fontSize = 11.sp) }
+                        }
+                    }
 
                     Spacer(Modifier.height(24.dp))
                     FormSectionTitle(Icons.Default.ShoppingCart, "Detalles del Préstamo")
@@ -222,7 +262,8 @@ fun RegistroClienteConCuotas(
                         label = "Monto del Préstamo Inicial",
                         placeholder = "$ 0.00",
                         icon = Icons.Default.Add,
-                        keyboardType = KeyboardType.Decimal
+                        keyboardType = KeyboardType.Decimal,
+                        supportingText = "${viewModel.montoPrestamo.length}/10 dígitos"
                     )
 
                     FormTextField(
@@ -231,13 +272,35 @@ fun RegistroClienteConCuotas(
                         label = "Número de Cuotas",
                         placeholder = "Ej. 12",
                         icon = Icons.Default.List,
-                        keyboardType = KeyboardType.Number
+                        keyboardType = KeyboardType.Number,
+                        supportingText = "${viewModel.numCuotas.length}/3 dígitos"
                     )
 
                     FrecuenciaDropdown(
                         selected = viewModel.frecuenciaPago,
                         onSelected = { viewModel.onEvent(RegistroClienteUiEvent.FrecuenciaChanged(it)) }
                     )
+
+                    PaymentDaySelector(
+                        frequency = viewModel.frecuenciaPago,
+                        selectedValue = viewModel.diaPagoPreferido,
+                        selectedDescription = viewModel.diaPagoDescripcion,
+                        onSelected = { value, description ->
+                            viewModel.onEvent(RegistroClienteUiEvent.DiaPagoChanged(value, description))
+                        }
+                    )
+
+                    if (viewModel.canUseCustomRate) {
+                        FormTextField(
+                            value = viewModel.tasaPersonalizada,
+                            onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.TasaPersonalizadaChanged(it)) },
+                            label = "Tasa personalizada (opcional)",
+                            placeholder = "Usar tarifa configurada",
+                            icon = Icons.Default.Percent,
+                            keyboardType = KeyboardType.Decimal,
+                            supportingText = "0 a 100% · úsala para ampliar o renovar el préstamo"
+                        )
+                    }
                 }
             }
             
@@ -245,11 +308,24 @@ fun RegistroClienteConCuotas(
         }
     }
 
+    if (showDniScanner) {
+        DniScannerDialog(
+            onDniDetected = { dni ->
+                viewModel.onEvent(RegistroClienteUiEvent.DniChanged(dni))
+                showDniScanner = false
+            },
+            onDismiss = { showDniScanner = false }
+        )
+    }
+
     // Handle Success/Error
     if (viewModel.success) {
-        LaunchedEffect(Unit) {
-            onNavigateBack()
-        }
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("Solicitud enviada") },
+            text = { Text("El cliente y su préstamo quedaron EN REVISIÓN. Cuando el administrador apruebe o rechace, recibirás una notificación y el estado cambiará automáticamente.") },
+            confirmButton = { Button(onClick = onNavigateBack) { Text("Ver clientes") } }
+        )
     }
 
     viewModel.error?.let { err ->
@@ -259,6 +335,48 @@ fun RegistroClienteConCuotas(
             title = { Text("Error") },
             text = { Text(err) }
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PaymentDaySelector(
+    frequency: FrecuenciaPago,
+    selectedValue: Int?,
+    selectedDescription: String?,
+    onSelected: (Int, String) -> Unit
+) {
+    if (frequency == FrecuenciaPago.DIARIO) {
+        Text("El pago diario iniciará el día siguiente a la activación.", fontSize = 12.sp, color = Color(0xFF30323A))
+        return
+    }
+    var expanded by remember { mutableStateOf(false) }
+    val options = if (frequency == FrecuenciaPago.SEMANAL) {
+        listOf(1 to "Domingo", 2 to "Lunes", 3 to "Martes", 4 to "Miércoles", 5 to "Jueves", 6 to "Viernes", 7 to "Sábado")
+    } else {
+        (1..28).map { day ->
+            day to if (frequency == FrecuenciaPago.QUINCENAL) "Primera fecha: día $day (luego cada 15 días)" else "Día $day de cada mes"
+        }
+    }
+    Column(Modifier.padding(vertical = 8.dp)) {
+        Text("Día preferido de pago", style = MaterialTheme.typography.labelMedium, color = Color(0xFF30323A))
+        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+            OutlinedTextField(
+                value = selectedDescription.orEmpty(),
+                onValueChange = {},
+                readOnly = true,
+                placeholder = { Text("El cliente elige cuándo pagar") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            )
+            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                options.forEach { (value, label) ->
+                    DropdownMenuItem(text = { Text(label) }, onClick = { onSelected(value, label); expanded = false })
+                }
+            }
+        }
+        Text(if (selectedValue == null) "Obligatorio para esta frecuencia" else "Seleccionado: $selectedDescription", fontSize = 11.sp, color = Color(0xFF30323A))
     }
 }
 
@@ -355,16 +473,19 @@ fun FormTextField(
     label: String,
     placeholder: String,
     icon: ImageVector,
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text,
+    supportingText: String? = null,
+    trailingIcon: @Composable (() -> Unit)? = null
 ) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(label, style = MaterialTheme.typography.labelMedium, color = Color(0xFF45464D))
+        Text(label, style = MaterialTheme.typography.labelMedium, color = Color(0xFF30323A))
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(placeholder) },
             leadingIcon = { Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp)) },
+            trailingIcon = trailingIcon,
             shape = RoundedCornerShape(12.dp),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             colors = OutlinedTextFieldDefaults.colors(
@@ -372,6 +493,7 @@ fun FormTextField(
                 focusedBorderColor = Color(0xFF006C49)
             )
         )
+        supportingText?.let { Text(it, fontSize = 11.sp, color = Color(0xFF30323A), modifier = Modifier.padding(start = 12.dp, top = 2.dp)) }
     }
 }
 
@@ -384,7 +506,7 @@ fun FrecuenciaDropdown(
     var expanded by remember { mutableStateOf(false) }
     
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text("Frecuencia de Pago", style = MaterialTheme.typography.labelMedium, color = Color(0xFF45464D))
+        Text("Frecuencia de Pago", style = MaterialTheme.typography.labelMedium, color = Color(0xFF30323A))
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
@@ -436,7 +558,7 @@ fun RegistroClienteConCuotasPreview() {
 @Composable
 private fun RegistroClienteContentPreview() {
     val surfaceColor = Color(0xFFF8F9FF)
-    val onSurfaceVariant = Color(0xFF45464D)
+    val onSurfaceVariant = Color(0xFF30323A)
     val outlineVariant = Color(0xFFC6C6CD)
     val primaryBlack = Color(0xFF000000)
 

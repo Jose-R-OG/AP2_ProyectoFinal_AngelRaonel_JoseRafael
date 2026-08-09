@@ -36,9 +36,12 @@ class EmpleadoPerfilViewModel @Inject constructor(
                         it.copy(
                             name = user.nombreCompleto,
                             roleTitle = user.role.name,
+                            activeRouteText = "Ruta: ${user.route?.takeIf(String::isNotBlank) ?: "Sin asignar"}",
                             agentId = "#${user.id}",
                             email = user.email ?: user.username,
-                            phone = user.telefono
+                            phone = user.telefono,
+                            avatarUrl = user.profilePhotoPath,
+                            isLoading = false
                         )
                     }
                 }

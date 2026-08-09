@@ -3,29 +3,62 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.
 data class Employee(
     val id: String = "",
     val name: String = "",
+    val username: String = "",
+    val identification: String = "",
     val phone: String = "",
-    val route: String = "",
+    val address: String = "",
+    val route: String = "SIN ASIGNAR",
     val clientsAssigned: Int = 0,
+    val collectionCount: Int = 0,
+    val recentActivity: List<String> = emptyList(),
     val isActive: Boolean = true,
-    val photoUrl: String? = null
+    val photoUrl: String? = null,
+    val dniFrontPhotoPath: String? = null,
+    val dniBackPhotoPath: String? = null,
+    val canCreateClients: Boolean = true,
+    val canCollectPayments: Boolean = true,
+    val canViewRoute: Boolean = true,
+    val canCloseCash: Boolean = true,
+    val canShareDocuments: Boolean = true
+)
+
+data class AssignableClient(
+    val id: Long,
+    val name: String,
+    val zone: String,
+    val currentEmployeeId: Long?
 )
 
 data class EmployeeUiState(
     val employees: List<Employee> = emptyList(),
+    val searchQuery: String = "",
     val totalAgents: Int = 0,
     val activeAgents: Int = 0,
     val pendingRoutes: Int = 0,
-    val alertsCount: Int = 0,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
-
-    val isAddModalOpen: Boolean = false,
-    val newEmployeeName: String = "",
-    val newEmployeeUsername: String = "",
-    val newEmployeePin: String = "1234",
-    val newEmployeePhone: String = "",
-    val newEmployeeRoute: String = "",
-    val availableRoutes: List<String> = listOf("Zona Norte", "Centro", "Zona Sur", "Zona Este"),
-
-    val errorMessage: String? = null
+    val isEditorOpen: Boolean = false,
+    val editingEmployeeId: Long? = null,
+    val name: String = "",
+    val username: String = "",
+    val pin: String = "1234",
+    val phone: String = "",
+    val identification: String = "",
+    val address: String = "",
+    val route: String = "",
+    val profilePhotoPath: String? = null,
+    val dniFrontPhotoPath: String? = null,
+    val dniBackPhotoPath: String? = null,
+    val canCreateClients: Boolean = true,
+    val canCollectPayments: Boolean = true,
+    val canViewRoute: Boolean = true,
+    val canCloseCash: Boolean = true,
+    val canShareDocuments: Boolean = true,
+    val availableRoutes: List<String> = listOf("Zona Norte", "Zona Sur", "Zona Este"),
+    val selectedEmployee: Employee? = null,
+    val assignmentEmployee: Employee? = null,
+    val assignableClients: List<AssignableClient> = emptyList(),
+    val pendingDeactivation: Employee? = null,
+    val errorMessage: String? = null,
+    val successMessage: String? = null
 )

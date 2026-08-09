@@ -6,6 +6,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.User
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.adminrequest.AdminRegisterRepository
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ActivationCodeViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val adminRegisterRepository: AdminRegisterRepository
+    private val adminRegisterRepository: AdminRegisterRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ActivationCodeUiState())
@@ -42,6 +44,11 @@ class ActivationCodeViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isVerifying = true, errorMessage = null) }
+
+            if (authRepository.hasAnyAdmin()) {
+                _uiState.update { it.copy(isVerifying = false, errorMessage = "Este teléfono ya tiene un administrador. No se puede crear otro sin borrar los datos de la aplicación.") }
+                return@launch
+            }
 
             val request = adminRegisterRepository.getRequestByEmail(email)
 
@@ -71,6 +78,9 @@ class ActivationCodeViewModel @Inject constructor(
                 email = request.email
             )
             authRepository.registerUser(user)
+            authRepository.login(request.username, request.pin)?.let { registeredUser ->
+                sessionManager.saveUserId(registeredUser.id)
+            }
 
             _uiState.update { it.copy(isVerifying = false, isVerifiedSuccess = true) }
         }

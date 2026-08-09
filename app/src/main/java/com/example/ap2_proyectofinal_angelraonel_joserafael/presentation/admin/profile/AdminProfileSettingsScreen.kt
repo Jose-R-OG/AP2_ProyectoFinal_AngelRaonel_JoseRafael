@@ -1,422 +1,338 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.profile
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.HelpCenter
+import androidx.compose.material.icons.filled.LockReset
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.profile.ConfirmarCerrarSesionDialog
+import coil.compose.AsyncImage
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 
-// Color Tokens según la paleta HTML
-private val SurfaceColor = Color(0xFFF8F9FF)
-private val PrimaryColor = Color(0xFF000000)
-private val OnSurfaceColor = Color(0xFF0B1C30)
-private val OnSurfaceVariant = Color(0xFF45464D)
-private val OutlineVariant = Color(0xFFC6C6CD)
-private val SurfaceContainerLowest = Color(0xFFFFFFFF)
-private val SurfaceContainerLow = Color(0xFFEFF4FF)
-private val SurfaceVariant = Color(0xFFD3E4FE)
-private val SecondaryColor = Color(0xFF006C49)
-private val SecondaryContainer = Color(0xFF6CF8BB)
-private val PrimaryContainer = Color(0xFF131B2E)
-private val OnPrimaryContainer = Color(0xFF7C839B)
-private val ErrorColor = Color(0xFFBA1A1A)
-private val ErrorContainer = Color(0xFFFFDAD6)
+private val ProfileSurface = Color(0xFFF8F9FF)
+private val ProfileGreen = Color(0xFF006C49)
+private val ProfileOutline = Color(0xFFC6C6CD)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminProfileSettingsScreen(
-    viewModel: AdminProfileViewModel = hiltViewModel(),
-    onChangePasswordClick: () -> Unit = {},
-    onSecuritySettingsClick: () -> Unit = {},
-    onNotificationsClick: () -> Unit = {},
-    onHelpSupportClick: () -> Unit = {},
-    onLogoutClick: () -> Unit = { },
-    onBackClick: () -> Unit = {}
+    onLogoutSuccess: () -> Unit,
+    onHome: () -> Unit,
+    onClients: () -> Unit,
+    onLoans: () -> Unit,
+    onRoutes: () -> Unit,
+    viewModel: AdminProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    val profilePicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let { viewModel.onEvent(AdminProfileUiEvent.ProfilePhotoSelected(it.toString())) }
+    }
+    val logoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let { viewModel.onEvent(AdminProfileUiEvent.BusinessLogoSelected(it.toString())) }
+    }
 
-    AdminProfileContent(
-        uiState = uiState,
-        onEvent = viewModel::onEvent,
-        onChangePasswordClick = onChangePasswordClick,
-        onSecuritySettingsClick = onSecuritySettingsClick,
-        onNotificationsClick = onNotificationsClick,
-        onHelpSupportClick = onHelpSupportClick,
-        onLogoutClick = {
-            viewModel.onEvent(AdminProfileUiEvent.Logout {
-                onLogoutClick()
-            })
-        },
-        onBackClick = onBackClick
-    )
-}
+    LaunchedEffect(uiState.isLoggedOut) {
+        if (uiState.isLoggedOut) onLogoutSuccess()
+    }
+    LaunchedEffect(uiState.message, uiState.showPinDialog, uiState.isEditing) {
+        if (!uiState.message.isNullOrBlank() && !uiState.showPinDialog && !uiState.isEditing) {
+            snackbar.showSnackbar(uiState.message.orEmpty())
+            viewModel.onEvent(AdminProfileUiEvent.MessageShown)
+        }
+    }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AdminProfileContent(
-    uiState: AdminProfileUiState = AdminProfileUiState(),
-    onEvent: (AdminProfileUiEvent) -> Unit = {},
-    onChangePasswordClick: () -> Unit = {},
-    onSecuritySettingsClick: () -> Unit = {},
-    onNotificationsClick: () -> Unit = {},
-    onHelpSupportClick: () -> Unit = {},
-    onLogoutClick: () -> Unit = {},
-    onBackClick: () -> Unit = {}
-) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.AccountBalance,
-                            contentDescription = null,
-                            tint = PrimaryColor
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Equity Flow",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = PrimaryColor
-                        )
+                        Icon(Icons.Default.AccountBalance, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(uiState.businessName, fontWeight = FontWeight.Bold)
                     }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = PrimaryColor
-                        )
-                    }
-                },
-                actions = {
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(SurfaceVariant),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Admin Avatar",
-                            tint = OnSurfaceColor
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
+                }
             )
         },
-        containerColor = SurfaceColor
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-
-            // Header de Perfil
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-                border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(modifier = Modifier.size(80.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                                .background(SurfaceVariant)
-                                .border(2.dp, SurfaceContainerLow, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AdminPanelSettings,
-                                contentDescription = null,
-                                modifier = Modifier.size(44.dp),
-                                tint = OnSurfaceColor
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(26.dp)
-                                .align(Alignment.BottomEnd)
-                                .clip(CircleShape)
-                                .background(PrimaryColor)
-                                .clickable { },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Editar Perfil",
-                                modifier = Modifier.size(14.dp),
-                                tint = Color.White
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column {
-                        OutlinedTextField(
-                            value = uiState.adminName,
-                            onValueChange = { onEvent(AdminProfileUiEvent.UpdateName(it)) },
-                            label = { Text("Nombre Completo") },
-                            modifier = Modifier.fillMaxWidth(),
-                            textStyle = LocalTextStyle.current.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor = Color.Transparent,
-                                focusedBorderColor = SecondaryColor
-                            )
-                        )
-                        OutlinedTextField(
-                            value = uiState.adminEmail,
-                            onValueChange = { onEvent(AdminProfileUiEvent.UpdateEmail(it)) },
-                            label = { Text("Email/Usuario") },
-                            modifier = Modifier.fillMaxWidth(),
-                            textStyle = LocalTextStyle.current.copy(fontSize = 13.sp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor = Color.Transparent,
-                                focusedBorderColor = SecondaryColor
-                            )
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            BadgeChip(
-                                text = uiState.roleBadge,
-                                containerColor = SecondaryContainer.copy(alpha = 0.4f),
-                                contentColor = SecondaryColor
-                            )
-                        }
-                        Button(
-                            onClick = { onEvent(AdminProfileUiEvent.SaveProfile) },
-                            modifier = Modifier.padding(top = 8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = SecondaryColor)
-                        ) {
-                            Text("Guardar Cambios")
-                        }
-                    }
-                }
+        bottomBar = {
+            RoleBottomBar(
+                isAdmin = true,
+                selectedTab = PrimaryTab.PROFILE,
+                onHome = onHome,
+                onClients = onClients,
+                onLoans = onLoans,
+                onRoutes = onRoutes,
+                onProfile = {}
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbar) },
+        containerColor = ProfileSurface
+    ) { padding ->
+        if (uiState.isLoading) {
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = ProfileGreen)
             }
-
-            // Sección: Security & Account
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    text = "Security & Account",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OnSurfaceColor,
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                )
-
-                SettingOptionTile(
-                    icon = Icons.Default.LockReset,
-                    title = "Change Password",
-                    subtitle = "Update your account credentials",
-                    onClick = onChangePasswordClick
-                )
-
-                SettingOptionTile(
-                    icon = Icons.Default.Person,
-                    title = "Security Settings",
-                    subtitle = if (uiState.isTwoFactorEnabled) "Two-Factor Authentication is Enabled" else "2FA is Disabled",
-                    subtitleHighlight = if (uiState.isTwoFactorEnabled) "Enabled" else null,
-                    highlightColor = SecondaryColor,
-                    onClick = onSecuritySettingsClick
-                )
-
-                SettingOptionTile(
-                    icon = Icons.Default.Notifications,
-                    title = "Notification Preferences",
-                    subtitle = "Email, Push and SMS alerts",
-                    onClick = onNotificationsClick
-                )
-            }
-
-            // Sección: Support
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    text = "Support",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OnSurfaceColor,
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                )
-
-                SettingOptionTile(
-                    icon = Icons.Default.HelpCenter,
-                    title = "Help & Support",
-                    subtitle = "Documentation and customer care",
-                    trailingIcon = Icons.Default.OpenInNew,
-                    onClick = onHelpSupportClick
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Logout & Versión
+        } else {
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Button(
-                    onClick = onLogoutClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ErrorContainer.copy(alpha = 0.5f),
-                        contentColor = ErrorColor
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, ErrorColor.copy(alpha = 0.2f))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, ProfileOutline)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Logout,
-                            contentDescription = "Logout",
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Logout from Account",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
-                        )
+                    Column(Modifier.padding(18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            ImageEditor(
+                                path = uiState.profilePhotoPath,
+                                fallbackIcon = Icons.Default.Person,
+                                label = "Foto de perfil",
+                                onClick = { viewModel.onEvent(AdminProfileUiEvent.StartEdit) }
+                            )
+                            ImageEditor(
+                                path = uiState.businessLogoPath,
+                                fallbackIcon = Icons.Default.Business,
+                                label = "Logotipo",
+                                onClick = { viewModel.onEvent(AdminProfileUiEvent.StartEdit) }
+                            )
+                        }
+                        Spacer(Modifier.height(12.dp))
+                        Text(uiState.adminName, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Text(uiState.adminEmail, fontSize = 13.sp, color = Color(0xFF30323A))
+                        Text(uiState.adminPhone, fontSize = 13.sp, color = Color(0xFF30323A))
+                        Spacer(Modifier.height(12.dp))
+                        Button(
+                            onClick = { viewModel.onEvent(AdminProfileUiEvent.StartEdit) },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                        ) {
+                            Icon(Icons.Default.Edit, null, Modifier.size(18.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Editar perfil y negocio")
+                        }
                     }
                 }
 
-                Text(
-                    text = "Equity Flow ${uiState.appVersion}",
-                    fontSize = 12.sp,
-                    color = OnSurfaceVariant
-                )
+                FunctionalOption(Icons.Default.LockReset, "Cambiar PIN", "Actualiza tus credenciales locales") {
+                    viewModel.onEvent(AdminProfileUiEvent.ShowPinDialog)
+                }
+                FunctionalOption(Icons.Default.Notifications, "Preferencias de notificación", "Activa o desactiva los avisos dentro de la aplicación") {
+                    viewModel.onEvent(AdminProfileUiEvent.ShowNotifications)
+                }
+                FunctionalOption(Icons.Default.HelpCenter, "Ayuda", "Explicación de los módulos principales") {
+                    viewModel.onEvent(AdminProfileUiEvent.ShowHelp)
+                }
+
+                Button(
+                    onClick = { viewModel.onEvent(AdminProfileUiEvent.RequestLogout) },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFDAD6), contentColor = Color(0xFFBA1A1A))
+                ) {
+                    Icon(Icons.Default.Logout, null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Cerrar sesión", fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.height(10.dp))
             }
         }
     }
-}
 
-@Composable
-private fun BadgeChip(text: String, containerColor: Color, contentColor: Color) {
-    Surface(
-        color = containerColor,
-        shape = RoundedCornerShape(50),
-        border = androidx.compose.foundation.BorderStroke(1.dp, contentColor.copy(alpha = 0.2f))
-    ) {
-        Text(
-            text = text.uppercase(),
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Bold,
-            color = contentColor,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-            letterSpacing = 0.5.sp
+    if (uiState.isEditing) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(AdminProfileUiEvent.CancelEdit) },
+            title = { Text("Editar perfil y negocio") },
+            text = {
+                Column(
+                    Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(9.dp)
+                ) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        EditableImage(
+                            path = uiState.pendingProfilePhoto,
+                            label = "Foto",
+                            modifier = Modifier.weight(1f)
+                        ) { profilePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                        EditableImage(
+                            path = uiState.pendingBusinessLogo,
+                            label = "Logo",
+                            modifier = Modifier.weight(1f)
+                        ) { logoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                    }
+                    OutlinedTextField(uiState.editName, { viewModel.onEvent(AdminProfileUiEvent.NameChanged(it)) }, label = { Text("Nombre") }, supportingText = { Text("${uiState.editName.length}/80") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(uiState.editEmail, { viewModel.onEvent(AdminProfileUiEvent.EmailChanged(it)) }, label = { Text("Correo") }, supportingText = { Text("${uiState.editEmail.length}/120") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
+                    OutlinedTextField(uiState.editPhone, { viewModel.onEvent(AdminProfileUiEvent.PhoneChanged(it)) }, label = { Text("Teléfono") }, supportingText = { Text("${uiState.editPhone.length}/10 dígitos") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone))
+                    OutlinedTextField(uiState.editBusinessName, { viewModel.onEvent(AdminProfileUiEvent.BusinessNameChanged(it)) }, label = { Text("Nombre del negocio") }, supportingText = { Text("${uiState.editBusinessName.length}/60") }, modifier = Modifier.fillMaxWidth())
+                    uiState.message?.let { Text(it, color = Color(0xFFBA1A1A), fontSize = 12.sp) }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.onEvent(AdminProfileUiEvent.SaveProfile) },
+                    enabled = !uiState.isSaving
+                ) {
+                    if (uiState.isSaving) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                    else Text("Guardar")
+                }
+            },
+            dismissButton = { TextButton(onClick = { viewModel.onEvent(AdminProfileUiEvent.CancelEdit) }) { Text("Cancelar") } }
+        )
+    }
+    if (uiState.showLogoutConfirmation) {
+        ConfirmarCerrarSesionDialog(
+            onConfirm = { viewModel.onEvent(AdminProfileUiEvent.ConfirmLogout) },
+            onDismiss = { viewModel.onEvent(AdminProfileUiEvent.CancelLogout) }
+        )
+    }
+
+    if (uiState.showPinDialog) PinDialog(uiState, viewModel::onEvent)
+    if (uiState.showNotificationDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(AdminProfileUiEvent.HideNotifications) },
+            title = { Text("Notificaciones") },
+            text = {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Avisos de solicitudes y cobros")
+                    Switch(uiState.notificationsEnabled, { viewModel.onEvent(AdminProfileUiEvent.NotificationsChanged(it)) })
+                }
+            },
+            confirmButton = { TextButton(onClick = { viewModel.onEvent(AdminProfileUiEvent.HideNotifications) }) { Text("Listo") } }
+        )
+    }
+    if (uiState.showHelpDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(AdminProfileUiEvent.HideHelp) },
+            title = { Text("Ayuda rápida") },
+            text = { Text("Clientes administra expedientes. Préstamos aprueba o rechaza solicitudes. Rutas muestra cobros pendientes. Ajustar tarifas define el interés usado en solicitudes nuevas.") },
+            confirmButton = { TextButton(onClick = { viewModel.onEvent(AdminProfileUiEvent.HideHelp) }) { Text("Entendido") } }
         )
     }
 }
 
 @Composable
-private fun SettingOptionTile(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    subtitleHighlight: String? = null,
-    highlightColor: Color = SecondaryColor,
-    trailingIcon: ImageVector = Icons.Default.ChevronRight,
-    onClick: () -> Unit
-) {
+private fun FunctionalOption(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, ProfileOutline),
+        shape = RoundedCornerShape(14.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(SurfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = PrimaryColor,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(14.dp))
-
-                Column {
-                    Text(
-                        text = title,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = OnSurfaceColor
-                    )
-                    Text(
-                        text = subtitle,
-                        fontSize = 12.sp,
-                        color = OnSurfaceVariant
-                    )
-                }
+        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, null, Modifier.size(26.dp))
+            Spacer(Modifier.width(14.dp))
+            Column {
+                Text(title, fontWeight = FontWeight.Bold)
+                Text(subtitle, fontSize = 12.sp, color = Color(0xFF30323A))
             }
-
-            Icon(
-                imageVector = trailingIcon,
-                contentDescription = null,
-                tint = OnSurfaceVariant,
-                modifier = Modifier.size(20.dp)
-            )
         }
     }
+}
+
+@Composable
+private fun ImageEditor(path: String?, fallbackIcon: ImageVector, label: String, onClick: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            Modifier.size(84.dp).clip(RoundedCornerShape(18.dp)).background(Color(0xFFDCE9FF)).clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            if (!path.isNullOrBlank()) AsyncImage(path, label, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            else Icon(fallbackIcon, null, Modifier.size(44.dp))
+        }
+        Text(label, fontSize = 11.sp)
+    }
+}
+
+@Composable
+private fun EditableImage(path: String?, label: String, modifier: Modifier, onClick: () -> Unit) {
+    Box(
+        modifier.height(92.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFFDCE9FF)).clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (!path.isNullOrBlank()) AsyncImage(path, label, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        else Text("Seleccionar $label", fontSize = 11.sp)
+    }
+}
+
+@Composable
+private fun PinDialog(uiState: AdminProfileUiState, onEvent: (AdminProfileUiEvent) -> Unit) {
+    AlertDialog(
+        onDismissRequest = { onEvent(AdminProfileUiEvent.HidePinDialog) },
+        title = { Text("Cambiar PIN") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(uiState.oldPin, { onEvent(AdminProfileUiEvent.OldPinChanged(it)) }, label = { Text("PIN actual") }, supportingText = { Text("${uiState.oldPin.length}/8 dígitos") }, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword))
+                OutlinedTextField(uiState.newPin, { onEvent(AdminProfileUiEvent.NewPinChanged(it)) }, label = { Text("PIN nuevo") }, supportingText = { Text("${uiState.newPin.length}/8 (mínimo 4)") }, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword))
+                OutlinedTextField(uiState.confirmPin, { onEvent(AdminProfileUiEvent.ConfirmPinChanged(it)) }, label = { Text("Confirmar PIN") }, supportingText = { Text("${uiState.confirmPin.length}/8 dígitos") }, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword))
+                uiState.message?.let { Text(it, color = Color(0xFFBA1A1A), fontSize = 12.sp) }
+            }
+        },
+        confirmButton = { Button(onClick = { onEvent(AdminProfileUiEvent.SavePin) }) { Text("Actualizar") } },
+        dismissButton = { TextButton(onClick = { onEvent(AdminProfileUiEvent.HidePinDialog) }) { Text("Cancelar") } }
+    )
 }

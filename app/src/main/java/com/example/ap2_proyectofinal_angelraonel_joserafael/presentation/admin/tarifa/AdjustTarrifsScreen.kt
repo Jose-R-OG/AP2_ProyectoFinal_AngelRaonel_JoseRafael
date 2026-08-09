@@ -67,7 +67,7 @@ private val OnPrimaryContainer = Color(0xFF7C839B)
 private val SecondaryGreen = Color(0xFF006C49)
 private val SecondaryContainer = Color(0xFF6CF8BB)
 private val OnSecondaryContainer = Color(0xFF00714D)
-private val OnSurfaceVariant = Color(0xFF45464D)
+private val OnSurfaceVariant = Color(0xFF30323A)
 private val OutlineVariant = Color(0xFFC6C6CD)
 private val ErrorContainer = Color(0xFFFFDAD6)
 private val OnErrorContainer = Color(0xFF93000A)
@@ -107,7 +107,7 @@ fun AdjustTariffsContent(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Equity Flow",
+                                text = "TacoBrao",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp,
                                 color = PrimaryColor
@@ -179,7 +179,7 @@ fun AdjustTariffsContent(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Las tasas configuradas aquí se aplicarán automáticamente a todas las nuevas solicitudes de préstamo dentro del flujo de Equity Flow.",
+                                text = "Las tasas configuradas aquí se aplicarán automáticamente a todas las nuevas solicitudes de préstamo de TacoBrao.",
                                 fontSize = 13.sp,
                                 color = OnSurfaceVariant
                             )
@@ -275,6 +275,10 @@ fun AdjustTariffsContent(
                                 color = OnSurfaceVariant
                             )
 
+                            uiState.errorMessage?.let { message ->
+                                Text(message, color = Color(0xFFBA1A1A), fontSize = 12.sp)
+                            }
+
                             Button(
                                 onClick = onSaveClick,
                                 modifier = Modifier
@@ -323,7 +327,7 @@ fun AdjustTariffsContent(
                             MetricRow("Margen Neto Proyectado", uiState.projectedNetMargin, isSecondary = true)
                             HorizontalDivider(color = OutlineVariant.copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 8.dp))
 
-                            MetricRow("Tasa Promedio de Mercado", uiState.averageMarketRate)
+                            MetricRow("Tasa Promedio Configurada", uiState.averageMarketRate)
                             HorizontalDivider(color = OutlineVariant.copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 8.dp))
 
                             Row(

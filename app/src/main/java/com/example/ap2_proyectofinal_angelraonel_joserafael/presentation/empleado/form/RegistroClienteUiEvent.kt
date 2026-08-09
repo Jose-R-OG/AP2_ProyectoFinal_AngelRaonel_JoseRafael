@@ -10,9 +10,12 @@ sealed interface RegistroClienteUiEvent {
     data class DniBackPhotoChanged(val path: String) : RegistroClienteUiEvent
     data class PhoneChanged(val value: String) : RegistroClienteUiEvent
     data class AddressChanged(val value: String) : RegistroClienteUiEvent
+    data class ZoneChanged(val value: String) : RegistroClienteUiEvent
     data class MontoChanged(val value: String) : RegistroClienteUiEvent
     data class CuotasChanged(val value: String) : RegistroClienteUiEvent
     data class FrecuenciaChanged(val frecuencia: FrecuenciaPago) : RegistroClienteUiEvent
+    data class DiaPagoChanged(val value: Int, val description: String) : RegistroClienteUiEvent
+    data class TasaPersonalizadaChanged(val value: String) : RegistroClienteUiEvent
     data object SaveCliente : RegistroClienteUiEvent
     data object ClearError : RegistroClienteUiEvent
 }

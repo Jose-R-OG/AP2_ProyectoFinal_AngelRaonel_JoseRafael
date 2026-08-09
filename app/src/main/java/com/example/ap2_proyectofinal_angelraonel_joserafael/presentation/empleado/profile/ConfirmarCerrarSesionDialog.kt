@@ -37,7 +37,7 @@ import androidx.compose.ui.window.Dialog
 private val DialogHeaderBg = Color(0xFFE3EEFF)
 private val RedDanger = Color(0xFFC62828)
 private val PrimaryBlack = Color(0xFF000000)
-private val OnSurfaceVariant = Color(0xFF45464D)
+private val OnSurfaceVariant = Color(0xFF30323A)
 
 @Composable
 fun ConfirmarCerrarSesionDialog(

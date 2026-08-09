@@ -59,7 +59,7 @@ private val SurfaceColor = Color(0xFFF8F9FF)
 private val PrimaryBlack = Color(0xFF000000)
 private val SecondaryGreen = Color(0xFF006C49)
 private val LightBlueIconBg = Color(0xFFE3EEFF)
-private val OnSurfaceVariant = Color(0xFF45464D)
+private val OnSurfaceVariant = Color(0xFF30323A)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,7 +84,7 @@ fun ActivationCodeScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AccountBalance, contentDescription = null, tint = PrimaryBlack)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Equity Flow", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = PrimaryBlack)
+                        Text("TacoBrao", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = PrimaryBlack)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)

@@ -2,6 +2,7 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,7 +22,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 
 // --- PALETA DE COLORES (Configuración Tailwind) ---
 val SurfaceColor = Color(0xFFF8F9FF)
@@ -29,7 +34,7 @@ val PrimaryColor = Color(0xFF000000)
 val SecondaryGreen = Color(0xFF006C49)
 val SecondaryContainer = Color(0xFF6CF8BB)
 val OnSecondaryContainer = Color(0xFF00714D)
-val OnSurfaceVariant = Color(0xFF45464D)
+val OnSurfaceVariant = Color(0xFF30323A)
 val OutlineVariant = Color(0xFFC6C6CD)
 val ErrorColor = Color(0xFFBA1A1A)
 val ErrorContainer = Color(0xFFFFDAD6)
@@ -39,30 +44,41 @@ val OnErrorContainer = Color(0xFF93000A)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
-    uiState: AdminDashboardUiState = AdminDashboardUiState(),
     onAddEmployee: () -> Unit = {},
     onNuevoCliente: () -> Unit = {},
     onRealizarCobro: () -> Unit = {},
     onAdjustTariffs: () -> Unit = {},
     onViewAllMovements: () -> Unit = {},
     onNavigateToLoans: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {}
+    onNavigateToClients: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
+    onNavigateToRoutes: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {},
+    viewModel: AdminDashboardViewModel = hiltViewModel()
 ) {
-    var selectedItem by remember { mutableIntStateOf(0) }
-
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.AccountBalance,
-                            contentDescription = null,
-                            tint = PrimaryColor
-                        )
+                        if (!uiState.businessLogoUrl.isNullOrBlank()) {
+                            AsyncImage(
+                                model = uiState.businessLogoUrl,
+                                contentDescription = "Logotipo del negocio",
+                                modifier = Modifier.size(30.dp).clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.AccountBalance,
+                                contentDescription = null,
+                                tint = PrimaryColor
+                            )
+                        }
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Equity Flow",
+                            text = uiState.businessName,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = PrimaryColor
@@ -70,8 +86,16 @@ fun AdminDashboardScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Notificaciones */ }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notificaciones")
+                    BadgedBox(
+                        badge = {
+                            if (uiState.unreadNotifications > 0) {
+                                Badge { Text(uiState.unreadNotifications.toString()) }
+                            }
+                        }
+                    ) {
+                        IconButton(onClick = onNavigateToNotifications) {
+                            Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
+                        }
                     }
                     if (!uiState.adminAvatarUrl.isNullOrEmpty()) {
                         AsyncImage(
@@ -80,7 +104,8 @@ fun AdminDashboardScreen(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .border(1.dp, OutlineVariant, CircleShape),
+                                .border(1.dp, OutlineVariant, CircleShape)
+                                .clickable(onClick = onNavigateToProfile),
                             contentScale = ContentScale.Crop
                         )
                     } else {
@@ -88,7 +113,8 @@ fun AdminDashboardScreen(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .background(OutlineVariant),
+                                .background(OutlineVariant)
+                                .clickable(onClick = onNavigateToProfile),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -103,15 +129,16 @@ fun AdminDashboardScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onNuevoCliente() },
-                containerColor = PrimaryColor,
-                contentColor = Color.White,
-                shape = CircleShape
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Añadir")
-            }
+        bottomBar = {
+            RoleBottomBar(
+                isAdmin = true,
+                selectedTab = PrimaryTab.HOME,
+                onHome = {},
+                onClients = onNavigateToClients,
+                onLoans = onNavigateToLoans,
+                onRoutes = onNavigateToRoutes,
+                onProfile = onNavigateToProfile
+            )
         },
         containerColor = SurfaceColor
     ) { paddingValues ->
@@ -158,6 +185,19 @@ fun AdminDashboardScreen(
                         icon = Icons.Default.AccountBalanceWallet,
                         iconTint = SecondaryGreen
                     )
+                }
+
+                item {
+                    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        MetricCardSmall(
+                            title = "Capital en la calle", value = uiState.capitalInStreet,
+                            subtitle = "Aprobado/activo", icon = Icons.Default.Payments
+                        )
+                        MetricCardSmall(
+                            title = "Cartera por cobrar", value = uiState.outstandingPortfolio,
+                            subtitle = "Saldo pendiente", icon = Icons.Default.AccountBalanceWallet
+                        )
+                    }
                 }
 
                 item {
@@ -226,7 +266,7 @@ fun AdminDashboardScreen(
                         )
                         if (uiState.recentMovements.isNotEmpty()) {
                             TextButton(onClick = onViewAllMovements) {
-                                Text("Ver Todos", color = OnSecondaryContainer)
+                                Text("Ver todo", color = OnSecondaryContainer)
                             }
                         }
                     }
@@ -257,7 +297,7 @@ fun AdminDashboardScreen(
                     }
                 } else {
                     items(uiState.recentMovements, key = { it.id }) { item ->
-                        MovementRow(item)
+                        MovementRow(item, onViewAllMovements)
                     }
                 }
 
@@ -322,13 +362,8 @@ fun MetricCardSmall(title: String, value: String, subtitle: String, icon: ImageV
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(title, fontSize = 11.sp, color = OnSurfaceVariant)
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(value, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
-                if (subtitle.isNotEmpty()) {
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(subtitle, fontSize = 11.sp, color = OnSurfaceVariant, modifier = Modifier.padding(bottom = 2.dp))
-                }
-            }
+            Text(value, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = PrimaryColor, maxLines = 1)
+            if (subtitle.isNotEmpty()) Text(subtitle, fontSize = 11.sp, color = OnSurfaceVariant)
         }
     }
 }
@@ -350,9 +385,9 @@ fun QuickActionButton(label: String, icon: ImageVector, modifier: Modifier, onCl
 }
 
 @Composable
-fun MovementRow(item: MovementItem) {
+fun MovementRow(item: MovementItem, onClick: () -> Unit = {}) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant.copy(alpha = 0.5f))

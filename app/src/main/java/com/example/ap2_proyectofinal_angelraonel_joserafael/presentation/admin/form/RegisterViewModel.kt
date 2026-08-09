@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.util.Log
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.adminrequest.AdminRegisterRepository
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +21,8 @@ sealed class RegisterState {
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val repository: AdminRegisterRepository
+    private val repository: AdminRegisterRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _registerState = MutableStateFlow<RegisterState>(RegisterState.Idle)
@@ -66,6 +68,10 @@ class RegisterViewModel @Inject constructor(
         _registerState.value = RegisterState.Loading
 
         viewModelScope.launch {
+            if (authRepository.hasAnyAdmin()) {
+                _registerState.value = RegisterState.Error("Este dispositivo ya tiene un administrador registrado. Para crear uno nuevo debes borrar los datos de la aplicación.")
+                return@launch
+            }
             val result = repository.submitRegistration(
                 fullName = fullName,
                 username = username,

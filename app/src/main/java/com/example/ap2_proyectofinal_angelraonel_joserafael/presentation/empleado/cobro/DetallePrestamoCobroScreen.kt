@@ -30,6 +30,9 @@ import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,8 +48,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +63,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.PaymentMethod
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.PaymentReceiptManager
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.DigitalSignaturePad
 
 private val SurfaceColor = Color(0xFFF8F9FF)
 private val PrimaryBlack = Color(0xFF000000)
@@ -62,7 +74,7 @@ private val SecondaryGreen = Color(0xFF006C49)
 private val TealActionButtonBg = Color(0xFF67B59F)
 private val LightBlueBadgeBg = Color(0xFFDCE9FF)
 private val LightBlueBadgeText = Color(0xFF1565C0)
-private val OnSurfaceVariant = Color(0xFF45464D)
+private val OnSurfaceVariant = Color(0xFF30323A)
 private val OutlineVariant = Color(0xFFC6C6CD)
 
 private val PagadoBadgeBg = Color(0xFF6CF8BB).copy(alpha = 0.4f)
@@ -77,10 +89,21 @@ private val FuturoBadgeText = Color(0xFF616161)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetallePrestamoCobroScreen(
+    isAdmin: Boolean,
     onNavigateBack: () -> Unit = {},
+    onNavigateHome: () -> Unit = {},
+    onNavigateToClients: () -> Unit = {},
+    onNavigateToLoans: () -> Unit = {},
+    onNavigateToRoutes: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
     viewModel: DetallePrestamoCobroViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    var showSignaturePad by remember { mutableStateOf(false) }
+    LaunchedEffect(uiState.generatedReceipt?.receiptNumber) {
+        uiState.generatedReceipt?.let { PaymentReceiptManager.print(context, it) }
+    }
 
     Scaffold(
         topBar = {
@@ -101,11 +124,22 @@ fun DetallePrestamoCobroScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = onNavigateToProfile) {
                         Icon(Icons.Default.AccountCircle, contentDescription = "Perfil", tint = PrimaryBlack)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
+            )
+        },
+        bottomBar = {
+            RoleBottomBar(
+                isAdmin = isAdmin,
+                selectedTab = null,
+                onHome = onNavigateHome,
+                onClients = onNavigateToClients,
+                onLoans = onNavigateToLoans,
+                onRoutes = onNavigateToRoutes,
+                onProfile = onNavigateToProfile
             )
         },
         containerColor = SurfaceColor
@@ -218,7 +252,7 @@ fun DetallePrestamoCobroScreen(
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         LinearProgressIndicator(
-                            progress = { 0.64f },
+                            progress = { uiState.progress },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(8.dp)
@@ -274,6 +308,25 @@ fun DetallePrestamoCobroScreen(
                 }
             }
 
+            item {
+                Column {
+                    Text("Método de pago", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(6.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PaymentMethodButton(
+                            text = "Efectivo",
+                            selected = uiState.paymentMethod == PaymentMethod.EFECTIVO,
+                            modifier = Modifier.weight(1f)
+                        ) { viewModel.onEvent(DetallePrestamoCobroUiEvent.PaymentMethodChanged(PaymentMethod.EFECTIVO)) }
+                        PaymentMethodButton(
+                            text = "Transferencia",
+                            selected = uiState.paymentMethod == PaymentMethod.TRANSFERENCIA,
+                            modifier = Modifier.weight(1f)
+                        ) { viewModel.onEvent(DetallePrestamoCobroUiEvent.PaymentMethodChanged(PaymentMethod.TRANSFERENCIA)) }
+                    }
+                }
+            }
+
             // Botón Realizar Cobro Seleccionado
             item {
                 Button(
@@ -283,14 +336,19 @@ fun DetallePrestamoCobroScreen(
                         .height(52.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = TealActionButtonBg),
-                    enabled = !uiState.isProcessingPayment
+                    enabled = !uiState.isProcessingPayment && uiState.selectedCount > 0
                 ) {
                     if (uiState.isProcessingPayment) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                     } else {
                         Icon(Icons.Default.ReceiptLong, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Seleccione cuotas a pagar", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(
+                            if (uiState.selectedCount == 0) "Seleccione cuotas a pagar" else "Cobrar ${uiState.selectedCount} cuota(s)",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
                     }
                 }
             }
@@ -333,6 +391,76 @@ fun DetallePrestamoCobroScreen(
 
             item { Spacer(modifier = Modifier.height(24.dp)) }
         }
+    }
+
+    uiState.generatedReceipt?.let { receipt ->
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(DetallePrestamoCobroUiEvent.DismissReceipt) },
+            title = { Text(if (receipt.debtPaidOff) "¡Deuda saldada!" else "Comprobante generado") },
+            text = { Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(if (receipt.debtPaidOff) "Todas las cuotas fueron pagadas. Se generó la constancia de deuda saldada." else "El pago se guardó correctamente.")
+                Text("Cuota: ${receipt.installmentLabel}", fontWeight = FontWeight.Bold)
+                Text("Pagos restantes: ${receipt.remainingInstallments}")
+                Text("Saldo: ${String.format(java.util.Locale.US, "RD$ %,.2f", receipt.remainingBalance)}")
+                Text(if (receipt.signaturePath == null) "Puedes agregar la firma digital antes de reimprimir o compartir." else "Firma digital guardada.")
+            } },
+            confirmButton = {
+                Button(onClick = { PaymentReceiptManager.print(context, receipt) }) { Text("Imprimir") }
+            },
+            dismissButton = {
+                Column(horizontalAlignment = Alignment.End) {
+                    TextButton(onClick = { showSignaturePad = true }) { Text(if (receipt.signaturePath == null) "Firmar recibo" else "Reemplazar firma") }
+                    TextButton(onClick = { PaymentReceiptManager.shareWhatsApp(context, receipt) }) { Text("Enviar por WhatsApp") }
+                    TextButton(onClick = { viewModel.onEvent(DetallePrestamoCobroUiEvent.DismissReceipt) }) { Text("Cerrar") }
+                }
+            }
+        )
+    }
+    if (showSignaturePad && uiState.generatedReceipt != null) {
+        val receipt = uiState.generatedReceipt!!
+        AlertDialog(
+            onDismissRequest = { showSignaturePad = false },
+            title = { Text("Firma del comprobante") },
+            text = {
+                DigitalSignaturePad { bitmap ->
+                    val path = PaymentReceiptManager.saveSignature(context, receipt.receiptNumber, bitmap)
+                    viewModel.onEvent(DetallePrestamoCobroUiEvent.ReceiptSigned(path))
+                    showSignaturePad = false
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { showSignaturePad = false }) { Text("Cancelar") } }
+        )
+    }
+    uiState.errorMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(DetallePrestamoCobroUiEvent.ClearError) },
+            title = { Text("No fue posible completar el cobro") },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onEvent(DetallePrestamoCobroUiEvent.ClearError) }) {
+                    Text("Aceptar")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun PaymentMethodButton(
+    text: String,
+    selected: Boolean,
+    modifier: Modifier,
+    onClick: () -> Unit
+) {
+    if (selected) {
+        Button(
+            onClick = onClick,
+            modifier = modifier,
+            colors = ButtonDefaults.buttonColors(containerColor = SecondaryGreen)
+        ) { Text(text) }
+    } else {
+        OutlinedButton(onClick = onClick, modifier = modifier) { Text(text) }
     }
 }
 

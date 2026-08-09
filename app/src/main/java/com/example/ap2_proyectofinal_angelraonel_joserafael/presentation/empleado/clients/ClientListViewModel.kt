@@ -3,7 +3,7 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.emplea
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecase.ObserveClientesUseCase
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.cliente.ObserveClientesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
