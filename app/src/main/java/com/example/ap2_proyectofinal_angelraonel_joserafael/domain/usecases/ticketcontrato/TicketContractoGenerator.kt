@@ -17,7 +17,7 @@ object TicketContratoGenerator {
 
         return """
         --------------------------------
-                  EQUITY FLOW           
+                   TACOBRAO             
              PAGARÉ DE PRÉSTAMO         
         --------------------------------
         Fecha: $fecha

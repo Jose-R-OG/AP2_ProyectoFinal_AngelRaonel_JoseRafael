@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecase
+package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.prestamos
 
 import java.math.BigDecimal
 import java.math.RoundingMode

@@ -1,11 +1,14 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.cobros
+package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases
 
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cuota
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.TipoTransaccion
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Transaccion
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.PaymentMethod
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.PrestamoRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.TransaccionRepository
 import java.math.BigDecimal
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class RegistrarAbonoUseCase @Inject constructor(
@@ -15,7 +18,8 @@ class RegistrarAbonoUseCase @Inject constructor(
     suspend operator fun invoke(
         cuotaOriginal: Cuota,
         montoRecibido: BigDecimal,
-        empleadoId: Long
+        empleadoId: Long,
+        paymentMethod: PaymentMethod = PaymentMethod.EFECTIVO
     ): Result<Unit> {
 
         if (montoRecibido <= BigDecimal.ZERO) {
@@ -24,6 +28,12 @@ class RegistrarAbonoUseCase @Inject constructor(
 
         // 1. Calcular deudas y saldos
         val balanceTotalCuota = cuotaOriginal.montoEsperado.add(cuotaOriginal.moraAcumulada)
+        val balancePendiente = balanceTotalCuota.subtract(cuotaOriginal.montoPagado)
+
+        if (montoRecibido > balancePendiente) {
+            return Result.failure(Exception("El monto recibido supera el balance pendiente de la cuota."))
+        }
+
         val nuevoMontoPagado = cuotaOriginal.montoPagado.add(montoRecibido)
 
         // 2. Evaluar si con este abono se liquida TODO (Cuota base + Mora)
@@ -43,13 +53,40 @@ class RegistrarAbonoUseCase @Inject constructor(
             empleadoId = empleadoId,
             monto = montoRecibido,
             tipo = TipoTransaccion.INGRESO,
+            paymentMethod = paymentMethod,
             nota = if (estaTotalmentePagada) "Pago Completo" else "Abono Parcial (Mora y balance pendientes)"
         )
 
+        return try {
+            prestamoRepository.guardarCuotas(listOf(cuotaActualizada))
+            transaccionRepository.guardarTransaccion(transaccion)
 
-        prestamoRepository.guardarCuotas(listOf(cuotaActualizada))
-        transaccionRepository.guardarTransaccion(transaccion)
+            val prestamo = prestamoRepository.obtenerPrestamoPorId(cuotaOriginal.prestamoId)
+                ?: return Result.failure(Exception("No se encontró el préstamo de la cuota."))
+            val cuotasActualizadas = prestamoRepository
+                .obtenerCuotasPorPrestamo(cuotaOriginal.prestamoId)
+                .first()
 
-        return Result.success(Unit)
+            val totalPagadoCalculado = prestamo.totalPagado.add(montoRecibido)
+            val totalPagado = if (totalPagadoCalculado > prestamo.totalAPagar) {
+                prestamo.totalAPagar
+            } else {
+                totalPagadoCalculado
+            }
+            val prestamoFinalizado = cuotasActualizadas.isNotEmpty() &&
+                cuotasActualizadas.all { it.estaPagada }
+
+            prestamoRepository.guardarPrestamo(
+                prestamo.copy(
+                    totalPagado = totalPagado,
+                    estado = if (prestamoFinalizado) LoanStatus.FINALIZADO else LoanStatus.ACTIVO,
+                    fechaFin = if (prestamoFinalizado) System.currentTimeMillis() else prestamo.fechaFin
+                )
+            )
+
+            Result.success(Unit)
+        } catch (exception: Exception) {
+            Result.failure(exception)
+        }
     }
 }

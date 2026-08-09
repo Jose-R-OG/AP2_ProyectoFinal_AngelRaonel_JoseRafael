@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecase
+package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.prestamos
 
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cuota
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
@@ -6,6 +6,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanSta
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.PrestamoRepository
 import java.util.Calendar
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class AprobarPrestamoUseCase @Inject constructor(
@@ -14,11 +15,17 @@ class AprobarPrestamoUseCase @Inject constructor(
     suspend operator fun invoke(prestamo: Prestamo, adminId: Long): Result<Unit> {
 
         val prestamoAprobado = prestamo.copy(
-            estado = LoanStatus.APROBADO,
-            aprobadoPorAdminId = adminId
+            estado = LoanStatus.ACTIVO,
+            aprobadoPorAdminId = adminId,
+            fechaInicio = prestamo.fechaInicio ?: System.currentTimeMillis()
         )
 
         val prestamoIdGenerado = repository.guardarPrestamo(prestamoAprobado)
+
+        val cuotasExistentes = repository.obtenerCuotasPorPrestamo(prestamoIdGenerado).first()
+        if (cuotasExistentes.isNotEmpty()) {
+            return Result.success(Unit)
+        }
 
         val cuotasGeneradas = mutableListOf<Cuota>()
         val calendar = Calendar.getInstance().apply {
