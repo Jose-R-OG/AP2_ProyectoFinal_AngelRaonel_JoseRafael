@@ -10,5 +10,6 @@ data class Transaccion(
     val monto: BigDecimal,
     val fecha: Long = System.currentTimeMillis(),
     val tipo: TipoTransaccion,
+    val paymentMethod: PaymentMethod = PaymentMethod.EFECTIVO,
     val nota: String
 )

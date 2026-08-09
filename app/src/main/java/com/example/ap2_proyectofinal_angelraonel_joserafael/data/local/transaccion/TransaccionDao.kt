@@ -17,4 +17,7 @@ interface TransaccionDao {
 
     @Query("SELECT * FROM transacciones WHERE prestamoId = :prestamoId ORDER BY fecha DESC")
     fun obtenerHistorialPorPrestamo(prestamoId: Long): Flow<List<TransaccionEntity>>
+
+    @Query("SELECT * FROM transacciones ORDER BY fecha DESC")
+    fun obtenerTodas(): Flow<List<TransaccionEntity>>
 }

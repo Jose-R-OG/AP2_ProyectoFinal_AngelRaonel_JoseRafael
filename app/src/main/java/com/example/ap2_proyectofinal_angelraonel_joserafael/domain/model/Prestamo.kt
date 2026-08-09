@@ -17,6 +17,8 @@ data class Prestamo(
     val montoCuota: BigDecimal,            // Valor de cada cuota
     val cantidadCuotas: Int,               // Plazo (ej. 12)
     val frecuenciaPago: FrecuenciaPago,    // DIARIO, SEMANAL...
+    val diaPagoPreferido: Int? = null,      // Día de semana (1-7) o de mes (1-28)
+    val diaPagoDescripcion: String? = null,
 
     // --- Fechas de Ciclo de Vida ---
     val fechaCreacion: Long = System.currentTimeMillis(), // Fecha de solicitud

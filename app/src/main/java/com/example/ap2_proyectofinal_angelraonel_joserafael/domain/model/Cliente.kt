@@ -6,6 +6,7 @@ data class Cliente(
     val dni: String,
     val phone: String,
     val address: String,
+    val zone: String = "SIN ASIGNAR",
     val profilePhotoPath: String? = null,
     val dniFrontPhotoPath: String? = null,
     val dniBackPhotoPath: String? = null,

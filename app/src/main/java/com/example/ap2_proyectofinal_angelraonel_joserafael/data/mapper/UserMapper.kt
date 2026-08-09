@@ -1,6 +1,6 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.data.Auth.mapper
+package com.example.ap2_proyectofinal_angelraonel_joserafael.data.mapper
 
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Auth.local.UserEntity
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.user.UserEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.User
 
 fun UserEntity.toDomain(): User {
@@ -14,7 +14,18 @@ fun UserEntity.toDomain(): User {
         pin = pin,
         role = role,
         isActive = isActive,
-        route = route
+        route = route,
+        address = address,
+        profilePhotoPath = profilePhotoPath,
+        dniFrontPhotoPath = dniFrontPhotoPath,
+        dniBackPhotoPath = dniBackPhotoPath,
+        businessName = businessName,
+        businessLogoPath = businessLogoPath,
+        canCreateClients = canCreateClients,
+        canCollectPayments = canCollectPayments,
+        canViewRoute = canViewRoute,
+        canCloseCash = canCloseCash,
+        canShareDocuments = canShareDocuments
     )
 }
 
@@ -29,6 +40,17 @@ fun User.toEntity(): UserEntity {
         pin = pin,
         role = role,
         isActive = isActive,
-        route = route
+        route = route,
+        address = address,
+        profilePhotoPath = profilePhotoPath,
+        dniFrontPhotoPath = dniFrontPhotoPath,
+        dniBackPhotoPath = dniBackPhotoPath,
+        businessName = businessName,
+        businessLogoPath = businessLogoPath,
+        canCreateClients = canCreateClients,
+        canCollectPayments = canCollectPayments,
+        canViewRoute = canViewRoute,
+        canCloseCash = canCloseCash,
+        canShareDocuments = canShareDocuments
     )
 }

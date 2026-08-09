@@ -1,6 +1,6 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.mapper
+package com.example.ap2_proyectofinal_angelraonel_joserafael.data.mapper
 
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.local.ClienteEntity
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.cliente.ClienteEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
 
 fun ClienteEntity.toDomain(): Cliente {
@@ -10,6 +10,7 @@ fun ClienteEntity.toDomain(): Cliente {
         dni = dni,
         phone = phone,
         address = address,
+        zone = zone,
         profilePhotoPath = profilePhotoPath,
         dniFrontPhotoPath = dniFrontPhotoPath,
         dniBackPhotoPath = dniBackPhotoPath,
@@ -24,6 +25,7 @@ fun Cliente.toEntity(): ClienteEntity {
         dni = dni,
         phone = phone,
         address = address,
+        zone = zone,
         profilePhotoPath = profilePhotoPath,
         dniFrontPhotoPath = dniFrontPhotoPath,
         dniBackPhotoPath = dniBackPhotoPath,

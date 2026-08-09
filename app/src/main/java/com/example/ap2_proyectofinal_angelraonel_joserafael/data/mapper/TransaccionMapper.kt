@@ -6,13 +6,13 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Transac
 fun TransaccionEntity.toDomain(): Transaccion {
     return Transaccion(
         id = id, prestamoId = prestamoId, cuotaId = cuotaId, empleadoId = empleadoId,
-        monto = monto, fecha = fecha, tipo = tipo, nota = nota
+        monto = monto, fecha = fecha, tipo = tipo, paymentMethod = paymentMethod, nota = nota
     )
 }
 
 fun Transaccion.toEntity(): TransaccionEntity {
     return TransaccionEntity(
         id = id, prestamoId = prestamoId, cuotaId = cuotaId, empleadoId = empleadoId,
-        monto = monto, fecha = fecha, tipo = tipo, nota = nota
+        monto = monto, fecha = fecha, tipo = tipo, paymentMethod = paymentMethod, nota = nota
     )
 }

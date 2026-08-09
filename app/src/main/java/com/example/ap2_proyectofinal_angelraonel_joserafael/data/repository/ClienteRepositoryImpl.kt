@@ -1,8 +1,8 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.repository
+package com.example.ap2_proyectofinal_angelraonel_joserafael.data.repository
 
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.local.ClienteDao
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.mapper.toDomain
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Cliente.mapper.toEntity
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.cliente.ClienteDao
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.mapper.toDomain
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.mapper.toEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.ClienteRepository
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +19,10 @@ class ClienteRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getAllClientes(): Flow<List<Cliente>> {
+        return clienteDao.getAllClientes().map { entities -> entities.map { it.toDomain() } }
+    }
+
     override suspend fun getClienteById(id: Long): Cliente? {
         return clienteDao.getClienteById(id)?.toDomain()
     }
@@ -27,7 +31,9 @@ class ClienteRepositoryImpl @Inject constructor(
         return clienteDao.insertCliente(cliente.toEntity())
     }
 
-    override suspend fun softDeleteCliente(id: Long) {
-        clienteDao.softDeleteCliente(id)
+    override suspend fun softDeleteCliente(id: Long): Boolean {
+        return clienteDao.softDeleteClienteIfAllowed(id) > 0
     }
+
+    override suspend fun hasBlockingLoans(id: Long): Boolean = clienteDao.countBlockingLoans(id) > 0
 }
