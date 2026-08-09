@@ -1,0 +1,16 @@
+package com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.notification
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "notifications")
+data class NotificationEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val recipientUserId: Long,
+    val title: String,
+    val message: String,
+    val relatedLoanId: Long? = null,
+    val createdAt: Long,
+    val isRead: Boolean
+)
