@@ -3,6 +3,7 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.data.database
 import androidx.room.TypeConverter
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.PaymentMethod
 import java.time.LocalDate
 import java.math.BigDecimal
 
@@ -46,4 +47,10 @@ class Converters {
     fun toLoanStatus(value: String?): LoanStatus? {
         return value?.let { LoanStatus.valueOf(it) }
     }
+
+    @TypeConverter
+    fun fromPaymentMethod(value: PaymentMethod?): String? = value?.name
+
+    @TypeConverter
+    fun toPaymentMethod(value: String?): PaymentMethod? = value?.let(PaymentMethod::valueOf)
 }
