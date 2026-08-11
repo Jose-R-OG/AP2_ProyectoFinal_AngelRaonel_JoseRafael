@@ -15,6 +15,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.Ta
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.ClienteRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.RegisterClientWithLoanUseCase
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.CedulaValidator
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
@@ -112,6 +113,12 @@ class RegistroClienteViewModel @Inject constructor(
         }
         if (dni.length != 11 || phone.length != 10) {
             error = "La cédula debe tener 11 dígitos (${dni.length}/11) y el teléfono 10 (${phone.length}/10)."
+            return
+        }
+
+        // Validación estricta de Cédula Dominicana
+        if (!CedulaValidator.validate(dni)) {
+            error = "Número de cédula inválido. Por favor verifique."
             return
         }
         if (profilePhotoPath == null || dniFrontPhotoPath == null || dniBackPhotoPath == null) {

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import android.util.Log
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.adminrequest.AdminRegisterRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.CedulaValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,6 +63,12 @@ class RegisterViewModel @Inject constructor(
 
         if (missingFields.isNotEmpty()) {
             _registerState.value = RegisterState.Error("Faltan campos obligatorios: ${missingFields.joinToString(", ")}")
+            return
+        }
+
+        // Validación estricta de Cédula Dominicana
+        if (!CedulaValidator.validate(cedula)) {
+            _registerState.value = RegisterState.Error("Número de cédula inválido. Por favor verifique.")
             return
         }
 
