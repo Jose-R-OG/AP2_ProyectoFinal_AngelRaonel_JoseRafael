@@ -216,6 +216,7 @@ fun ClientesScreen(
                                 cliente = cliente,
                                 enabled = !uiState.isMutating && cliente.isActive,
                                 isAdmin = isAdmin,
+                                canCreateLoans = uiState.canCreateLoans,
                                 onEdit = {
                                     viewModel.onEvent(ClientesUiEvent.EditRequested(cliente))
                                 },
@@ -342,6 +343,7 @@ private fun ClienteCard(
     cliente: Cliente,
     enabled: Boolean,
     isAdmin: Boolean,
+    canCreateLoans: Boolean = false,
     onEdit: () -> Unit,
     onDeactivate: () -> Unit,
     onAssign: () -> Unit,
@@ -427,10 +429,12 @@ private fun ClienteCard(
                     Text(if (cliente.isActive) "Desactivar" else "Inactivo")
                 }
             }
-            if (isAdmin && cliente.isActive) {
-                OutlinedButton(onClick = onAssign, modifier = Modifier.fillMaxWidth(), enabled = enabled) {
-                    Icon(Icons.Default.Group, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp)); Text("Asignar a empleado")
+            if (cliente.isActive && (isAdmin || canCreateLoans)) {
+                if (isAdmin) {
+                    OutlinedButton(onClick = onAssign, modifier = Modifier.fillMaxWidth(), enabled = enabled) {
+                        Icon(Icons.Default.Group, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp)); Text("Asignar a empleado")
+                    }
                 }
                 Button(
                     onClick = onNewLoan,
@@ -439,7 +443,7 @@ private fun ClienteCard(
                     colors = ButtonDefaults.buttonColors(containerColor = ClientesGreen)
                 ) {
                     Icon(Icons.Default.Payments, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp)); Text("Nuevo préstamo / ampliar capital")
+                    Spacer(modifier = Modifier.width(6.dp)); Text("Nuevo préstamo / ampliar capital")
                 }
             }
         }
