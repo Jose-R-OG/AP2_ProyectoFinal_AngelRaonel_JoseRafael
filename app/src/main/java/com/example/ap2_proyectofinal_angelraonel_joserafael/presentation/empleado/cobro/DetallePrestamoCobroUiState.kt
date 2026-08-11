@@ -20,6 +20,8 @@ enum class CuotaStatus {
 
 data class DetallePrestamoCobroUiState(
     val prestamoCode: String = "",
+    val clientId: Long = -1L,
+    val canCreateLoans: Boolean = false,
     val statusText: String = "",
     val clientName: String = "",
     val pendingBalanceFormatted: String = "$0.00",
