@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.prestamos
+package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.empleado
 
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo

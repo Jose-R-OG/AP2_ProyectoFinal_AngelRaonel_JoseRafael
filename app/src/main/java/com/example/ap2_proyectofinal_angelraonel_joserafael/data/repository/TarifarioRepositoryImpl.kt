@@ -1,8 +1,8 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.repository
+package com.example.ap2_proyectofinal_angelraonel_joserafael.data.repository
 
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.local.ConfigDao
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.mapper.toDomain
-import com.example.ap2_proyectofinal_angelraonel_joserafael.data.Tarifario.mapper.toEntity
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.tarifa.ConfigDao
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.mapper.toDomain
+import com.example.ap2_proyectofinal_angelraonel_joserafael.data.mapper.toEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Tarifario
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.TarifarioRepository
 import kotlinx.coroutines.flow.Flow

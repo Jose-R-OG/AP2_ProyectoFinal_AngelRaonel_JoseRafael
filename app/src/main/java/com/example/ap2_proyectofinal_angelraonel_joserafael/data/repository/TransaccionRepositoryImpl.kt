@@ -28,4 +28,8 @@ class TransaccionRepositoryImpl @Inject constructor(
             entities.map { it.toDomain() }
         }
     }
+
+    override fun obtenerTodas(): Flow<List<Transaccion>> {
+        return transaccionDao.obtenerTodas().map { entities -> entities.map { it.toDomain() } }
+    }
 }

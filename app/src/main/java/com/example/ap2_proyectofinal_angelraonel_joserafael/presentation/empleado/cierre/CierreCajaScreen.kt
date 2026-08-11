@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,9 +40,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -57,6 +60,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.LocalContext
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 
 private val SurfaceColor = Color(0xFFF8F9FF)
 private val PrimaryBlack = Color(0xFF000000)
@@ -64,18 +71,22 @@ private val SecondaryGreen = Color(0xFF006C49)
 private val GreenBadgeBg = Color(0xFF6CF8BB).copy(alpha = 0.4f)
 private val GreenBadgeText = Color(0xFF00714D)
 private val LightBlueButtonBg = Color(0xFFE3EEFF)
-private val OnSurfaceVariant = Color(0xFF45464D)
+private val OnSurfaceVariant = Color(0xFF30323A)
 private val OutlineVariant = Color(0xFFC6C6CD)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CierreCajaScreen(
+    isAdmin: Boolean = false,
     onNavigateBack: () -> Unit = {},
+    onNavigateToClients: () -> Unit = {},
+    onNavigateToCobros: () -> Unit = {},
+    onNavigateToRoutes: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
     viewModel: CierreCajaViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedTab by remember { mutableIntStateOf(3) }
-
+    val context = LocalContext.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -95,7 +106,7 @@ fun CierreCajaScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.onEvent(CierreCajaUiEvent.ImprimirResumen) }) {
+                    IconButton(onClick = { viewModel.imprimirResumen(context) }) {
                         Icon(Icons.Default.Print, contentDescription = "Imprimir", tint = PrimaryBlack)
                     }
                 },
@@ -103,32 +114,15 @@ fun CierreCajaScreen(
             )
         },
         bottomBar = {
-            NavigationBar(containerColor = Color.White) {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio", fontSize = 11.sp) },
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0; onNavigateBack() }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Group, contentDescription = "Clientes") },
-                    label = { Text("Clientes", fontSize = 11.sp) },
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Payments, contentDescription = "Cobros") },
-                    label = { Text("Cobros", fontSize = 11.sp) },
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.PointOfSale, contentDescription = "Cierre") },
-                    label = { Text("Cierre", fontSize = 11.sp) },
-                    selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 }
-                )
-            }
+            RoleBottomBar(
+                isAdmin = isAdmin,
+                selectedTab = null,
+                onHome = onNavigateBack,
+                onClients = onNavigateToClients,
+                onLoans = onNavigateToCobros,
+                onRoutes = onNavigateToRoutes,
+                onProfile = onNavigateToProfile
+            )
         },
         containerColor = SurfaceColor
     ) { paddingValues ->
@@ -358,7 +352,15 @@ fun CierreCajaScreen(
                         Column(horizontalAlignment = Alignment.End) {
                             Text("Efectivo en Mano", fontSize = 11.sp, color = OnSurfaceVariant, fontWeight = FontWeight.Medium)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(uiState.cashInHand, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryBlack)
+                            OutlinedTextField(
+                                value = uiState.cashInHandInput,
+                                onValueChange = { viewModel.onEvent(CierreCajaUiEvent.OnCashInHandChanged(it)) },
+                                modifier = Modifier.width(130.dp),
+                                prefix = { Text("RD$ ") },
+                                singleLine = true,
+                                enabled = uiState.isTurnActive,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                            )
                         }
                     }
 
@@ -376,7 +378,7 @@ fun CierreCajaScreen(
                             text = uiState.differenceAmount,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = SecondaryGreen
+                            color = if (uiState.differenceAmount == "RD$ 0.00") SecondaryGreen else Color(0xFFBA1A1A)
                         )
                     }
                 }
@@ -392,20 +394,24 @@ fun CierreCajaScreen(
                     .height(54.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = SecondaryGreen),
-                enabled = !uiState.isFinalizingTurn
+                enabled = !uiState.isFinalizingTurn && uiState.isTurnActive
             ) {
                 if (uiState.isFinalizingTurn) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                 } else {
                     Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Finalizar Turno", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        if (uiState.isTurnActive) "Finalizar Turno" else "Turno Finalizado",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
             // Botón 2: Imprimir Resumen (Azul Suave)
             Button(
-                onClick = { viewModel.onEvent(CierreCajaUiEvent.ImprimirResumen) },
+                onClick = { viewModel.imprimirResumen(context) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -424,5 +430,35 @@ fun CierreCajaScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    if (uiState.turnFinalizedSuccess) {
+        AlertDialog(
+            onDismissRequest = {
+                viewModel.onEvent(CierreCajaUiEvent.DismissSuccess)
+            },
+            title = { Text("Turno finalizado") },
+            text = { Text("El cierre de caja fue completado correctamente.") },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.onEvent(CierreCajaUiEvent.DismissSuccess) }
+                ) {
+                    Text("Aceptar")
+                }
+            }
+        )
+    }
+
+    uiState.errorMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(CierreCajaUiEvent.ClearError) },
+            title = { Text("No fue posible completar la acción") },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onEvent(CierreCajaUiEvent.ClearError) }) {
+                    Text("Aceptar")
+                }
+            }
+        )
     }
 }

@@ -22,6 +22,8 @@ data class PrestamoEntity(
     val montoCuota: BigDecimal,
     val cantidadCuotas: Int,
     val frecuenciaPago: FrecuenciaPago,
+    val diaPagoPreferido: Int?,
+    val diaPagoDescripcion: String?,
 
     val fechaCreacion: Long,
     val fechaInicio: Long?,

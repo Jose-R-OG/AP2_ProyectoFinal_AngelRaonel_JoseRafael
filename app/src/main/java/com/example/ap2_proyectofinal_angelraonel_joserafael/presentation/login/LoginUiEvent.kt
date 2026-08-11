@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.auth.login
+package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login
 
 import android.content.Context
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.User

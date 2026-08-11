@@ -46,14 +46,14 @@ class TariffsViewModel @Inject constructor(
                 val twelveWeeks = tarifarios.find { it.frecuencia == FrecuenciaPago.SEMANAL && it.duracion == 12 }
 
                 _uiState.update { state ->
-                    state.copy(
-                        dailyRate = daily?.porcentajeInteres?.toString() ?: "",
-                        biweeklyRate = biweekly?.porcentajeInteres?.toString() ?: "",
-                        monthlyRate = monthly?.porcentajeInteres?.toString() ?: "",
-                        fourWeeksRate = fourWeeks?.porcentajeInteres?.toString() ?: "",
-                        sixWeeksRate = sixWeeks?.porcentajeInteres?.toString() ?: "",
-                        twelveWeeksRate = twelveWeeks?.porcentajeInteres?.toString() ?: ""
-                    )
+                    calculateMetrics(state.copy(
+                        dailyRate = daily?.porcentajeInteres?.toString() ?: state.dailyRate,
+                        biweeklyRate = biweekly?.porcentajeInteres?.toString() ?: state.biweeklyRate,
+                        monthlyRate = monthly?.porcentajeInteres?.toString() ?: state.monthlyRate,
+                        fourWeeksRate = fourWeeks?.porcentajeInteres?.toString() ?: state.fourWeeksRate,
+                        sixWeeksRate = sixWeeks?.porcentajeInteres?.toString() ?: state.sixWeeksRate,
+                        twelveWeeksRate = twelveWeeks?.porcentajeInteres?.toString() ?: state.twelveWeeksRate
+                    ))
                 }
                 isInitialized = true
             }
@@ -62,27 +62,65 @@ class TariffsViewModel @Inject constructor(
 
     fun onEvent(event: TariffsUiEvent) {
         when (event) {
-            is TariffsUiEvent.DailyRateChanged -> _uiState.update { it.copy(dailyRate = event.value) }
-            is TariffsUiEvent.BiweeklyRateChanged -> _uiState.update { it.copy(biweeklyRate = event.value) }
-            is TariffsUiEvent.MonthlyRateChanged -> _uiState.update { it.copy(monthlyRate = event.value) }
-            is TariffsUiEvent.FourWeeksChanged -> _uiState.update { it.copy(fourWeeksRate = event.value) }
-            is TariffsUiEvent.SixWeeksChanged -> _uiState.update { it.copy(sixWeeksRate = event.value) }
-            is TariffsUiEvent.TwelveWeeksChanged -> _uiState.update { it.copy(twelveWeeksRate = event.value) }
+            is TariffsUiEvent.DailyRateChanged -> updateMetrics { copy(dailyRate = event.value) }
+            is TariffsUiEvent.BiweeklyRateChanged -> updateMetrics { copy(biweeklyRate = event.value) }
+            is TariffsUiEvent.MonthlyRateChanged -> updateMetrics { copy(monthlyRate = event.value) }
+            is TariffsUiEvent.FourWeeksChanged -> updateMetrics { copy(fourWeeksRate = event.value) }
+            is TariffsUiEvent.SixWeeksChanged -> updateMetrics { copy(sixWeeksRate = event.value) }
+            is TariffsUiEvent.TwelveWeeksChanged -> updateMetrics { copy(twelveWeeksRate = event.value) }
             is TariffsUiEvent.SaveTariffs -> saveTariffs()
         }
     }
 
+    private fun updateMetrics(transform: TariffsUiState.() -> TariffsUiState) {
+        _uiState.update { calculateMetrics(it.transform().copy(errorMessage = null)) }
+    }
+
+    private fun calculateMetrics(state: TariffsUiState): TariffsUiState {
+        val rates = listOf(
+            state.dailyRate,
+            state.biweeklyRate,
+            state.monthlyRate,
+            state.fourWeeksRate,
+            state.sixWeeksRate,
+            state.twelveWeeksRate
+        ).mapNotNull { it.toBigDecimalOrNull() }
+        val average = if (rates.isEmpty()) BigDecimal.ZERO else
+            rates.reduce(BigDecimal::add).divide(BigDecimal(rates.size), 1, java.math.RoundingMode.HALF_UP)
+        val margin = average.multiply(BigDecimal("0.65")).setScale(1, java.math.RoundingMode.HALF_UP)
+        val risk = when {
+            average <= BigDecimal("15") -> "BAJO"
+            average <= BigDecimal("25") -> "MODERADO"
+            else -> "ALTO"
+        }
+        return state.copy(
+            projectedNetMargin = "$margin%",
+            averageMarketRate = "$average%",
+            riskScore = risk
+        )
+    }
+
     private fun idExistente(frecuencia: FrecuenciaPago, duracion: Int? = null): Long {
         return if (duracion != null) {
-            tarifariosActuales.find { it.frecuencia == frecuencia && (it.duracion == duracion || it.duracion == null) }?.id ?: 0L
+            tarifariosActuales.find { it.frecuencia == frecuencia && it.duracion == duracion }?.id ?: 0L
         } else {
             tarifariosActuales.find { it.frecuencia == frecuencia }?.id ?: 0L
         }
     }
 
     private fun saveTariffs() {
+        val values = with(_uiState.value) {
+            listOf(dailyRate, biweeklyRate, monthlyRate, fourWeeksRate, sixWeeksRate, twelveWeeksRate)
+        }
+        if (values.any { value ->
+                val number = value.toBigDecimalOrNull()
+                number == null || number < BigDecimal.ZERO || number > BigDecimal("100")
+            }) {
+            _uiState.update { it.copy(errorMessage = "Todas las tasas deben ser números entre 0 y 100.") }
+            return
+        }
         viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true) }
+            _uiState.update { it.copy(isSaving = true, errorMessage = null) }
             val currentState = _uiState.value
             val results = mutableListOf<Result<Unit>>()
 
@@ -139,11 +177,11 @@ class TariffsViewModel @Inject constructor(
             val hasError = results.any { it.isFailure }
             if (!hasError) {
                 isInitialized = false
-                _uiState.update { it.copy(isSaving = false, showSuccessToast = true) }
+                _uiState.update { it.copy(isSaving = false, showSuccessToast = true, errorMessage = null) }
                 kotlinx.coroutines.delay(3000)
                 _uiState.update { it.copy(showSuccessToast = false) }
             } else {
-                _uiState.update { it.copy(isSaving = false) }
+                _uiState.update { it.copy(isSaving = false, errorMessage = "No fue posible guardar todas las tarifas.") }
             }
         }
     }

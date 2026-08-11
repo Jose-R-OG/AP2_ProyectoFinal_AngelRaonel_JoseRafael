@@ -68,6 +68,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.QrCodeScanner
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.components.DniScannerDialog
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,6 +97,7 @@ fun RegisterAdminScreen(
 
     // Términos
     var termsAccepted by remember { mutableStateOf(false) }
+    var showDniScanner by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val registerState by viewModel.registerState.collectAsState()
@@ -114,7 +117,7 @@ fun RegisterAdminScreen(
                 try {
                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:${state.email}")
-                        putExtra(Intent.EXTRA_SUBJECT, "Código de Activación TacoBraoApp - Equity Flow")
+                        putExtra(Intent.EXTRA_SUBJECT, "Código de Activación TacoBrao")
                         putExtra(
                             Intent.EXTRA_TEXT,
                             "¡Hola ${fullName}!\n\nTu registro ha sido enviado exitosamente.\n\nTu código de activación es: ${state.activationCode}\n\nConsérvalo para verificar tu cuenta."
@@ -156,14 +159,14 @@ fun RegisterAdminScreen(
             ) {
                 Icon(Icons.Default.AccountBalance, contentDescription = null, tint = Color.Black, modifier = Modifier.size(28.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Equity Flow", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text("TacoBrao", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             }
 
             Text("Registrar Empresa", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             Text(
                 "Complete la información de su empresa, defina su PIN y adjunte el comprobante para habilitar su cuenta.",
                 fontSize = 14.sp,
-                color = Color(0xFF45464D),
+                color = Color(0xFF30323A),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
             )
@@ -178,7 +181,7 @@ fun RegisterAdminScreen(
                 Column(modifier = Modifier.padding(24.dp)) {
 
                     // 1. DATOS PERSONALES
-                    Text("INFORMACIÓN PERSONAL", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF45464D))
+                    Text("INFORMACIÓN PERSONAL", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF30323A))
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
@@ -249,7 +252,11 @@ fun RegisterAdminScreen(
                         },
                         label = { Text("Cédula de Identidad (Dominicana)") },
                         placeholder = { Text("001-0000000-0") },
-                        trailingIcon = { Icon(Icons.Default.Badge, contentDescription = null) },
+                        trailingIcon = {
+                            IconButton(onClick = { showDniScanner = true }) {
+                                Icon(Icons.Default.QrCodeScanner, contentDescription = "Escanear Cédula", tint = Color(0xFF006C49))
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
                     )
 
@@ -380,7 +387,7 @@ fun RegisterAdminScreen(
                         Text(
                             "Certifico que la información provista es verídica y corresponde a mi identidad legal en la República Dominicana.",
                             fontSize = 11.sp,
-                            color = Color(0xFF45464D)
+                            color = Color(0xFF30323A)
                         )
                     }
 
@@ -420,5 +427,15 @@ fun RegisterAdminScreen(
                 }
             }
         }
+    }
+
+    if (showDniScanner) {
+        DniScannerDialog(
+            onDniDetected = { detectedDni ->
+                cedula = detectedDni
+                showDniScanner = false
+            },
+            onDismiss = { showDniScanner = false }
+        )
     }
 }

@@ -1,62 +1,23 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.empleado
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalance
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.Route
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,293 +27,126 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
+import coil.compose.AsyncImage
+import java.io.File
 
-private val SurfaceColor = Color(0xFFF8F9FF)
-private val PrimaryColor = Color(0xFF000000)
-private val PrimaryContainer = Color(0xFF131B2E)
-private val OnPrimaryContainer = Color(0xFF7C839B)
-private val SecondaryGreen = Color(0xFF006C49)
-private val OnSurfaceVariant = Color(0xFF45464D)
-private val OutlineVariant = Color(0xFFC6C6CD)
-private val SurfaceContainerLowest = Color(0xFFFFFFFF)
-private val SurfaceVariant = Color(0xFFD3E4FE)
-private val OnTertiaryVariant = Color(0xFF004395)
-private val ErrorColor = Color(0xFFBA1A1A)
+private val Page = Color(0xFFF8F9FF)
+private val Ink = Color(0xFF111318)
+private val Muted = Color(0xFF30323A)
+private val Green = Color(0xFF006C49)
+private val Red = Color(0xFFBA1A1A)
+private val Border = Color(0xFFC6C6CD)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmployeeManagementScreen(
-    uiState: EmployeeUiState = EmployeeUiState(),
-    onEvent: (EmployeeUiEvent) -> Unit = {},
-    onOpenModal: () -> Unit = { onEvent(EmployeeUiEvent.OpenAddModal) },
-    onCloseModal: () -> Unit = { onEvent(EmployeeUiEvent.CloseModal) },
-    onNameChange: (String) -> Unit = { onEvent(EmployeeUiEvent.NameChanged(it)) },
-    onUsernameChange: (String) -> Unit = { onEvent(EmployeeUiEvent.UsernameChanged(it)) },
-    onPinChange: (String) -> Unit = { onEvent(EmployeeUiEvent.PinChanged(it)) },
-    onPhoneChange: (String) -> Unit = { onEvent(EmployeeUiEvent.PhoneChanged(it)) },
-    onRouteSelected: (String) -> Unit = { onEvent(EmployeeUiEvent.RouteSelected(it)) },
-    onSaveEmployee: () -> Unit = { onEvent(EmployeeUiEvent.SaveEmployee) },
-    onToggleStatus: (String) -> Unit = { onEvent(EmployeeUiEvent.ToggleStatus(it)) },
+    uiState: EmployeeUiState,
+    onEvent: (EmployeeUiEvent) -> Unit,
     onBackClick: () -> Unit = {}
 ) {
     Scaffold(
+        containerColor = Page,
         topBar = {
             TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.AccountBalance, contentDescription = null, tint = PrimaryColor)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Equity Flow", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = PrimaryColor)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Outlined.Notifications, contentDescription = "Notificaciones", tint = OnSurfaceVariant)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
+                title = { Text("TacoBrao · Empleados", fontWeight = FontWeight.Bold) },
+                navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver") } },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Page)
             )
         },
-        containerColor = SurfaceColor
-    ) { paddingValues ->
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 300.dp),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        floatingActionButton = {
+            FloatingActionButton(onClick = { onEvent(EmployeeUiEvent.OpenAddModal) }, containerColor = Color.Black, contentColor = Color.White) {
+                Icon(Icons.Default.PersonAdd, "Agregar empleado")
+            }
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 96.dp)
         ) {
-            // Header
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text("Directorio de Empleados", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
-                            Text("Gestiona los cobradores de campo y sus credenciales de acceso.", fontSize = 14.sp, color = OnSurfaceVariant)
-                        }
-                        Button(
-                            onClick = onOpenModal,
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
-                            shape = RoundedCornerShape(20.dp)
-                        ) {
-                            Icon(Icons.Default.PersonAdd, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Nuevo Empleado")
-                        }
-                    }
-                }
+            item {
+                Text("Directorio de empleados", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Ink)
+                Text("Busca, revisa actividad, edita credenciales y distribuye clientes.", color = Muted)
             }
-
-            // Tarjetas de Métricas (Dashboard Stats)
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    MetricCard("Total Agentes", uiState.totalAgents.toString(), PrimaryColor, Modifier.weight(1f))
-                    MetricCard("Activos Ahora", uiState.activeAgents.toString(), SecondaryGreen, Modifier.weight(1f))
-                    MetricCard("Rutas Pendientes", uiState.pendingRoutes.toString(), OnTertiaryVariant, Modifier.weight(1f))
-                    MetricCard("Alertas", uiState.alertsCount.toString(), ErrorColor, Modifier.weight(1f))
-                }
-            }
-
-            // Lista de Empleados
-            items(uiState.employees, key = { it.id }) { employee ->
-                EmployeeCard(
-                    employee = employee,
-                    onToggleStatus = { onToggleStatus(employee.id) }
+            item {
+                OutlinedTextField(
+                    value = uiState.searchQuery,
+                    onValueChange = { onEvent(EmployeeUiEvent.SearchChanged(it)) },
+                    label = { Text("Buscar por nombre, cédula, teléfono o zona") },
+                    leadingIcon = { Icon(Icons.Default.Search, null) },
+                    modifier = Modifier.fillMaxWidth(), singleLine = true
                 )
             }
-
-            // Botón/Card para Asignar Nuevo Empleado
             item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clickable { onOpenModal() },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(Icons.Default.AddCircle, contentDescription = null, tint = OutlineVariant, modifier = Modifier.size(40.dp))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Asignar nuevo agente\npara expandir cobertura.",
-                            fontSize = 12.sp,
-                            color = OnSurfaceVariant,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Stat("Total", uiState.totalAgents, Modifier.weight(1f))
+                    Stat("Activos", uiState.activeAgents, Modifier.weight(1f))
+                    Stat("Sin ruta", uiState.pendingRoutes, Modifier.weight(1f))
                 }
+            }
+            if (uiState.isLoading) item { Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() } }
+            if (!uiState.isLoading && uiState.employees.isEmpty()) item {
+                Text("No se encontraron empleados.", modifier = Modifier.fillMaxWidth().padding(28.dp), color = Muted)
+            }
+            items(uiState.employees, key = Employee::id) { employee ->
+                EmployeeCard(employee, onEvent)
             }
         }
     }
 
-    // Modal para Agregar Empleado
-    if (uiState.isAddModalOpen) {
-        AddEmployeeDialog(
-            uiState = uiState,
-            onCloseModal = onCloseModal,
-            onNameChange = onNameChange,
-            onUsernameChange = onUsernameChange,
-            onPinChange = onPinChange,
-            onPhoneChange = onPhoneChange,
-            onRouteSelected = onRouteSelected,
-            onSaveEmployee = onSaveEmployee
+    if (uiState.isEditorOpen) EmployeeEditor(uiState, onEvent)
+    uiState.selectedEmployee?.let { EmployeeDetail(it, onEvent) }
+    uiState.assignmentEmployee?.let { AssignmentDialog(it, uiState.assignableClients, onEvent) }
+    uiState.pendingDeactivation?.let { employee ->
+        AlertDialog(
+            onDismissRequest = { onEvent(EmployeeUiEvent.CancelDeactivation) },
+            title = { Text("¿Desactivar empleado?") },
+            text = { Text("${employee.name} conservará su historial y aparecerá como INACTIVO. Sus ${employee.clientsAssigned} cliente(s) pendientes pasarán al administrador para ser redistribuidos.") },
+            confirmButton = { Button(onClick = { onEvent(EmployeeUiEvent.ConfirmDeactivation) }, colors = ButtonDefaults.buttonColors(containerColor = Red)) { Text("Sí, desactivar") } },
+            dismissButton = { TextButton(onClick = { onEvent(EmployeeUiEvent.CancelDeactivation) }) { Text("Cancelar") } }
+        )
+    }
+    (uiState.errorMessage ?: uiState.successMessage)?.let { message ->
+        AlertDialog(
+            onDismissRequest = { onEvent(EmployeeUiEvent.ClearMessage) },
+            text = { Text(message) },
+            confirmButton = { TextButton(onClick = { onEvent(EmployeeUiEvent.ClearMessage) }) { Text("Aceptar") } }
         )
     }
 }
 
-@Composable
-private fun MetricCard(title: String, value: String, valueColor: Color, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(title, fontSize = 11.sp, color = OnSurfaceVariant, fontWeight = FontWeight.SemiBold)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = valueColor)
-        }
+@Composable private fun Stat(label: String, value: Int, modifier: Modifier) {
+    Card(modifier, colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(1.dp, Border)) {
+        Column(Modifier.padding(12.dp)) { Text(label, fontSize = 12.sp, color = Muted); Text(value.toString(), fontSize = 22.sp, fontWeight = FontWeight.Bold) }
     }
 }
 
-@Composable
-private fun EmployeeCard(
-    employee: Employee,
-    onToggleStatus: () -> Unit
-) {
+@Composable private fun EmployeeCard(employee: Employee, onEvent: (EmployeeUiEvent) -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+        modifier = Modifier.fillMaxWidth().clickable { onEvent(EmployeeUiEvent.ShowDetails(employee.id)) },
+        colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(1.dp, Border),
+        shape = RoundedCornerShape(16.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(PrimaryContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = employee.name.take(1).uppercase(),
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(employee.name, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = PrimaryColor)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(if (employee.isActive) SecondaryGreen else OnSurfaceVariant)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = if (employee.isActive) "ACTIVO" else "INACTIVO",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (employee.isActive) SecondaryGreen else OnSurfaceVariant
-                            )
-                        }
-                    }
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (employee.photoUrl != null) AsyncImage(
+                    model = if (employee.photoUrl.startsWith("/")) File(employee.photoUrl) else employee.photoUrl,
+                    contentDescription = "Foto de ${employee.name}", modifier = Modifier.size(52.dp).clip(CircleShape)
+                ) else Box(Modifier.size(52.dp).clip(CircleShape).background(Color(0xFFDCE9FF)), contentAlignment = Alignment.Center) {
+                    Text(employee.name.take(1).uppercase(), fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 }
-                IconButton(onClick = { }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = null, tint = OnSurfaceVariant)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(employee.name, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                    Text("${employee.route} · ${employee.phone}", color = Muted, fontSize = 13.sp)
                 }
+                Text(if (employee.isActive) "ACTIVO" else "INACTIVO", color = if (employee.isActive) Green else Red, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
-
-            HorizontalDivider(color = OutlineVariant.copy(alpha = 0.5f))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Call, contentDescription = null, modifier = Modifier.size(14.dp), tint = OnSurfaceVariant)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Teléfono", fontSize = 12.sp, color = OnSurfaceVariant)
-                }
-                Text(employee.phone, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = PrimaryColor)
-            }
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Route, contentDescription = null, modifier = Modifier.size(14.dp), tint = OnSurfaceVariant)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Ruta", fontSize = 12.sp, color = OnSurfaceVariant)
-                }
-                Surface(
-                    color = SurfaceVariant,
-                    shape = RoundedCornerShape(4.dp)
-                ) {
-                    Text(
-                        text = employee.route.uppercase(),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = OnTertiaryVariant,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
-                }
-            }
-
-            HorizontalDivider(color = OutlineVariant.copy(alpha = 0.5f))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clip(CircleShape)
-                            .background(PrimaryColor),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(employee.clientsAssigned.toString(), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Clientes Asignados", fontSize = 11.sp, color = OnSurfaceVariant)
-                }
-
-                TextButton(onClick = onToggleStatus) {
-                    Text(
-                        text = if (employee.isActive) "Desactivar" else "Activar",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (employee.isActive) ErrorColor else SecondaryGreen
-                    )
+            Text("${employee.clientsAssigned} clientes · ${employee.collectionCount} cobros registrados", color = Muted, fontSize = 13.sp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                OutlinedButton(onClick = { onEvent(EmployeeUiEvent.OpenEdit(employee.id)) }, modifier = Modifier.weight(1f)) { Text("Editar", fontSize = 12.sp) }
+                OutlinedButton(onClick = { onEvent(EmployeeUiEvent.OpenAssignment(employee.id)) }, modifier = Modifier.weight(1f), enabled = employee.isActive) { Text("Asignar", fontSize = 12.sp) }
+                TextButton(onClick = { onEvent(EmployeeUiEvent.ToggleStatus(employee.id)) }, modifier = Modifier.weight(1f)) {
+                    Text(if (employee.isActive) "Desactivar" else "Activar", color = if (employee.isActive) Red else Green, fontSize = 12.sp)
                 }
             }
         }
@@ -360,143 +154,121 @@ private fun EmployeeCard(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AddEmployeeDialog(
-    uiState: EmployeeUiState,
-    onCloseModal: () -> Unit,
-    onNameChange: (String) -> Unit,
-    onUsernameChange: (String) -> Unit,
-    onPinChange: (String) -> Unit,
-    onPhoneChange: (String) -> Unit,
-    onRouteSelected: (String) -> Unit,
-    onSaveEmployee: () -> Unit
-) {
-    var expandedDropdown by remember { mutableStateOf(false) }
-
-    Dialog(onDismissRequest = onCloseModal) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest)
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Registrar Nuevo Empleado", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
-                    IconButton(onClick = onCloseModal) {
-                        Icon(Icons.Default.Close, contentDescription = "Cerrar")
-                    }
-                }
-
-                OutlinedTextField(
-                    value = uiState.newEmployeeName,
-                    onValueChange = onNameChange,
-                    label = { Text("Nombre Completo") },
-                    placeholder = { Text("Ej. Juan Pérez") },
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = uiState.newEmployeeUsername,
-                    onValueChange = onUsernameChange,
-                    label = { Text("Usuario de Acceso") },
-                    placeholder = { Text("Ej. jperez") },
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = uiState.newEmployeePin,
-                    onValueChange = onPinChange,
-                    label = { Text("PIN de Acceso (4 dígitos)") },
-                    placeholder = { Text("1234") },
-                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = uiState.newEmployeePhone,
-                    onValueChange = onPhoneChange,
-                    label = { Text("Número de Teléfono") },
-                    placeholder = { Text("809-000-0000") },
-                    leadingIcon = { Icon(Icons.Default.Call, contentDescription = null) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                ExposedDropdownMenuBox(
-                    expanded = expandedDropdown,
-                    onExpandedChange = { expandedDropdown = !expandedDropdown }
-                ) {
-                    OutlinedTextField(
-                        value = uiState.newEmployeeRoute.ifBlank { "Seleccionar Ruta" },
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Asignar Ruta") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDropdown) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expandedDropdown,
-                        onDismissRequest = { expandedDropdown = false }
-                    ) {
-                        uiState.availableRoutes.forEach { route ->
-                            DropdownMenuItem(
-                                text = { Text(route) },
-                                onClick = {
-                                    onRouteSelected(route)
-                                    expandedDropdown = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onCloseModal,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Text("Cancelar", color = PrimaryColor)
-                    }
-
-                    Button(
-                        onClick = onSaveEmployee,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = SecondaryGreen),
-                        shape = RoundedCornerShape(20.dp),
-                        enabled = !uiState.isSaving
-                    ) {
-                        if (uiState.isSaving) {
-                            CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White)
-                        } else {
-                            Text("Guardar Empleado")
-                        }
-                    }
-                }
-            }
-        }
+@Composable private fun EmployeeEditor(ui: EmployeeUiState, onEvent: (EmployeeUiEvent) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val profile = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let { onEvent(EmployeeUiEvent.PhotoChanged(EmployeePhotoType.PROFILE, it.toString())) }
     }
+    val front = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let { onEvent(EmployeeUiEvent.PhotoChanged(EmployeePhotoType.DNI_FRONT, it.toString())) }
+    }
+    val back = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let { onEvent(EmployeeUiEvent.PhotoChanged(EmployeePhotoType.DNI_BACK, it.toString())) }
+    }
+
+    AlertDialog(
+        onDismissRequest = { onEvent(EmployeeUiEvent.CloseModal) },
+        title = { Text(if (ui.editingEmployeeId == null) "Agregar empleado" else "Editar empleado") },
+        text = {
+            Column(Modifier.fillMaxWidth().heightIn(max = 620.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                EditorField(ui.name, { onEvent(EmployeeUiEvent.NameChanged(it)) }, "Nombre completo", "${ui.name.length}/80", KeyboardType.Text)
+                EditorField(ui.username, { onEvent(EmployeeUiEvent.UsernameChanged(it)) }, "Usuario de acceso", "${ui.username.length}/24 (mínimo 4)", KeyboardType.Text)
+                EditorField(ui.pin, { onEvent(EmployeeUiEvent.PinChanged(it)) }, "PIN", "${ui.pin.length}/4 dígitos", KeyboardType.NumberPassword, true)
+                EditorField(ui.phone, { onEvent(EmployeeUiEvent.PhoneChanged(it)) }, "Teléfono", "${ui.phone.length}/10 dígitos", KeyboardType.Phone)
+                EditorField(ui.identification, { onEvent(EmployeeUiEvent.IdentificationChanged(it)) }, "Cédula", "${ui.identification.length}/11 dígitos", KeyboardType.Number)
+                EditorField(ui.address, { onEvent(EmployeeUiEvent.AddressChanged(it)) }, "Dirección donde vive", "${ui.address.length}/160", KeyboardType.Text)
+                ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                    OutlinedTextField(ui.route, {}, readOnly = true, label = { Text("Zona / ruta") }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) }, modifier = Modifier.fillMaxWidth().menuAnchor())
+                    ExposedDropdownMenu(expanded, { expanded = false }) { ui.availableRoutes.forEach { route ->
+                        DropdownMenuItem({ Text(route) }, { onEvent(EmployeeUiEvent.RouteSelected(route)); expanded = false })
+                    } }
+                }
+                PhotoButton("Foto del empleado", ui.profilePhotoPath) { profile.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                PhotoButton("Cédula · frente", ui.dniFrontPhotoPath) { front.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                PhotoButton("Cédula · reverso", ui.dniBackPhotoPath) { back.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                Text("Permisos operativos", fontWeight = FontWeight.Bold)
+                PermissionSwitch("Registrar clientes", ui.canCreateClients) { onEvent(EmployeeUiEvent.PermissionChanged(EmployeePermission.CREATE_CLIENTS, it)) }
+                PermissionSwitch("Realizar cobros", ui.canCollectPayments) { onEvent(EmployeeUiEvent.PermissionChanged(EmployeePermission.COLLECT_PAYMENTS, it)) }
+                PermissionSwitch("Consultar su ruta", ui.canViewRoute) { onEvent(EmployeeUiEvent.PermissionChanged(EmployeePermission.VIEW_ROUTE, it)) }
+                PermissionSwitch("Cerrar caja", ui.canCloseCash) { onEvent(EmployeeUiEvent.PermissionChanged(EmployeePermission.CLOSE_CASH, it)) }
+                PermissionSwitch("Imprimir y compartir documentos", ui.canShareDocuments) { onEvent(EmployeeUiEvent.PermissionChanged(EmployeePermission.SHARE_DOCUMENTS, it)) }
+            }
+        },
+        confirmButton = { Button(onClick = { onEvent(EmployeeUiEvent.SaveEmployee) }, enabled = !ui.isSaving) { Text(if (ui.isSaving) "Guardando…" else "Guardar") } },
+        dismissButton = { TextButton(onClick = { onEvent(EmployeeUiEvent.CloseModal) }) { Text("Cancelar") } }
+    )
+}
+
+@Composable private fun PermissionSwitch(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, modifier = Modifier.weight(1f), color = Muted)
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+}
+
+@Composable private fun EditorField(value: String, onChange: (String) -> Unit, label: String, support: String, type: KeyboardType, password: Boolean = false) {
+    OutlinedTextField(
+        value, onChange, label = { Text(label) }, supportingText = { Text(support) },
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = type),
+        visualTransformation = if (password) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
+        modifier = Modifier.fillMaxWidth(), singleLine = label != "Dirección donde vive"
+    )
+}
+
+@Composable private fun PhotoButton(label: String, path: String?, onClick: () -> Unit) {
+    OutlinedButton(onClick, Modifier.fillMaxWidth()) {
+        Icon(if (path == null) Icons.Default.AddAPhoto else Icons.Default.CheckCircle, null)
+        Spacer(Modifier.width(8.dp)); Text(if (path == null) "$label (obligatoria)" else "$label cargada")
+    }
+}
+
+@Composable private fun EmployeeDetail(employee: Employee, onEvent: (EmployeeUiEvent) -> Unit) {
+    AlertDialog(
+        onDismissRequest = { onEvent(EmployeeUiEvent.CloseDetails) },
+        title = { Text(employee.name) },
+        text = { Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            Text(if (employee.isActive) "ACTIVO" else "DESACTIVADO", color = if (employee.isActive) Green else Red, fontWeight = FontWeight.Bold)
+            DetailLine("Usuario", employee.username); DetailLine("Cédula", employee.identification)
+            DetailLine("Teléfono", employee.phone); DetailLine("Dirección", employee.address)
+            DetailLine("Ruta", employee.route); DetailLine("Clientes", employee.clientsAssigned.toString())
+            DetailLine("Actividad de cobros", employee.collectionCount.toString())
+            Text("Credenciales: ${if (employee.dniFrontPhotoPath != null && employee.dniBackPhotoPath != null) "completas" else "incompletas"}", color = Muted)
+            Text("Permisos", fontWeight = FontWeight.Bold)
+            Text(listOfNotNull(
+                "Clientes".takeIf { employee.canCreateClients },
+                "Cobros".takeIf { employee.canCollectPayments },
+                "Ruta".takeIf { employee.canViewRoute },
+                "Cierre".takeIf { employee.canCloseCash },
+                "Documentos".takeIf { employee.canShareDocuments }
+            ).joinToString(" · ").ifBlank { "Sin permisos operativos" }, color = Muted, fontSize = 12.sp)
+            Text("Actividad reciente", fontWeight = FontWeight.Bold)
+            if (employee.recentActivity.isEmpty()) Text("Sin cobros registrados.", color = Muted)
+            employee.recentActivity.forEach { Text("• $it", fontSize = 12.sp, color = Muted) }
+        } },
+        confirmButton = { Button(onClick = { onEvent(EmployeeUiEvent.CloseDetails); onEvent(EmployeeUiEvent.OpenEdit(employee.id)) }) { Text("Editar información") } },
+        dismissButton = { TextButton(onClick = { onEvent(EmployeeUiEvent.CloseDetails) }) { Text("Cerrar") } }
+    )
+}
+
+@Composable private fun DetailLine(label: String, value: String) { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text(label, color = Muted); Text(value.ifBlank { "No registrado" }, fontWeight = FontWeight.SemiBold) } }
+
+@Composable private fun AssignmentDialog(employee: Employee, clients: List<AssignableClient>, onEvent: (EmployeeUiEvent) -> Unit) {
+    AlertDialog(
+        onDismissRequest = { onEvent(EmployeeUiEvent.CloseAssignment) },
+        title = { Text("Asignar cliente a ${employee.name}") },
+        text = { LazyColumn(Modifier.heightIn(max = 440.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (clients.isEmpty()) item { Text("No hay clientes activos disponibles.") }
+            items(clients, key = AssignableClient::id) { client ->
+                Card(
+                    Modifier.fillMaxWidth().clickable(enabled = client.currentEmployeeId != employee.id.toLong()) { onEvent(EmployeeUiEvent.AssignClient(client.id)) },
+                    colors = CardDefaults.cardColors(containerColor = if (client.currentEmployeeId == employee.id.toLong()) Color(0xFFE5F7EF) else Color.White),
+                    border = BorderStroke(1.dp, Border)
+                ) { Column(Modifier.padding(12.dp)) {
+                    Text(client.name, fontWeight = FontWeight.Bold); Text(client.zone, color = Muted, fontSize = 12.sp)
+                    Text(if (client.currentEmployeeId == employee.id.toLong()) "Ya asignado" else "Tocar para asignar", color = if (client.currentEmployeeId == employee.id.toLong()) Green else Muted, fontSize = 12.sp)
+                } }
+            }
+        } },
+        confirmButton = { TextButton(onClick = { onEvent(EmployeeUiEvent.CloseAssignment) }) { Text("Cerrar") } }
+    )
 }

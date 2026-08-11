@@ -11,7 +11,7 @@ class GetEmployeesUseCase @Inject constructor(
     private val repository: AuthRepository
 ) {
     operator fun invoke(): Flow<List<User>> {
-        return repository.getAllActiveUsers().map { users ->
+        return repository.getAllUsers().map { users ->
             users.filter { it.role == UserRole.EMPLEADO }
         }
     }

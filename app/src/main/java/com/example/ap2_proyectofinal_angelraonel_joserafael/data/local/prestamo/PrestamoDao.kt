@@ -16,11 +16,17 @@ interface PrestamoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarCuotas(cuotas: List<CuotaEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertarHistorial(historial: LoanStatusHistoryEntity): Long
+
     @Query("SELECT * FROM prestamos ORDER BY fechaCreacion DESC")
     fun obtenerTodosLosPrestamos(): Flow<List<PrestamoEntity>>
 
     @Query("SELECT * FROM cuotas WHERE prestamoId = :prestamoId ORDER BY numeroCuota ASC")
     fun obtenerCuotasPorPrestamo(prestamoId: Long): Flow<List<CuotaEntity>>
+
+    @Query("SELECT * FROM cuotas ORDER BY fechaVencimiento ASC")
+    fun obtenerTodasLasCuotas(): Flow<List<CuotaEntity>>
 
     @Query("SELECT * FROM prestamos WHERE estado = :estado ORDER BY fechaCreacion ASC")
     fun obtenerPrestamosPorEstado(estado: LoanStatus): Flow<List<PrestamoEntity>>
@@ -30,4 +36,10 @@ interface PrestamoDao {
 
     @Query("SELECT * FROM prestamos WHERE id = :prestamoId LIMIT 1")
     suspend fun obtenerPrestamoPorId(prestamoId: Long): PrestamoEntity?
+
+    @Query("SELECT * FROM loan_status_history WHERE loanId = :loanId ORDER BY changedAt DESC")
+    fun observarHistorialPrestamo(loanId: Long): Flow<List<LoanStatusHistoryEntity>>
+
+    @Query("SELECT * FROM loan_status_history ORDER BY changedAt DESC")
+    fun observarTodoElHistorial(): Flow<List<LoanStatusHistoryEntity>>
 }

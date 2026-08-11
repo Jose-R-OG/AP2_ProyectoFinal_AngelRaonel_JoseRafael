@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.cobros
+package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.empleado
 
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Transaccion
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.TransaccionRepository

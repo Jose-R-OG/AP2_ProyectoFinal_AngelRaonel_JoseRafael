@@ -8,9 +8,11 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cuota
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.ClienteRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.PrestamoRepository
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.cobros.RegistrarAbonoUseCase
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.prestamos.GetRutaCobroUseCase
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.RegistrarAbonoUseCase
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.empleado.GetRutaCobroUseCase
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.PaymentReceipt
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +31,7 @@ class DetallePrestamoCobroViewModel @Inject constructor(
     private val clienteRepository: ClienteRepository,
     private val registrarAbonoUseCase: RegistrarAbonoUseCase,
     private val getRutaCobroUseCase: GetRutaCobroUseCase,
+    private val authRepository: AuthRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
@@ -50,6 +53,12 @@ class DetallePrestamoCobroViewModel @Inject constructor(
         when (event) {
             is DetallePrestamoCobroUiEvent.ToggleSelectCuota -> toggleSelectCuota(event.cuotaId)
             is DetallePrestamoCobroUiEvent.RealizarCobroSeleccionado -> realizarCobro()
+            is DetallePrestamoCobroUiEvent.PaymentMethodChanged -> _uiState.update { it.copy(paymentMethod = event.method) }
+            is DetallePrestamoCobroUiEvent.DismissPaymentSuccess -> _uiState.update { it.copy(paymentSuccess = false) }
+            is DetallePrestamoCobroUiEvent.DismissReceipt -> _uiState.update { it.copy(generatedReceipt = null, paymentSuccess = false) }
+            is DetallePrestamoCobroUiEvent.ReceiptSigned -> _uiState.update { state ->
+                state.copy(generatedReceipt = state.generatedReceipt?.copy(signaturePath = event.path))
+            }
             is DetallePrestamoCobroUiEvent.ClearError -> _uiState.update { it.copy(errorMessage = null) }
         }
     }
@@ -110,9 +119,17 @@ class DetallePrestamoCobroViewModel @Inject constructor(
             }
 
             var huboError = false
+            val totalReceipt = cuotasAPagar.fold(BigDecimal.ZERO) { total, cuota ->
+                total.add(cuota.montoEsperado).add(cuota.moraAcumulada).subtract(cuota.montoPagado)
+            }
             for (cuota in cuotasAPagar) {
                 val balancePendiente = cuota.montoEsperado.add(cuota.moraAcumulada).subtract(cuota.montoPagado)
-                val result = registrarAbonoUseCase(cuota, balancePendiente, empleadoId)
+                val result = registrarAbonoUseCase(
+                    cuota,
+                    balancePendiente,
+                    empleadoId,
+                    _uiState.value.paymentMethod
+                )
                 if (result.isFailure) {
                     huboError = true
                     _uiState.update { it.copy(errorMessage = result.exceptionOrNull()?.message ?: "Error al registrar el cobro.") }
@@ -120,18 +137,43 @@ class DetallePrestamoCobroViewModel @Inject constructor(
                 }
             }
 
+            val paidAt = System.currentTimeMillis()
+            val employeeName = authRepository.getUserById(empleadoId)?.nombreCompleto ?: "Usuario #$empleadoId"
+            val refreshedInstallments = prestamoRepository.obtenerCuotasPorPrestamo(prestamo.id).first()
+            cuotasActuales = refreshedInstallments
+            val remaining = refreshedInstallments.filterNot { it.estaPagada }
+            val remainingBalance = remaining.fold(BigDecimal.ZERO) { total, cuota ->
+                total.add(cuota.montoEsperado).add(cuota.moraAcumulada).subtract(cuota.montoPagado)
+            }.max(BigDecimal.ZERO)
+            val numbers = cuotasAPagar.map { it.numeroCuota }.sorted()
+            val installmentLabel = if (numbers.size == 1) "${numbers.first()} de ${prestamo.cantidadCuotas}"
+                else "${numbers.first()}-${numbers.last()} de ${prestamo.cantidadCuotas}"
+            val receipt = if (!huboError) PaymentReceipt(
+                receiptNumber = "TB-${prestamo.id}-${paidAt.toString().takeLast(8)}",
+                loanId = prestamo.id,
+                clientName = clienteActual?.fullName ?: "Cliente #${prestamo.clienteId}",
+                clientDni = clienteActual?.dni.orEmpty(),
+                employeeName = employeeName,
+                amount = totalReceipt,
+                paymentMethod = _uiState.value.paymentMethod.name,
+                paidAt = paidAt,
+                note = "Pago de ${cuotasAPagar.size} cuota(s)",
+                installmentLabel = installmentLabel,
+                totalInstallments = prestamo.cantidadCuotas,
+                remainingInstallments = remaining.size,
+                remainingBalance = remainingBalance,
+                debtPaidOff = remaining.isEmpty()
+            ) else null
             selectedCuotaIds = emptySet()
             _uiState.update {
                 it.copy(
                     isProcessingPayment = false,
-                    paymentSuccess = !huboError
+                    paymentSuccess = !huboError,
+                    generatedReceipt = receipt
                 )
             }
 
-            prestamoRepository.obtenerCuotasPorPrestamo(prestamo.id).first().let { cuotas ->
-                cuotasActuales = cuotas
-                actualizarUiState()
-            }
+            actualizarUiState()
         }
     }
 
@@ -182,6 +224,8 @@ class DetallePrestamoCobroViewModel @Inject constructor(
                 originalAmountFormatted = String.format(Locale.US, "$%,.2f", prestamo.montoSolicitado),
                 interestRateText = "${prestamo.porcentajeInteres}% (tasa total)",
                 totalPlanFormatted = String.format(Locale.US, "Total: $%,.2f", totalAPagar),
+                progress = (porcentajePagado / 100f).coerceIn(0f, 1f),
+                selectedCount = selectedCuotaIds.size,
                 cuotasList = cuotasUi,
                 errorMessage = null
             )

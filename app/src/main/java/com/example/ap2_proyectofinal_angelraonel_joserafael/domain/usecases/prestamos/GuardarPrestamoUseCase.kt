@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecase
+package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.prestamos
 
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo

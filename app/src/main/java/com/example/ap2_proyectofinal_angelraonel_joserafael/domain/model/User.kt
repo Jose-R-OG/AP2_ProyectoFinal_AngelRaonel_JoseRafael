@@ -10,5 +10,16 @@ data class User(
     val pin: String,
     val role: UserRole,
     val isActive: Boolean = true,
-    val route: String? = null
+    val route: String? = null,
+    val address: String = "",
+    val profilePhotoPath: String? = null,
+    val dniFrontPhotoPath: String? = null,
+    val dniBackPhotoPath: String? = null,
+    val businessName: String? = null,
+    val businessLogoPath: String? = null,
+    val canCreateClients: Boolean = true,
+    val canCollectPayments: Boolean = true,
+    val canViewRoute: Boolean = true,
+    val canCloseCash: Boolean = true,
+    val canShareDocuments: Boolean = true
 )

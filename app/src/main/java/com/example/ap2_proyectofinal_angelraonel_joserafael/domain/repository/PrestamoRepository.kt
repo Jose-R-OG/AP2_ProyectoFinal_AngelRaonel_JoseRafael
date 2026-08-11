@@ -3,6 +3,7 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cuota
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatusHistory
 import kotlinx.coroutines.flow.Flow
 
 interface PrestamoRepository {
@@ -13,6 +14,10 @@ interface PrestamoRepository {
     fun obtenerTodosLosPrestamos(): Flow<List<Prestamo>>
     fun obtenerPrestamosPorEstado(estado: LoanStatus): Flow<List<Prestamo>>
     fun obtenerCuotasPorPrestamo(prestamoId: Long): Flow<List<Cuota>>
+    fun obtenerTodasLasCuotas(): Flow<List<Cuota>>
     fun obtenerRutaDeCobro(fechaLimite: Long): Flow<List<Cuota>>
+    suspend fun guardarHistorial(historial: LoanStatusHistory)
+    fun observarHistorialPrestamo(prestamoId: Long): Flow<List<LoanStatusHistory>>
+    fun observarTodoElHistorial(): Flow<List<LoanStatusHistory>>
 
 }

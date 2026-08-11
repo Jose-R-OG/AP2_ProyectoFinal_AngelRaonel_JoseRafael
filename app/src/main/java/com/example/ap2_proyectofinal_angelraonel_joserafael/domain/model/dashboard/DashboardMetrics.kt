@@ -6,6 +6,8 @@ import java.math.BigDecimal
 data class DashboardMetrics(
     val adminAvatarUrl: String? = null,
     val totalCollectedToday: BigDecimal = BigDecimal.ZERO,
+    val capitalInStreet: BigDecimal = BigDecimal.ZERO,
+    val outstandingPortfolio: BigDecimal = BigDecimal.ZERO,
     val collectedPercentage: Float = 0f,
     val activeEmployees: Int = 0,
     val totalEmployees: Int = 0,

@@ -7,7 +7,7 @@ coreTesting = "2.2.0"
 escposThermalprinterAndroid = "3.3.0"
 firebaseBomVersion = "33.1.2"
 hiltAndroid = "2.59.2"
-hiltAndroidTestingVersion = "2.48"
+hiltAndroidTestingVersion = "2.59.2"
 hiltNavigationCompose = "1.3.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -27,11 +27,13 @@ roomKtx = "2.8.4"
 roomRuntime = "2.8.4"
 kotlinxDatetime = "0.8.0"
 desugar_jdk_libs = "2.1.5"
-roomTesting = "2.6.0"
+roomTesting = "2.8.4"
 turbine = "1.2.1"
 uiTestJunit4 = "1.5.4"
 uiTestManifest = "1.5.4"
 datastorePreferences = "1.1.7"
+camerax = "1.4.1"
+mlkitTextRecognition = "16.0.1"
 
 credentials = "1.6.0"
 firebaseBom = "34.15.0"
@@ -88,6 +90,11 @@ desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref 
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camerax" }
+androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "mlkitTextRecognition" }
 
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
@@ -104,6 +111,7 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroid" }

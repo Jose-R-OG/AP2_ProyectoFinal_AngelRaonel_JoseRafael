@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.auth.login
+package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -144,7 +144,7 @@ fun LoginScreen(
                             text = "USUARIO",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF45464D)
+                                color = Color(0xFF30323A)
                             )
                         )
                         Spacer(modifier = Modifier.height(6.dp))
@@ -170,7 +170,7 @@ fun LoginScreen(
                             text = "PIN DE ACCESO",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF45464D)
+                                color = Color(0xFF30323A)
                             )
                         )
                         Spacer(modifier = Modifier.height(6.dp))
@@ -226,25 +226,36 @@ fun LoginScreen(
                         }
                     }
 
+                    OutlinedButton(
+                        onClick = { viewModel.signInWithGoogle(context) },
+                        enabled = viewModel.uiState !is LoginUiState.Loading,
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Continuar con Google", fontWeight = FontWeight.Bold, color = primaryGreen)
+                    }
+
 
                     // Opción para Crear Cuenta / Registrar Empresa
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "¿No tienes una cuenta?",
-                            style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF76777D))
-                        )
-                        TextButton(onClick = { onNavigateToRegisterAdmin() }) {
+                    if (viewModel.canRegisterAdmin) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
-                                text = "Registrar Empresa",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = primaryGreen
-                                )
+                                text = "¿Es la primera vez en este dispositivo?",
+                                style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF30323A))
                             )
+                            TextButton(onClick = { onNavigateToRegisterAdmin() }) {
+                                Text(
+                                    text = "Crear administrador",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = primaryGreen
+                                    )
+                                )
+                            }
                         }
                     }
                 }

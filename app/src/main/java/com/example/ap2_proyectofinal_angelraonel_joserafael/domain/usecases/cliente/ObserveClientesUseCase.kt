@@ -1,4 +1,4 @@
-package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecase
+package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.cliente
 
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.ClienteRepository
@@ -9,6 +9,6 @@ class ObserveClientesUseCase @Inject constructor(
     private val repository: ClienteRepository
 ) {
     operator fun invoke(): Flow<List<Cliente>> {
-        return repository.getActiveClientes()
+        return repository.getAllClientes()
     }
 }
