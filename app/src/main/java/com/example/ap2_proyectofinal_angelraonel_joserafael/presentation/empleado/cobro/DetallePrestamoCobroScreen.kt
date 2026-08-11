@@ -102,7 +102,9 @@ fun DetallePrestamoCobroScreen(
     val context = LocalContext.current
     var showSignaturePad by remember { mutableStateOf(false) }
     LaunchedEffect(uiState.generatedReceipt?.receiptNumber) {
-        uiState.generatedReceipt?.let { PaymentReceiptManager.print(context, it) }
+        if (uiState.generatedReceipt != null) {
+            viewModel.onEvent(DetallePrestamoCobroUiEvent.PrintReceipt)
+        }
     }
 
     Scaffold(
@@ -405,7 +407,7 @@ fun DetallePrestamoCobroScreen(
                 Text(if (receipt.signaturePath == null) "Puedes agregar la firma digital antes de reimprimir o compartir." else "Firma digital guardada.")
             } },
             confirmButton = {
-                Button(onClick = { PaymentReceiptManager.print(context, receipt) }) { Text("Imprimir") }
+                Button(onClick = { viewModel.onEvent(DetallePrestamoCobroUiEvent.PrintReceipt) }) { Text("Imprimir") }
             },
             dismissButton = {
                 Column(horizontalAlignment = Alignment.End) {

@@ -14,6 +14,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.Au
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.ClienteRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.PrestamoRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.TransaccionRepository
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.CedulaValidator
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.storage.FileStorageUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -172,6 +173,7 @@ class EmployeeViewModel @Inject constructor(
             state.pin.length != 4 -> "El PIN debe tener exactamente 4 dígitos (${state.pin.length}/4)."
             state.phone.length != 10 -> "El teléfono debe tener exactamente 10 dígitos (${state.phone.length}/10)."
             state.identification.length != 11 -> "La cédula debe tener exactamente 11 dígitos (${state.identification.length}/11)."
+            !CedulaValidator.validate(state.identification) -> "Número de cédula inválido. Por favor verifique."
             state.address.isBlank() -> "La dirección es obligatoria (máximo 160 caracteres)."
             state.route.isBlank() -> "Selecciona una zona o ruta."
             state.profilePhotoPath == null -> "Debes subir una foto del empleado."

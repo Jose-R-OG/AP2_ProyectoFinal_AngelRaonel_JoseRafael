@@ -9,6 +9,9 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.Au
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.ClienteRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.PrestamoRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.TransaccionRepository
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.printer.BluetoothPrinterManager
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.PaymentReceipt
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.ThermalReceiptGenerator
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -57,10 +60,19 @@ class CobrosHistorialViewModel @Inject constructor(
     private val loanRepository: PrestamoRepository,
     private val clientRepository: ClienteRepository,
     private val authRepository: AuthRepository,
+    private val printerManager: BluetoothPrinterManager,
     private val sessionManager: SessionManager
 ) : ViewModel() {
+
     private val _uiState = MutableStateFlow(CobrosHistorialUiState())
     val uiState: StateFlow<CobrosHistorialUiState> = _uiState.asStateFlow()
+
+    fun imprimir(receipt: PaymentReceipt) {
+        val text = ThermalReceiptGenerator.generate(receipt)
+        viewModelScope.launch {
+            printerManager.imprimirTicket(text)
+        }
+    }
 
     init {
         viewModelScope.launch {

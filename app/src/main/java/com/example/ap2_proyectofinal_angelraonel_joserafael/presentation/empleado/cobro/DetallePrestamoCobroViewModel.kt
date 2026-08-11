@@ -11,6 +11,8 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.Pr
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.RegistrarAbonoUseCase
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.empleado.GetRutaCobroUseCase
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.printer.BluetoothPrinterManager
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.ThermalReceiptGenerator
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.PaymentReceipt
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +33,7 @@ class DetallePrestamoCobroViewModel @Inject constructor(
     private val clienteRepository: ClienteRepository,
     private val registrarAbonoUseCase: RegistrarAbonoUseCase,
     private val getRutaCobroUseCase: GetRutaCobroUseCase,
+    private val printerManager: BluetoothPrinterManager,
     private val authRepository: AuthRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
@@ -59,7 +62,19 @@ class DetallePrestamoCobroViewModel @Inject constructor(
             is DetallePrestamoCobroUiEvent.ReceiptSigned -> _uiState.update { state ->
                 state.copy(generatedReceipt = state.generatedReceipt?.copy(signaturePath = event.path))
             }
+            DetallePrestamoCobroUiEvent.PrintReceipt -> imprimirRecibo()
             is DetallePrestamoCobroUiEvent.ClearError -> _uiState.update { it.copy(errorMessage = null) }
+        }
+    }
+
+    private fun imprimirRecibo() {
+        val receipt = uiState.value.generatedReceipt ?: return
+        val text = ThermalReceiptGenerator.generate(receipt)
+        viewModelScope.launch {
+            val result = printerManager.imprimirTicket(text)
+            if (result.isFailure) {
+                _uiState.update { it.copy(errorMessage = result.exceptionOrNull()?.message) }
+            }
         }
     }
 

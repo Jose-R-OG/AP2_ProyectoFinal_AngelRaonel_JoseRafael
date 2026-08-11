@@ -10,4 +10,5 @@ sealed class DetallePrestamoCobroUiEvent {
     data object DismissReceipt : DetallePrestamoCobroUiEvent()
     data class ReceiptSigned(val path: String) : DetallePrestamoCobroUiEvent()
     data object ClearError : DetallePrestamoCobroUiEvent()
+    data object PrintReceipt : DetallePrestamoCobroUiEvent()
 }
