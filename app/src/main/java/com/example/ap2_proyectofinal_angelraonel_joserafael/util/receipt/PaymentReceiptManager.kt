@@ -16,6 +16,7 @@ import android.print.PrintDocumentAdapter
 import android.print.PrintDocumentInfo
 import android.print.PrintManager
 import androidx.core.content.FileProvider
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.printer.BluetoothPrinterManager
 import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
@@ -128,11 +129,18 @@ object PaymentReceiptManager {
         }
     }
 
-    fun print(context: Context, receipt: PaymentReceipt): Result<Unit> = runCatching {
-        val file = createPdf(context, receipt)
-        val manager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
-        manager.print("TacoBrao ${receipt.receiptNumber}", PdfAdapter(file), PrintAttributes.Builder().build())
-        Unit
+    fun print(context: Context, receipt: PaymentReceipt, printerManager: BluetoothPrinterManager? = null): Result<Unit> {
+        return if (printerManager != null) {
+            val text = ThermalReceiptGenerator.generate(receipt)
+            printerManager.imprimirTicket(text)
+        } else {
+            runCatching {
+                val file = createPdf(context, receipt)
+                val manager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
+                manager.print("TacoBrao ${receipt.receiptNumber}", PdfAdapter(file), PrintAttributes.Builder().build())
+                Unit
+            }
+        }
     }
 
     fun shareWhatsApp(context: Context, receipt: PaymentReceipt): Result<Unit> = runCatching {

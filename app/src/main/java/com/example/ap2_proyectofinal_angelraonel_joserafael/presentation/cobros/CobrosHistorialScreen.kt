@@ -148,7 +148,7 @@ fun CobrosHistorialScreen(
                 Text("Cuota: ${item.installmentLabel}")
                 Text("Pagos restantes: ${item.remainingInstallments}")
             } },
-            confirmButton = { Button(onClick = { PaymentReceiptManager.print(context, receipt) }) { Text("Reimprimir") } },
+            confirmButton = { Button(onClick = { viewModel.imprimir(receipt) }) { Text("Reimprimir") } },
             dismissButton = { Column(horizontalAlignment = Alignment.End) {
                 TextButton(onClick = { PaymentReceiptManager.shareWhatsApp(context, receipt) }) { Text("Enviar WhatsApp") }
                 TextButton(onClick = { selected = null }) { Text("Cerrar") }

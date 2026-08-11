@@ -208,22 +208,25 @@ class CierreCajaViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isPrinting = true) }
             val lines = listOf(
+                "--------------------------------",
+                "        RESUMEN DE CIERRE       ",
+                "--------------------------------",
                 "Fecha: ${SimpleDateFormat("dd/MM/yyyy h:mm a", Locale("es", "DO")).format(Date())}",
                 "Total recaudado: ${_uiState.value.totalCollectedTurn}",
                 "Cobros realizados: ${_uiState.value.totalCobrosCount}",
                 "Clientes visitados: ${_uiState.value.visitedCount}/${_uiState.value.totalTargetVisited}",
                 "Efectivo: ${_uiState.value.cashAmount}",
                 "Transferencias: ${_uiState.value.transferAmount}",
-                "Diferencia: ${_uiState.value.differenceAmount}"
+                "Diferencia: ${_uiState.value.differenceAmount}",
+                "--------------------------------",
+                "       FIN DE DOCUMENTO         ",
+                "\n\n"
             )
-            val systemResult = ShiftSummaryPrinter.print(context, "Cierre de caja", lines)
-            val finalResult = if (systemResult.isFailure) {
-                printerManager.imprimirTicket(lines.joinToString("\n"))
-            } else systemResult
+            val result = printerManager.imprimirTicket(lines.joinToString("\n"))
             _uiState.update {
                 it.copy(
                     isPrinting = false,
-                    errorMessage = finalResult.exceptionOrNull()?.message
+                    errorMessage = result.exceptionOrNull()?.message
                 )
             }
         }
