@@ -14,6 +14,9 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE username = :username AND pin = :pin AND isActive = 1 LIMIT 1")
     suspend fun login(username: String, pin: String): UserEntity?
 
+    @Query("SELECT * FROM users WHERE email = :email AND isActive = 1 LIMIT 1")
+    suspend fun getUserByEmail(email: String): UserEntity?
+
     @Query("SELECT * FROM users WHERE isActive = 1")
     fun getAllActiveUsers(): Flow<List<UserEntity>>
 

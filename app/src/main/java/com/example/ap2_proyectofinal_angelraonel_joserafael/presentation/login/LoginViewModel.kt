@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.auth.GoogleAuthUiClient
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -73,11 +74,28 @@ class LoginViewModel @Inject constructor(
     }
 
     fun clearError() {
-        if (uiState is LoginUiState.Error) {
+        if (uiState is LoginUiState.Idle || uiState is LoginUiState.Error) {
             uiState = LoginUiState.Idle
         }
     }
 
     fun signInWithGoogle(context: Context) {
+        viewModelScope.launch {
+            uiState = LoginUiState.Loading
+            val googleAuthUiClient = GoogleAuthUiClient(context)
+            val email = googleAuthUiClient.signIn()
+            
+            if (email != null) {
+                val user = authRepository.loginWithGoogle(email)
+                if (user != null) {
+                    sessionManager.saveUserId(user.id)
+                    uiState = LoginUiState.Success(user)
+                } else {
+                    uiState = LoginUiState.Error("Este correo de Google ($email) no está registrado en el sistema")
+                }
+            } else {
+                uiState = LoginUiState.Error("No se pudo iniciar sesión con Google")
+            }
+        }
     }
 }
