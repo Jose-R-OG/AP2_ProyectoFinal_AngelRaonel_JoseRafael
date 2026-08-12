@@ -92,7 +92,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "¡Bienvenido a TacoBraoApp!",
+                text = "¡Bienvenido a TaCobrao!",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
