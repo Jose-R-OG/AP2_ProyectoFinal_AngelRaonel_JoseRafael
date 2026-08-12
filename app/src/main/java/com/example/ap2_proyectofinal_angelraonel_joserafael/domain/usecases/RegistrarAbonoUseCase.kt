@@ -26,7 +26,6 @@ class RegistrarAbonoUseCase @Inject constructor(
             return Result.failure(Exception("El monto debe ser mayor a cero."))
         }
 
-        // 1. Calcular deudas y saldos
         val balanceTotalCuota = cuotaOriginal.montoEsperado.add(cuotaOriginal.moraAcumulada)
         val balancePendiente = balanceTotalCuota.subtract(cuotaOriginal.montoPagado)
 
@@ -36,17 +35,14 @@ class RegistrarAbonoUseCase @Inject constructor(
 
         val nuevoMontoPagado = cuotaOriginal.montoPagado.add(montoRecibido)
 
-        // 2. Evaluar si con este abono se liquida TODO (Cuota base + Mora)
         val estaTotalmentePagada = nuevoMontoPagado >= balanceTotalCuota
 
-        // 3. Crear cuota actualizada
         val cuotaActualizada = cuotaOriginal.copy(
             montoPagado = nuevoMontoPagado,
             estaPagada = estaTotalmentePagada,
             fechaPago = if (estaTotalmentePagada) System.currentTimeMillis() else cuotaOriginal.fechaPago
         )
 
-        // 4. Crear registro de transacción para el cuadre de caja
         val transaccion = Transaccion(
             prestamoId = cuotaOriginal.prestamoId,
             cuotaId = cuotaOriginal.id,

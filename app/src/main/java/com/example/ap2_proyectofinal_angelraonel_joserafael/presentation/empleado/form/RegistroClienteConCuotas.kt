@@ -85,7 +85,6 @@ fun RegistroClienteConCuotas(
     val scrollState = rememberScrollState()
     var showDniScanner by remember { mutableStateOf(false) }
 
-    // Colors adapted from the provided Tailwind config
     val surfaceColor = Color(0xFFF8F9FF)
     val onSurfaceVariant = Color(0xFF30323A)
     val outlineVariant = Color(0xFFC6C6CD)
@@ -146,7 +145,6 @@ fun RegistroClienteConCuotas(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Profile Photo Picker
             ProfilePhotoPicker(
                 photoPath = viewModel.profilePhotoPath,
                 onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.ProfilePhotoChanged(it)) }
@@ -154,7 +152,6 @@ fun RegistroClienteConCuotas(
 
             Spacer(Modifier.height(24.dp))
 
-            // Form Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -304,7 +301,7 @@ fun RegistroClienteConCuotas(
                 }
             }
             
-            Spacer(Modifier.height(100.dp)) // Extra space for bottom bar
+            Spacer(Modifier.height(100.dp))
         }
     }
 
@@ -318,7 +315,6 @@ fun RegistroClienteConCuotas(
         )
     }
 
-    // Handle Success/Error
     if (viewModel.success) {
         AlertDialog(
             onDismissRequest = {},
@@ -549,7 +545,6 @@ fun borderStroke(color: Color) = androidx.compose.foundation.BorderStroke(1.dp, 
 @Composable
 fun RegistroClienteConCuotasPreview() {
     MaterialTheme {
-        // Vista previa estática simulando la pantalla
         RegistroClienteContentPreview()
     }
 }
@@ -562,14 +557,13 @@ private fun RegistroClienteContentPreview() {
     val outlineVariant = Color(0xFFC6C6CD)
     val primaryBlack = Color(0xFF000000)
 
-    // Variables de estado simuladas para el Preview
     var fullName by remember { mutableStateOf("Juan Pérez") }
     var dni by remember { mutableStateOf("001-0000000-0") }
     var phone by remember { mutableStateOf("809-555-0199") }
     var address by remember { mutableStateOf("Calle Principal #123") }
     var monto by remember { mutableStateOf("15000") }
     var cuotas by remember { mutableStateOf("12") }
-    var frecuencia by remember { mutableStateOf(FrecuenciaPago.SEMANAL) } // Reemplazar con una variante real de tu Enum
+    var frecuencia by remember { mutableStateOf(FrecuenciaPago.SEMANAL) }
 
     Scaffold(
         topBar = {
@@ -721,7 +715,7 @@ private fun RegistroClienteContentPreview() {
                 }
             }
 
-            Spacer(Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }

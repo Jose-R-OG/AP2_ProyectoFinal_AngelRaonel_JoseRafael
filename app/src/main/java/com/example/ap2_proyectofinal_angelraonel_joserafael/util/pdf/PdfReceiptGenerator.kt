@@ -21,15 +21,12 @@ object PdfReceiptGenerator {
         numeroCuota: Int,
         nota: String
     ): File? {
-        // 1. Crear el documento PDF
         val pdfDocument = PdfDocument()
 
-        // Formato estándar de recibo (ancho 400, alto 600, página 1)
         val pageInfo = PdfDocument.PageInfo.Builder(400, 600, 1).create()
         val page = pdfDocument.startPage(pageInfo)
         val canvas: Canvas = page.canvas
 
-        // 2. Configurar los pinceles (Paint) para dibujar texto
         val paintTitle = Paint().apply {
             color = Color.BLACK
             textSize = 24f
@@ -43,7 +40,6 @@ object PdfReceiptGenerator {
 
         val fechaActual = SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.getDefault()).format(Date())
 
-        // 3. Dibujar el contenido en el Canvas (posiciones X, Y)
         val centroX = pageInfo.pageWidth / 2f
 
         canvas.drawText("RECIBO DE PAGO", centroX, 50f, paintTitle)
@@ -60,10 +56,8 @@ object PdfReceiptGenerator {
         canvas.drawText("================================", centroX, 340f, paintTitle)
         canvas.drawText("¡Gracias por su pago!", centroX, 380f, paintTitle)
 
-        // Terminar la página
         pdfDocument.finishPage(page)
 
-        // 4. Guardar el archivo en la caché de la aplicación (la que configuramos en file_paths.xml)
         return try {
             val pdfDir = File(context.cacheDir, "pdfs")
             if (!pdfDir.exists()) pdfDir.mkdirs()

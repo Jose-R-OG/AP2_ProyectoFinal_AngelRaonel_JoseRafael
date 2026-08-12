@@ -2,20 +2,7 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,26 +10,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountBalance
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Print
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -67,7 +36,6 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
-// Paleta TacoBrao
 private val SurfaceColor = Color(0xFFF8F9FF)
 private val PrimaryColor = Color(0xFF000000)
 private val OnSurfaceVariant = Color(0xFF30323A)
@@ -156,7 +124,6 @@ fun LoanApprovalContent(
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Header
                 item {
                     Column(modifier = Modifier.padding(top = 8.dp)) {
                         Text(
@@ -208,7 +175,6 @@ fun LoanApprovalContent(
                     }
                 }
 
-                // Bento Dashboard Stats
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Row(
@@ -223,12 +189,11 @@ fun LoanApprovalContent(
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             BentoStatCard("Interés promedio", "${uiState.avgInterestRate}%", SecondaryGreen, Modifier.weight(1f))
-                            BentoStatCard("Estado", "OPERATIVO", OnTertiaryContainer, Modifier.weight(1f))
+                            BentoStatStatCard("Estado", "OPERATIVO", OnTertiaryContainer, Modifier.weight(1f))
                         }
                     }
                 }
 
-                // Table / Card List Container
                 item {
                     if (uiState.isLoading) {
                         Box(
@@ -274,7 +239,6 @@ fun LoanApprovalContent(
                     }
                 }
 
-                // Footer Pagination
                 item {
                     Row(
                         modifier = Modifier
@@ -292,7 +256,6 @@ fun LoanApprovalContent(
                 }
             }
 
-            // MODAL DETALLE DE SOLICITUD
             if (uiState.isDetailOpen && uiState.selectedPrestamo != null) {
                 uiState.selectedPrestamo?.let { prestamo ->
                     LoanDetailModal(
@@ -306,7 +269,6 @@ fun LoanApprovalContent(
                 }
             }
 
-            // Diálogo emergente de vista previa del Ticket Térmico
             uiState.ticketParaImprimir?.let { ticketTexto ->
                 AlertDialog(
                     onDismissRequest = { onEvent(LoanApprovalUiEvent.DismissTicket) },
@@ -368,6 +330,11 @@ fun BentoStatCard(title: String, value: String, valueColor: Color, modifier: Mod
 }
 
 @Composable
+fun BentoStatStatCard(title: String, value: String, valueColor: Color, modifier: Modifier = Modifier) {
+    BentoStatCard(title, value, valueColor, modifier)
+}
+
+@Composable
 private fun LoanRequestCompactCard(
     request: PrestamoEntity,
     client: LoanClientSummary?,
@@ -413,90 +380,6 @@ private fun LoanRequestCompactCard(
                         colors = ButtonDefaults.buttonColors(containerColor = SecondaryGreen)
                     ) { Text("Aprobar") }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun LoanRequestRow(
-    request: PrestamoEntity,
-    onDetailClick: () -> Unit,
-    onRejectClick: () -> Unit,
-    onApproveClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onDetailClick() }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(modifier = Modifier.weight(2f), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(SecondaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "CL",
-                    color = OnSecondaryContainer,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text("Cliente #${request.clienteId}", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = PrimaryColor)
-                Text("Enviado por: #${request.empleadoId}", fontSize = 12.sp, color = OnSurfaceVariant)
-            }
-        }
-
-        Text(
-            text = "$${String.format(Locale.US, "%,.2f", request.montoSolicitado)}",
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp,
-            color = PrimaryColor,
-            modifier = Modifier.weight(1f)
-        )
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text("${request.cantidadCuotas} Cuotas", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
-            Text("@ ${request.porcentajeInteres}%", fontSize = 12.sp, color = SecondaryGreen, fontWeight = FontWeight.Bold)
-        }
-
-        Row(
-            modifier = Modifier.weight(1.5f),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            FilledTonalButton(
-                onClick = onDetailClick,
-                colors = ButtonDefaults.filledTonalButtonColors(containerColor = SurfaceContainerHigh),
-                shape = RoundedCornerShape(8.dp),
-                contentPadding = PaddingValues(horizontal = 8.dp)
-            ) {
-                Text("Detalles", fontSize = 11.sp, color = PrimaryColor)
-            }
-            Spacer(modifier = Modifier.width(4.dp))
-            Button(
-                onClick = onRejectClick,
-                colors = ButtonDefaults.buttonColors(containerColor = ErrorColor.copy(alpha = 0.1f)),
-                shape = RoundedCornerShape(8.dp),
-                contentPadding = PaddingValues(horizontal = 8.dp)
-            ) {
-                Text("Rechazar", fontSize = 11.sp, color = ErrorColor)
-            }
-            Spacer(modifier = Modifier.width(4.dp))
-            Button(
-                onClick = onApproveClick,
-                colors = ButtonDefaults.buttonColors(containerColor = SecondaryGreen),
-                shape = RoundedCornerShape(8.dp),
-                contentPadding = PaddingValues(horizontal = 8.dp)
-            ) {
-                Text("Aprobar", fontSize = 11.sp)
             }
         }
     }

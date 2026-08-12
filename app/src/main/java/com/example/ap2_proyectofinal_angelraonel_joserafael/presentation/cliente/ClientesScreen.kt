@@ -433,7 +433,7 @@ private fun ClienteCard(
                 if (isAdmin) {
                     OutlinedButton(onClick = onAssign, modifier = Modifier.fillMaxWidth(), enabled = enabled) {
                         Icon(Icons.Default.Group, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp)); Text("Asignar a empleado")
+                        Spacer(modifier = Modifier.width(6.dp)); Text("Asignar a empleado")
                     }
                 }
                 Button(

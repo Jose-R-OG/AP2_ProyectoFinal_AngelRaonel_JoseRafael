@@ -6,28 +6,27 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.SavedStateHandle
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Tarifario
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.TarifarioRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.ClienteRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.RegisterClientWithLoanUseCase
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.prestamos.GuardarPrestamoUseCase
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.CedulaValidator
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 
 @HiltViewModel
 class RegistroClienteViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val registerClientWithLoanUseCase: RegisterClientWithLoanUseCase,
+    private val registerUseCase: RegisterClientWithLoanUseCase,
+    private val guardarPrestamoUseCase: GuardarPrestamoUseCase,
     private val tarifarioRepository: TarifarioRepository,
     private val clienteRepository: ClienteRepository,
     private val authRepository: AuthRepository,
@@ -116,7 +115,6 @@ class RegistroClienteViewModel @Inject constructor(
             return
         }
 
-        // Validación estricta de Cédula Dominicana
         if (!CedulaValidator.validate(dni)) {
             error = "Número de cédula inválido. Por favor verifique."
             return
@@ -125,7 +123,8 @@ class RegistroClienteViewModel @Inject constructor(
             error = "Debes tomar la foto del cliente y ambos lados de su cédula."
             return
         }
-        val monto = montoPrestamo.replace(",", ".").toBigDecimalOrNull()
+        val montoStr = montoPrestamo.replace(",", ".")
+        val monto = montoStr.toBigDecimalOrNull()
         val cuotas = numCuotas.toIntOrNull()
         if (monto == null || monto <= BigDecimal.ZERO || cuotas == null || cuotas <= 0) {
             error = "Ingrese un monto y una cantidad de cuotas válidos."
@@ -155,97 +154,49 @@ class RegistroClienteViewModel @Inject constructor(
                     return@launch
                 }
 
-                val montoValido = montoPrestamo.replace(",", ".")
-                val monto = montoValido.toBigDecimalOrNull()
-                val cuotas = numCuotas.toIntOrNull()
-
-                if (monto == null || monto <= BigDecimal.ZERO || cuotas == null || cuotas <= 0) {
-                    error = "Ingrese un monto y una cantidad de cuotas válidos."
-                    isLoading = false
-                    return@launch
-                }
-
-                val todosLosTarifarios = tarifarioRepository.getActiveTarifarios().first()
-                
-                val configuredTariff = if (frecuenciaPago == FrecuenciaPago.SEMANAL) {
-                    // Para semanal, buscar coincidencia exacta de duración (4, 6, 12)
-                    todosLosTarifarios.find { it.frecuencia == FrecuenciaPago.SEMANAL && it.duracion == cuotas }
-                        ?: todosLosTarifarios.firstOrNull { it.frecuencia == FrecuenciaPago.SEMANAL }
-                } else {
-                    todosLosTarifarios.firstOrNull { it.frecuencia == frecuenciaPago }
-                }
-
-                val tarifario = configuredTariff ?: defaultTariff(frecuenciaPago, cuotas)
-                    .also { tarifarioRepository.saveTarifario(it) }
-
                 val customRate = tasaPersonalizada.replace(",", ".").toBigDecimalOrNull()
-                if (customRate != null && (customRate < BigDecimal.ZERO || customRate > BigDecimal("100"))) {
-                    error = "La tasa personalizada debe estar entre 0 y 100%."
-                    isLoading = false
-                    return@launch
+                val cuotasInt = numCuotas.toIntOrNull() ?: 0
+
+                if (isExistingClient) {
+                    val todosLosTarifarios = tarifarioRepository.getActiveTarifarios().first()
+                    val configuredTariff = if (frecuenciaPago == FrecuenciaPago.SEMANAL) {
+                        todosLosTarifarios.find { it.frecuencia == FrecuenciaPago.SEMANAL && it.duracion == cuotasInt }
+                            ?: todosLosTarifarios.firstOrNull { it.frecuencia == FrecuenciaPago.SEMANAL }
+                    } else {
+                        todosLosTarifarios.firstOrNull { it.frecuencia == frecuenciaPago }
+                    }
+                    val appliedRate = if (canUseCustomRate && customRate != null) customRate else configuredTariff?.porcentajeInteres ?: BigDecimal("10")
+                    
+                    val calc = com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.prestamos.CalculateLoanPercentageUseCase().execute(monto, appliedRate, cuotasInt)
+                    val prestamo = Prestamo(
+                        clienteId = existingClientId,
+                        empleadoId = empleadoId,
+                        montoSolicitado = monto,
+                        porcentajeInteres = appliedRate,
+                        interesTotal = calc.interesTotal,
+                        totalAPagar = calc.totalAPagar,
+                        totalPagado = BigDecimal.ZERO,
+                        montoCuota = calc.montoCuota,
+                        cantidadCuotas = cuotasInt,
+                        frecuenciaPago = frecuenciaPago,
+                        diaPagoPreferido = diaPagoPreferido,
+                        diaPagoDescripcion = diaPagoDescripcion,
+                        estado = LoanStatus.PENDIENTE_REVISION
+                    )
+                    guardarPrestamoUseCase.execute(prestamo)
+                    success = true
+                } else {
+                    val result = registerUseCase(
+                        fullName, dni, phone, address, zone, profilePhotoPath, dniFrontPhotoPath, dniBackPhotoPath,
+                        monto, cuotasInt, frecuenciaPago, diaPagoPreferido, diaPagoDescripcion, empleadoId, customRate
+                    )
+                    if (result.isSuccess) success = true else error = result.exceptionOrNull()?.message
                 }
-                val appliedRate = if (canUseCustomRate && customRate != null) customRate else tarifario.porcentajeInteres
-
-                val interesTotal = monto.multiply(appliedRate)
-                    .divide(BigDecimal("100"), 2, RoundingMode.HALF_UP)
-                val totalAPagar = monto.add(interesTotal)
-                val montoCuota = totalAPagar.divide(BigDecimal(cuotas), 2, RoundingMode.HALF_UP)
-
-                val nuevoCliente = Cliente(
-                    id = existingClientId.takeIf { it > 0 } ?: 0L,
-                    fullName = fullName.trim(),
-                    dni = dni.trim(),
-                    phone = phone.trim(),
-                    address = address.trim(),
-                    zone = zone,
-                    profilePhotoPath = profilePhotoPath,
-                    dniFrontPhotoPath = dniFrontPhotoPath,
-                    dniBackPhotoPath = dniBackPhotoPath,
-                    isActive = true
-                )
-
-                val nuevoPrestamo = Prestamo(
-                    clienteId = 0L,
-                    empleadoId = empleadoId,
-                    montoSolicitado = monto,
-                    porcentajeInteres = appliedRate,
-                    interesTotal = interesTotal,
-                    totalAPagar = totalAPagar,
-                    montoCuota = montoCuota,
-                    cantidadCuotas = cuotas,
-                    frecuenciaPago = frecuenciaPago,
-                    diaPagoPreferido = diaPagoPreferido,
-                    diaPagoDescripcion = diaPagoDescripcion,
-                    estado = LoanStatus.PENDIENTE_REVISION
-                )
-
-                val result = registerClientWithLoanUseCase(nuevoCliente, nuevoPrestamo)
-                isLoading = false
-                result.onSuccess { success = true }
-                    .onFailure { error = it.message ?: "Error al registrar el cliente y el préstamo." }
 
             } catch (e: Exception) {
-                isLoading = false
                 error = e.message ?: "Error al registrar el cliente."
             }
+            isLoading = false
         }
-    }
-
-    private fun defaultTariff(frequency: FrecuenciaPago, installments: Int): Tarifario {
-        val percentage = when (frequency) {
-            FrecuenciaPago.DIARIO -> BigDecimal("5")
-            FrecuenciaPago.QUINCENAL -> BigDecimal("10")
-            FrecuenciaPago.MENSUAL -> BigDecimal("15")
-            FrecuenciaPago.SEMANAL -> when (installments) {
-                in 1..4 -> BigDecimal("10")
-                in 5..6 -> BigDecimal("15")
-                else -> BigDecimal("25")
-            }
-        }
-        return Tarifario(
-            frecuencia = frequency,
-            duracion = installments,
-            porcentajeInteres = percentage
-        )
     }
 }

@@ -18,8 +18,6 @@ class BluetoothPrinterManager @Inject constructor(
             val connection = BluetoothPrintersConnections.selectFirstPaired()
             if (connection != null) {
                 val printer = EscPosPrinter(connection, 203, 48f, 32)
-                // El formato de la librería usa etiquetas como [C] para centrar, [L] izquierda, etc.
-                // Convertimos el texto plano a un formato básico compatible
                 val formattedText = contenido.lines().joinToString("\n") { "[L]$it" }
                 printer.printFormattedText(formattedText)
                 Result.success(Unit)

@@ -1,92 +1,75 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases
 
 import android.content.Context
+import androidx.core.net.toUri
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cuota
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.ClienteRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.PrestamoRepository
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.NotificationRepository
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.AppNotification
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatusHistory
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.prestamos.CalculateLoanPercentageUseCase
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.storage.FileStorageUtil
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.Calendar
+import java.math.BigDecimal
 import javax.inject.Inject
-import androidx.core.net.toUri
-import kotlinx.coroutines.flow.first
 
 class RegisterClientWithLoanUseCase @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+    @ApplicationContext private val context: Context,
     private val clienteRepository: ClienteRepository,
     private val prestamoRepository: PrestamoRepository,
-    private val authRepository: AuthRepository,
-    private val notificationRepository: NotificationRepository
+    private val calculateLoanPercentageUseCase: CalculateLoanPercentageUseCase
 ) {
-    suspend operator fun invoke(cliente: Cliente, prestamo: Prestamo): Result<Long> {
+    suspend operator fun invoke(
+        fullName: String, dni: String, phone: String, address: String, zone: String,
+        profilePhoto: String?, dniFront: String?, dniBack: String?,
+        monto: BigDecimal, cuotas: Int, frecuencia: FrecuenciaPago,
+        diaPago: Int?, diaPagoDesc: String?,
+        empleadoId: Long,
+        tasaPersonalizada: BigDecimal? = null
+    ): Result<Unit> {
         return try {
-            val localProfilePath = cliente.profilePhotoPath?.let { path ->
-                if (path.startsWith("content://")) FileStorageUtil.saveFileToInternalStorage(context, path.toUri(), "clients/profiles") else path
-            }
-            val localDniFrontPath = cliente.dniFrontPhotoPath?.let { path ->
-                if (path.startsWith("content://")) FileStorageUtil.saveFileToInternalStorage(context, path.toUri(), "clients/dni") else path
-            }
-            val localDniBackPath = cliente.dniBackPhotoPath?.let { path ->
-                if (path.startsWith("content://")) FileStorageUtil.saveFileToInternalStorage(context, path.toUri(), "clients/dni") else path
+            fun persist(path: String?, folder: String): String? = path?.let {
+                if (it.startsWith("content://")) FileStorageUtil.saveFileToInternalStorage(context, it.toUri(), folder) else it
             }
 
-            val updatedCliente = cliente.copy(
-                profilePhotoPath = localProfilePath,
-                dniFrontPhotoPath = localDniFrontPath,
-                dniBackPhotoPath = localDniBackPath
+            val cliente = Cliente(
+                fullName = fullName, dni = dni, phone = phone, address = address, zone = zone,
+                profilePhotoPath = persist(profilePhoto, "clients/profiles"),
+                dniFrontPhotoPath = persist(dniFront, "clients/dni"),
+                dniBackPhotoPath = persist(dniBack, "clients/dni"),
+                isActive = true
+            )
+            val clienteId = clienteRepository.saveCliente(cliente)
+
+            val tasa = tasaPersonalizada ?: when (frecuencia) {
+                FrecuenciaPago.DIARIO -> BigDecimal("10")
+                FrecuenciaPago.SEMANAL -> if (cuotas <= 4) BigDecimal("10") else if (cuotas <= 6) BigDecimal("15") else BigDecimal("20")
+                FrecuenciaPago.QUINCENAL -> BigDecimal("20")
+                FrecuenciaPago.MENSUAL -> BigDecimal("25")
+            }
+
+            val calc = calculateLoanPercentageUseCase.execute(monto, tasa, cuotas)
+
+            val prestamo = Prestamo(
+                clienteId = clienteId,
+                empleadoId = empleadoId,
+                montoSolicitado = monto,
+                porcentajeInteres = tasa,
+                interesTotal = calc.interesTotal,
+                totalAPagar = calc.totalAPagar,
+                montoCuota = calc.montoCuota,
+                cantidadCuotas = cuotas,
+                frecuenciaPago = frecuencia,
+                diaPagoPreferido = diaPago,
+                diaPagoDescripcion = diaPagoDesc,
+                estado = LoanStatus.PENDIENTE_REVISION
             )
 
-            val clienteId = clienteRepository.saveCliente(updatedCliente)
-            val prestamoConId = prestamo.copy(clienteId = clienteId)
-            val prestamoId = prestamoRepository.guardarPrestamo(prestamoConId)
-            prestamoRepository.guardarHistorial(
-                LoanStatusHistory(
-                    loanId = prestamoId,
-                    status = prestamoConId.estado,
-                    changedByUserId = prestamoConId.empleadoId,
-                    note = "Solicitud enviada a revisión"
-                )
-            )
-
-            val cuotas = generarCuotas(prestamoId, prestamoConId)
-            prestamoRepository.guardarCuotas(cuotas)
-
-            authRepository.getAllActiveUsers().first()
-                .filter { it.role == UserRole.ADMINISTRADOR }
-                .forEach { admin ->
-                    notificationRepository.create(
-                        AppNotification(
-                            recipientUserId = admin.id,
-                            title = "Nueva solicitud de préstamo",
-                            message = "${updatedCliente.fullName} solicitó un préstamo pendiente de revisión.",
-                            relatedLoanId = prestamoId
-                        )
-                    )
-                }
-
-            Result.success(clienteId)
+            prestamoRepository.guardarPrestamo(prestamo)
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
-        }
-    }
-
-    private fun generarCuotas(prestamoId: Long, prestamo: Prestamo): List<Cuota> {
-        val fechaInicio = prestamo.fechaInicio ?: System.currentTimeMillis()
-        return buildPaymentDates(prestamo, fechaInicio).mapIndexed { index, dueAt ->
-                Cuota(
-                    prestamoId = prestamoId,
-                    numeroCuota = index + 1,
-                    fechaVencimiento = dueAt,
-                    montoEsperado = prestamo.montoCuota
-                )
         }
     }
 }

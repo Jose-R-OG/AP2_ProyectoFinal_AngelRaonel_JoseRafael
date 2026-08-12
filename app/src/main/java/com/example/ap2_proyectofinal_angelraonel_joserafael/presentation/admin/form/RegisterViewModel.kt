@@ -3,7 +3,6 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import android.util.Log
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.adminrequest.AdminRegisterRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.CedulaValidator
@@ -66,7 +65,6 @@ class RegisterViewModel @Inject constructor(
             return
         }
 
-        // Validación estricta de Cédula Dominicana
         if (!CedulaValidator.validate(cedula)) {
             _registerState.value = RegisterState.Error("Número de cédula inválido. Por favor verifique.")
             return
@@ -93,10 +91,8 @@ class RegisterViewModel @Inject constructor(
             )
             
             result.onSuccess { activationCode ->
-                Log.d("RegisterViewModel", "Registro exitoso. Código: $activationCode")
                 _registerState.value = RegisterState.Success(activationCode, email)
             }.onFailure { e ->
-                Log.e("RegisterViewModel", "Error al enviar registro", e)
                 _registerState.value = RegisterState.Error(e.message ?: "Error al enviar la solicitud.")
             }
         }

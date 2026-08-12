@@ -26,37 +26,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.AccountBalance
-import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Mail
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -68,7 +40,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material.icons.filled.QrCodeScanner
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.components.DniScannerDialog
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -79,7 +50,6 @@ fun RegisterAdminScreen(
     onNavigateToActivation: (email: String, code: String) -> Unit = { _, _ -> },
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
-    // Campos de texto
     var fullName by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -88,32 +58,27 @@ fun RegisterAdminScreen(
     var phone by remember { mutableStateOf("") }
     var cedula by remember { mutableStateOf("") }
 
-    // Pago y Banco
     var selectedBank by remember { mutableStateOf("") }
     var expandedBankMenu by remember { mutableStateOf(false) }
     var transferNumber by remember { mutableStateOf("") }
     var depositorName by remember { mutableStateOf("") }
     var voucherUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Términos
     var termsAccepted by remember { mutableStateOf(false) }
     var showDniScanner by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val registerState by viewModel.registerState.collectAsState()
 
-    // Selector de archivos para el Voucher
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri -> voucherUri = uri }
 
-    // Manejo de Estados
     LaunchedEffect(registerState) {
         when (val state = registerState) {
             is RegisterState.Success -> {
                 Toast.makeText(context, "Solicitud enviada. Código enviado al correo: ${state.activationCode}", Toast.LENGTH_LONG).show()
 
-                // Intent para abrir cliente de correo con el código de activación
                 try {
                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:${state.email}")
@@ -125,7 +90,6 @@ fun RegisterAdminScreen(
                     }
                     context.startActivity(Intent.createChooser(emailIntent, "Enviar Código por Correo"))
                 } catch (e: Exception) {
-                    // Continuar si no hay app de correo por defecto
                 }
 
                 onNavigateToActivation(state.email, state.activationCode)
@@ -151,7 +115,6 @@ fun RegisterAdminScreen(
                 .padding(vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- HEADER ---
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
@@ -171,7 +134,6 @@ fun RegisterAdminScreen(
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
             )
 
-            // --- TARJETA FORMULARIO ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -180,7 +142,6 @@ fun RegisterAdminScreen(
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
 
-                    // 1. DATOS PERSONALES
                     Text("INFORMACIÓN PERSONAL", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF30323A))
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -211,7 +172,6 @@ fun RegisterAdminScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Nuevo Campo: PIN / Contraseña de Acceso
                     OutlinedTextField(
                         value = pin, onValueChange = { pin = it },
                         label = { Text("PIN / Contraseña de Acceso") },
@@ -239,7 +199,6 @@ fun RegisterAdminScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Campo Cédula Dominicana
                     OutlinedTextField(
                         value = cedula,
                         onValueChange = { input ->
@@ -262,7 +221,6 @@ fun RegisterAdminScreen(
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 20.dp), color = Color(0xFFC6C6CD))
 
-                    // 2. SECCIÓN DE PAGO / BANCO
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFDCE9FF))
@@ -279,7 +237,6 @@ fun RegisterAdminScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Dropdown Banco con .menuAnchor() para interacción perfecta
                     ExposedDropdownMenuBox(
                         expanded = expandedBankMenu,
                         onExpandedChange = { expandedBankMenu = !expandedBankMenu }
@@ -311,7 +268,6 @@ fun RegisterAdminScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Muestra de cuenta bancaria dinámica
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = Color(0xFFEFF4FF),
@@ -352,7 +308,6 @@ fun RegisterAdminScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Carga de Comprobante / Voucher
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -378,7 +333,6 @@ fun RegisterAdminScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Aceptación de Términos
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = termsAccepted,
@@ -393,7 +347,6 @@ fun RegisterAdminScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Botón de Enviar
                     Button(
                         onClick = {
                             viewModel.onEvent(

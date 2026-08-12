@@ -11,7 +11,6 @@ interface TransaccionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarTransaccion(transaccion: TransaccionEntity)
 
-    // Esencial para el Cuadre de Caja del día
     @Query("SELECT * FROM transacciones WHERE fecha >= :inicioDia AND fecha <= :finDia ORDER BY fecha DESC")
     fun obtenerTransaccionesPorDia(inicioDia: Long, finDia: Long): Flow<List<TransaccionEntity>>
 
