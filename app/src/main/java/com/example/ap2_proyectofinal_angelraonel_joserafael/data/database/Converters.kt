@@ -53,4 +53,12 @@ class Converters {
 
     @TypeConverter
     fun toPaymentMethod(value: String?): PaymentMethod? = value?.let(PaymentMethod::valueOf)
+
+    @TypeConverter
+    fun fromUserRole(value: com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole?): String? = value?.name
+
+    @TypeConverter
+    fun toUserRole(value: String?): com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole? = value?.let { 
+        com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole.valueOf(it) 
+    }
 }

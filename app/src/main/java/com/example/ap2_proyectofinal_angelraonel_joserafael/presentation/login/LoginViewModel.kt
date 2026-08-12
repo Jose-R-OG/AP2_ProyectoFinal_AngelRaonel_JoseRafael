@@ -1,6 +1,7 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,6 +13,9 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.Session
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.User
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -81,20 +85,50 @@ class LoginViewModel @Inject constructor(
 
     fun signInWithGoogle(context: Context) {
         viewModelScope.launch {
+            Log.d("LoginViewModel", "signInWithGoogle started")
             uiState = LoginUiState.Loading
-            val googleAuthUiClient = GoogleAuthUiClient(context)
-            val email = googleAuthUiClient.signIn()
-            
-            if (email != null) {
-                val user = authRepository.loginWithGoogle(email)
-                if (user != null) {
-                    sessionManager.saveUserId(user.id)
-                    uiState = LoginUiState.Success(user)
+            try {
+                val googleAuthUiClient = GoogleAuthUiClient(context)
+                val email = googleAuthUiClient.signIn()
+                
+                Log.d("LoginViewModel", "Google sign in result email: $email")
+                if (email != null) {
+                    var user = authRepository.loginWithGoogle(email)
+                    Log.d("LoginViewModel", "User found in DB: ${user?.username}")
+                    
+                    if (user == null && !authRepository.hasAnyUser()) {
+                        Log.d("LoginViewModel", "System is empty, registering first admin: $email")
+                        val newUser = User(
+                            id = 0,
+                            nombreCompleto = email.substringBefore("@").replaceFirstChar { it.uppercase() },
+                            username = email.substringBefore("@"),
+                            identificacion = "00000000000",
+                            telefono = "0000000000",
+                            email = email,
+                            pin = "1234",
+                            role = UserRole.ADMINISTRADOR,
+                            isActive = true
+                        )
+                        authRepository.registerUser(newUser)
+                        user = authRepository.loginWithGoogle(email)
+                        Log.d("LoginViewModel", "User registered and re-fetched: ${user?.username}")
+                    }
+
+                    if (user != null) {
+                        Log.d("LoginViewModel", "Success! Saving session for userId: ${user.id}")
+                        sessionManager.saveUserId(user.id)
+                        uiState = LoginUiState.Success(user)
+                    } else {
+                        Log.w("LoginViewModel", "User not registered and system not empty")
+                        uiState = LoginUiState.Error("Este correo ($email) no está registrado. Pida al administrador que lo registre.")
+                    }
                 } else {
-                    uiState = LoginUiState.Error("Este correo de Google ($email) no está registrado en el sistema")
+                    Log.w("LoginViewModel", "Email is null (cancelled or error)")
+                    uiState = LoginUiState.Idle
                 }
-            } else {
-                uiState = LoginUiState.Error("No se pudo iniciar sesión con Google")
+            } catch (e: Exception) {
+                Log.e("LoginViewModel", "Unexpected error in signInWithGoogle", e)
+                uiState = LoginUiState.Error("Error con Google: ${e.message}")
             }
         }
     }
