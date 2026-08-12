@@ -12,7 +12,7 @@ data class RecentCobroItem(
 )
 
 data class EmpleadoDashboardUiState(
-    val appTitle: String = "TacoBraoApp",
+    val appTitle: String = "TaCobraoApp",
     val userName: String = "Empleado",
     val formattedDate: String = "",
     val totalCollectedToday: String = "RD$ 0.00",

@@ -73,7 +73,7 @@ fun DetallePrestamoCobroScreen(
                 title = {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "TacoBraoApp",
+                            text = "TaCobraoApp",
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = PrimaryBlack
