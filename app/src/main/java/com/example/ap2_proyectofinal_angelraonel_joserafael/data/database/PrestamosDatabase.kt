@@ -35,7 +35,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.cierre.Ca
         CashClosureEntity::class,
         LoanStatusHistoryEntity::class
     ],
-    version = 13,
+    version = 14,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

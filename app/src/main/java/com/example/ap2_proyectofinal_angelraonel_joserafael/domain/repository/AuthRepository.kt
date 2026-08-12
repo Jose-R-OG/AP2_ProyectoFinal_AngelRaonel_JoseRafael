@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {
     suspend fun login(username: String, pin: String): User?
+    suspend fun loginWithGoogle(email: String): User?
     suspend fun registerUser(user: User)
     suspend fun updateUser(user: User)
     suspend fun hasAnyUser(): Boolean

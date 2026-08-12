@@ -17,6 +17,10 @@ class AuthRepositoryImpl @Inject constructor(
         return userDao.login(username, pin)?.toDomain()
     }
 
+    override suspend fun loginWithGoogle(email: String): User? {
+        return userDao.getUserByEmail(email)?.toDomain()
+    }
+
     override suspend fun registerUser(user: User) {
         userDao.insertUser(user.toEntity())
 
