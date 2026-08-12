@@ -1,5 +1,6 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,13 +53,20 @@ fun LoginScreen(
     val context = LocalContext.current
 
     LaunchedEffect(viewModel.uiState) {
+        Log.d("LoginScreen", "uiState changed to: ${viewModel.uiState}")
         when (val state = viewModel.uiState) {
             is LoginUiState.Success -> {
+                Log.d("LoginScreen", "Login Success! Role: ${state.user.role}")
                 if (state.user.role == UserRole.ADMINISTRADOR) {
+                    Log.d("LoginScreen", "Navigating to Admin Home...")
                     onNavigateToAdminHome()
                 } else {
+                    Log.d("LoginScreen", "Navigating to Empleado Home...")
                     onNavigateToEmpleadoHome()
                 }
+            }
+            is LoginUiState.Error -> {
+                Log.e("LoginScreen", "Login Error: ${state.message}")
             }
             else -> {}
         }
@@ -164,7 +174,7 @@ fun LoginScreen(
                             trailingIcon = {
                                 IconButton(onClick = { viewModel.onEvent(LoginUiEvent.TogglePinVisibility) }) {
                                     Icon(
-                                        imageVector = Icons.Default.Lock,
+                                        imageVector = if (viewModel.isPinVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                         contentDescription = "Mostrar/Ocultar PIN"
                                     )
                                 }
