@@ -15,7 +15,7 @@ class GoogleAuthUiClient(
     suspend fun signIn(): String? {
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
-            .setServerClientId("YOUR_SERVER_CLIENT_ID") // Se recomienda configurar esto
+            .setServerClientId("YOUR_SERVER_CLIENT_ID")
             .build()
 
         val request = GetCredentialRequest.Builder()
