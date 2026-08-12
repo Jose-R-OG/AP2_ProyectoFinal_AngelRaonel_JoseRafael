@@ -99,6 +99,12 @@ class DetallePrestamoCobroViewModel @Inject constructor(
             prestamoActual = prestamo
             clienteActual = clienteRepository.getClienteById(prestamo.clienteId)
 
+            val userId = sessionManager.currentUserId.first()
+            val user = userId?.let { authRepository.getUserById(it) }
+            val canCreate = user?.role == com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole.ADMINISTRADOR || user?.canCreateClients == true
+
+            _uiState.update { it.copy(clientId = prestamo.clienteId, canCreateLoans = canCreate) }
+
             prestamoRepository.obtenerCuotasPorPrestamo(prestamoId).collect { cuotas ->
                 cuotasActuales = cuotas
                 selectedCuotaIds = selectedCuotaIds.intersect(cuotas.map { it.id }.toSet())

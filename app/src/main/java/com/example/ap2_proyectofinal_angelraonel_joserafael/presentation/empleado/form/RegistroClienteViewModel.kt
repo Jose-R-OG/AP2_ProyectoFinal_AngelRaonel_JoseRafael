@@ -62,7 +62,7 @@ class RegistroClienteViewModel @Inject constructor(
         viewModelScope.launch {
             val userId = sessionManager.currentUserId.first()
             val user = userId?.let { authRepository.getUserById(it) }
-            canUseCustomRate = user?.role == com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole.ADMINISTRADOR
+            canUseCustomRate = user?.role == com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole.ADMINISTRADOR || user?.canCreateClients == true
             if (existingClientId > 0) {
                 clienteRepository.getClienteById(existingClientId)?.let { client ->
                     isExistingClient = true

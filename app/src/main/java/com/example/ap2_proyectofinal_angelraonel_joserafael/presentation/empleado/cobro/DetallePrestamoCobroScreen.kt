@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
@@ -96,6 +97,7 @@ fun DetallePrestamoCobroScreen(
     onNavigateToLoans: () -> Unit = {},
     onNavigateToRoutes: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToRegisterClient: (Long) -> Unit = {},
     viewModel: DetallePrestamoCobroViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -126,6 +128,11 @@ fun DetallePrestamoCobroScreen(
                     }
                 },
                 actions = {
+                    if (uiState.canCreateLoans) {
+                        IconButton(onClick = { onNavigateToRegisterClient(uiState.clientId) }) {
+                            Icon(Icons.Default.Add, contentDescription = "Ampliar capital", tint = SecondaryGreen)
+                        }
+                    }
                     IconButton(onClick = onNavigateToProfile) {
                         Icon(Icons.Default.AccountCircle, contentDescription = "Perfil", tint = PrimaryBlack)
                     }

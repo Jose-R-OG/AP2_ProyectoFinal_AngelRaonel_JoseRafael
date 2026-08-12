@@ -40,6 +40,7 @@ data class ClientesUiState(
     val searchQuery: String = "",
     val editor: ClienteEditorState? = null,
     val pendingDeactivation: Cliente? = null,
+    val canCreateLoans: Boolean = false,
     val isLoading: Boolean = true,
     val isMutating: Boolean = false,
     val message: String? = null

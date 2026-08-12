@@ -56,6 +56,9 @@ class ClientesViewModel @Inject constructor(
 
         viewModelScope.launch {
             val userId = sessionManager.currentUserId.first() ?: return@launch
+            val user = authRepository.getUserById(userId)
+            _uiState.update { it.copy(canCreateLoans = user?.role == UserRole.ADMINISTRADOR || user?.canCreateClients == true) }
+
             prestamoRepository.obtenerTodosLosPrestamos().collect { loans ->
                 this@ClientesViewModel.loans = loans
                 _uiState.update {
