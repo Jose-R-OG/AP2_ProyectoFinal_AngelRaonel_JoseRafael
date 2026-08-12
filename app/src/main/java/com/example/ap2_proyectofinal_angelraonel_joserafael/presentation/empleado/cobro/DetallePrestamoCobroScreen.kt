@@ -3,62 +3,20 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.emplea
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Percent
-import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material.icons.filled.ReceiptLong
-import androidx.compose.material.icons.filled.RemoveCircleOutline
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,6 +25,8 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Payment
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.PaymentReceiptManager
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.DigitalSignaturePad
+import java.util.Locale
+import java.util.Date
 
 private val SurfaceColor = Color(0xFFF8F9FF)
 private val PrimaryBlack = Color(0xFF000000)
@@ -76,7 +36,6 @@ private val LightBlueBadgeBg = Color(0xFFDCE9FF)
 private val LightBlueBadgeText = Color(0xFF1565C0)
 private val OnSurfaceVariant = Color(0xFF30323A)
 private val OutlineVariant = Color(0xFFC6C6CD)
-
 private val PagadoBadgeBg = Color(0xFF6CF8BB).copy(alpha = 0.4f)
 private val PagadoBadgeText = Color(0xFF00714D)
 private val VencidoBadgeBg = Color(0xFFFFDAD6)
@@ -96,6 +55,7 @@ fun DetallePrestamoCobroScreen(
     onNavigateToLoans: () -> Unit = {},
     onNavigateToRoutes: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToRegisterClient: (Long) -> Unit = {},
     viewModel: DetallePrestamoCobroViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -126,6 +86,11 @@ fun DetallePrestamoCobroScreen(
                     }
                 },
                 actions = {
+                    if (uiState.canCreateLoans) {
+                        IconButton(onClick = { onNavigateToRegisterClient(uiState.clientId) }) {
+                            Icon(Icons.Default.Add, contentDescription = "Ampliar capital", tint = SecondaryGreen)
+                        }
+                    }
                     IconButton(onClick = onNavigateToProfile) {
                         Icon(Icons.Default.AccountCircle, contentDescription = "Perfil", tint = PrimaryBlack)
                     }
@@ -153,7 +118,6 @@ fun DetallePrestamoCobroScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Subheader: Volver a Clientes
             item {
                 Row(
                     modifier = Modifier
@@ -177,7 +141,6 @@ fun DetallePrestamoCobroScreen(
                 }
             }
 
-            // Título de Préstamo y Cliente
             item {
                 Column {
                     Row(
@@ -213,7 +176,6 @@ fun DetallePrestamoCobroScreen(
                 }
             }
 
-            // Card 1: Saldo Pendiente
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -266,13 +228,11 @@ fun DetallePrestamoCobroScreen(
                 }
             }
 
-            // Fila 2 Cards: Monto Original y Tasa de Interés
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Card Monto Original
                     Card(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(16.dp),
@@ -290,7 +250,6 @@ fun DetallePrestamoCobroScreen(
                         }
                     }
 
-                    // Card Tasa de Interés
                     Card(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(16.dp),
@@ -329,7 +288,6 @@ fun DetallePrestamoCobroScreen(
                 }
             }
 
-            // Botón Realizar Cobro Seleccionado
             item {
                 Button(
                     onClick = { viewModel.onEvent(DetallePrestamoCobroUiEvent.RealizarCobroSeleccionado) },
@@ -355,7 +313,6 @@ fun DetallePrestamoCobroScreen(
                 }
             }
 
-            // Header Plan de Pagos
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -383,7 +340,6 @@ fun DetallePrestamoCobroScreen(
                 }
             }
 
-            // Lista de Cuotas
             items(uiState.cuotasList, key = { it.id }) { cuota ->
                 CuotaCardRow(
                     cuota = cuota,
@@ -403,7 +359,7 @@ fun DetallePrestamoCobroScreen(
                 Text(if (receipt.debtPaidOff) "Todas las cuotas fueron pagadas. Se generó la constancia de deuda saldada." else "El pago se guardó correctamente.")
                 Text("Cuota: ${receipt.installmentLabel}", fontWeight = FontWeight.Bold)
                 Text("Pagos restantes: ${receipt.remainingInstallments}")
-                Text("Saldo: ${String.format(java.util.Locale.US, "RD$ %,.2f", receipt.remainingBalance)}")
+                Text("Saldo: ${String.format(Locale.US, "RD$ %,.2f", receipt.remainingBalance)}")
                 Text(if (receipt.signaturePath == null) "Puedes agregar la firma digital antes de reimprimir o compartir." else "Firma digital guardada.")
             } },
             confirmButton = {

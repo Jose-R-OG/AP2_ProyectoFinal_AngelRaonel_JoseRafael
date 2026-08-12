@@ -111,7 +111,8 @@ fun AppNavigation(navController: NavHostController) {
                 onNavigateLoans = { employee(Routes.COBROS_EMPLEADO) },
                 onNavigateProfile = { employee(Routes.EMPLEADO_PERFIL) },
                 onNavigateRoutes = { employee(Routes.RUTAS_EMPLEADO) },
-                onAddCliente = { navController.navigate(Routes.REGISTRO_CLIENTE) }
+                onAddCliente = { navController.navigate(Routes.REGISTRO_CLIENTE) },
+                onNewLoan = { clientId -> navController.navigate("${Routes.REGISTRO_CLIENTE}?clientId=$clientId") }
             )
         }
 
@@ -209,6 +210,9 @@ fun AppNavigation(navController: NavHostController) {
                 },
                 onNavigateToProfile = {
                     if (isAdmin) admin(Routes.ADMIN_PROFILE) else employee(Routes.EMPLEADO_PERFIL)
+                },
+                onNavigateToRegisterClient = { clientId ->
+                    navController.navigate("${Routes.REGISTRO_CLIENTE}?clientId=$clientId")
                 }
             )
         }

@@ -3,52 +3,15 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.emplea
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AltRoute
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.Payments
-import androidx.compose.material.icons.filled.PendingActions
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.PointOfSale
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,7 +27,6 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRol
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 
-// --- PALETA DE COLORES (Mockup TacoBraoApp) ---
 private val SurfaceColor = Color(0xFFF8F9FF)
 private val PrimaryBlack = Color(0xFF000000)
 private val SecondaryGreen = Color(0xFF006C49)
@@ -134,16 +96,16 @@ fun EmpleadoDashboardScreen(
                     }
                 },
                 actions = {
-                    androidx.compose.material3.BadgedBox(
+                    BadgedBox(
                         badge = {
                             if (uiState.unreadNotifications > 0) {
-                                androidx.compose.material3.Badge {
+                                Badge {
                                     Text(uiState.unreadNotifications.toString())
                                 }
                             }
                         }
                     ) {
-                        androidx.compose.material3.IconButton(onClick = onNavigateToNotifications) {
+                        IconButton(onClick = onNavigateToNotifications) {
                             Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
                         }
                     }
@@ -181,7 +143,6 @@ fun EmpleadoDashboardScreen(
                     .padding(horizontal = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                // Indicador especial si el usuario es Admin utilizando modo empleado
                 if (uiState.userRole == UserRole.ADMINISTRADOR) {
                     item {
                         Surface(
@@ -215,7 +176,6 @@ fun EmpleadoDashboardScreen(
                     }
                 }
 
-                // Saludo y Fecha
                 item {
                     Column(modifier = Modifier.padding(top = 4.dp)) {
                         Text(
@@ -233,7 +193,6 @@ fun EmpleadoDashboardScreen(
                     }
                 }
 
-                // Resumen del día: esperado, cobrado y pendiente
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         DailyAmountCard("Total a cobrar", uiState.totalToCollectToday, Icons.Default.Payments, Color(0xFF1565C0))
@@ -242,13 +201,11 @@ fun EmpleadoDashboardScreen(
                     }
                 }
 
-                // Fila de 2 Tarjetas Pequeñas (Pendientes y Ruta Activa)
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        // Pendientes
                         Card(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(16.dp),
@@ -278,7 +235,6 @@ fun EmpleadoDashboardScreen(
                             }
                         }
 
-                        // Ruta Activa
                         Card(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(16.dp),
@@ -310,7 +266,6 @@ fun EmpleadoDashboardScreen(
                     }
                 }
 
-                // Sección Acciones Rápidas
                 item {
                     Text(
                         text = "Acciones Rápidas",
@@ -320,14 +275,12 @@ fun EmpleadoDashboardScreen(
                     )
                 }
 
-                // Grid 2x2 Acciones Rápidas
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // 1. Nuevo Cliente (Negro)
                             ActionButtonLarge(
                                 label = "Nuevo Cliente",
                                 icon = Icons.Default.PersonAdd,
@@ -338,7 +291,6 @@ fun EmpleadoDashboardScreen(
                                 onClick = onNuevoClienteClick
                             )
 
-                            // 2. Realizar Cobro (Verde Oscuro)
                             ActionButtonLarge(
                                 label = "Realizar Cobro",
                                 icon = Icons.Default.Payments,
@@ -354,7 +306,6 @@ fun EmpleadoDashboardScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // 3. Ver Mi Ruta (Azul Suave)
                             ActionButtonLarge(
                                 label = "Ver Mi Ruta",
                                 icon = Icons.Default.Map,
@@ -365,7 +316,6 @@ fun EmpleadoDashboardScreen(
                                 onClick = onVerRutaClick
                             )
 
-                            // 4. Cierre de Caja (Azul Suave con icono Rojo)
                             ActionButtonLarge(
                                 label = "Cierre de Caja",
                                 icon = Icons.Default.PointOfSale,
@@ -379,7 +329,6 @@ fun EmpleadoDashboardScreen(
                     }
                 }
 
-                // Sección Cobros Recientes
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -403,7 +352,6 @@ fun EmpleadoDashboardScreen(
                     }
                 }
 
-                // Lista de Cobros Recientes
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),

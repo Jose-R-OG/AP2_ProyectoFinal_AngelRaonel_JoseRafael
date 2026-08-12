@@ -5,28 +5,25 @@ import java.math.BigDecimal
 data class Prestamo(
     val id: Long = 0,
     val clienteId: Long,
-    val empleadoId: Long,                  // Quién registró la solicitud
-    val aprobadoPorAdminId: Long? = null,  // Quién la aprobó (Auditoría)
+    val empleadoId: Long,
+    val aprobadoPorAdminId: Long? = null,
 
-    // --- Fotografía de las condiciones pactadas ---
-    val montoSolicitado: BigDecimal,       // Capital prestado
-    val porcentajeInteres: BigDecimal,     // Porcentaje aplicado (%)
-    val interesTotal: BigDecimal,          // Interés total generado
-    val totalAPagar: BigDecimal,           // Capital + Intereses
-    val totalPagado: BigDecimal = BigDecimal.ZERO, // Acumulador de lo que ha pagado
-    val montoCuota: BigDecimal,            // Valor de cada cuota
-    val cantidadCuotas: Int,               // Plazo (ej. 12)
-    val frecuenciaPago: FrecuenciaPago,    // DIARIO, SEMANAL...
-    val diaPagoPreferido: Int? = null,      // Día de semana (1-7) o de mes (1-28)
+    val montoSolicitado: BigDecimal,
+    val porcentajeInteres: BigDecimal,
+    val interesTotal: BigDecimal,
+    val totalAPagar: BigDecimal,
+    val totalPagado: BigDecimal = BigDecimal.ZERO,
+    val montoCuota: BigDecimal,
+    val cantidadCuotas: Int,
+    val frecuenciaPago: FrecuenciaPago,
+    val diaPagoPreferido: Int? = null,
     val diaPagoDescripcion: String? = null,
 
-    // --- Fechas de Ciclo de Vida ---
-    val fechaCreacion: Long = System.currentTimeMillis(), // Fecha de solicitud
-    val fechaInicio: Long? = null,         // Fecha de inicio (Desembolso)
-    val fechaFin: Long? = null,            // Fecha proyectada de término
+    val fechaCreacion: Long = System.currentTimeMillis(),
+    val fechaInicio: Long? = null,
+    val fechaFin: Long? = null,
 
-    // --- Control y Estado ---
-    val estado: LoanStatus = LoanStatus.PENDIENTE_REVISION,
+    val estado: LoanStatus,
     val motivoRechazo: String? = null,
     val rutaFotoContratoFirmado: String? = null,
     val contratoFisicoEntregado: Boolean = false

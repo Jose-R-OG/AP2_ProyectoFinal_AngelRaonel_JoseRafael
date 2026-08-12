@@ -6,10 +6,10 @@ data class Cuota(
     val id: Long = 0,
     val prestamoId: Long,
     val numeroCuota: Int,
-    val fechaVencimiento: Long,            // Fecha en la que toca pagar
-    val fechaPago: Long? = null,           // Fecha exacta en la que se pagó realmente
-    val montoEsperado: BigDecimal,         // Monto base de la cuota
-    val montoPagado: BigDecimal = BigDecimal.ZERO, // Abonos realizados
-    val moraAcumulada: BigDecimal = BigDecimal.ZERO, // Mora sumada por atrasos
+    val fechaVencimiento: Long,
+    val fechaPago: Long? = null,
+    val montoEsperado: BigDecimal,
+    val montoPagado: BigDecimal = BigDecimal.ZERO,
+    val moraAcumulada: BigDecimal = BigDecimal.ZERO,
     val estaPagada: Boolean = false
 )

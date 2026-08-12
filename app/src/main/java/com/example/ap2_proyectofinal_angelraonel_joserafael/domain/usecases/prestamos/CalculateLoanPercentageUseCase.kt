@@ -4,31 +4,32 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 
-class CalcularPorcentajePrestamoUseCase @Inject constructor() {
+class CalculateLoanPercentageUseCase @Inject constructor() {
 
-    data class ResultadoCalculo(
-        val totalAPagar: BigDecimal,
-        val montoCuota: BigDecimal,
-        val interesTotal: BigDecimal
-    )
-
-    operator fun invoke(montoSolicitado: BigDecimal, porcentajeInteres: BigDecimal, cantidadCuotas: Int): ResultadoCalculo {
-        // Interés = Monto * (Porcentaje / 100)
-        val interesTotal = montoSolicitado
-            .multiply(porcentajeInteres)
+    fun execute(
+        monto: BigDecimal,
+        porcentaje: BigDecimal,
+        plazo: Int
+    ): LoanCalculationResult {
+        val interesTotal = monto.multiply(porcentaje)
             .divide(BigDecimal("100"), 2, RoundingMode.HALF_UP)
 
-        // Total a Pagar = Capital + Intereses
-        val totalAPagar = montoSolicitado.add(interesTotal)
+        val totalAPagar = monto.add(interesTotal)
 
-        // Valor Cuota Fija = Total a Pagar / Plazo
-        val montoCuota = totalAPagar
-            .divide(BigDecimal(cantidadCuotas), 2, RoundingMode.HALF_UP)
+        val montoCuota = totalAPagar.divide(
+            BigDecimal(plazo), 2, RoundingMode.HALF_UP
+        )
 
-        return ResultadoCalculo(
+        return LoanCalculationResult(
+            interesTotal = interesTotal,
             totalAPagar = totalAPagar,
-            montoCuota = montoCuota,
-            interesTotal = interesTotal
+            montoCuota = montoCuota
         )
     }
 }
+
+data class LoanCalculationResult(
+    val interesTotal: BigDecimal,
+    val totalAPagar: BigDecimal,
+    val montoCuota: BigDecimal
+)

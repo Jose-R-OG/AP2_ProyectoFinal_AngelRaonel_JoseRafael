@@ -28,7 +28,6 @@ import coil.compose.AsyncImage
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 
-// --- PALETA DE COLORES (Configuración Tailwind) ---
 val SurfaceColor = Color(0xFFF8F9FF)
 val PrimaryColor = Color(0xFF000000)
 val SecondaryGreen = Color(0xFF006C49)
@@ -39,7 +38,6 @@ val OutlineVariant = Color(0xFFC6C6CD)
 val ErrorColor = Color(0xFFBA1A1A)
 val ErrorContainer = Color(0xFFFFDAD6)
 val OnErrorContainer = Color(0xFF93000A)
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -159,7 +157,6 @@ fun AdminDashboardScreen(
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Header Bienvenida
                 item {
                     Column(modifier = Modifier.padding(vertical = 8.dp)) {
                         Text(
@@ -176,7 +173,6 @@ fun AdminDashboardScreen(
                     }
                 }
 
-                // Bento Grid: Métricas Claves Dinámicas
                 item {
                     MetricCard(
                         title = "Total Cobrado Hoy",
@@ -225,7 +221,6 @@ fun AdminDashboardScreen(
                     }
                 }
 
-                // Quick Actions
                 item {
                     Text(
                         text = "Acciones Rápidas",
@@ -251,7 +246,6 @@ fun AdminDashboardScreen(
                     }
                 }
 
-                // Movimientos Recientes
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -272,7 +266,6 @@ fun AdminDashboardScreen(
                     }
                 }
 
-                // Estado Vacío o Lista Dinámica
                 if (uiState.recentMovements.isEmpty()) {
                     item {
                         Card(
