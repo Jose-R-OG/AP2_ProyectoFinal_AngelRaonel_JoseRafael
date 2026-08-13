@@ -1,6 +1,5 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.data.repository.dashboard
 
-import android.util.Log
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.user.UserDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.PrestamoDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.transaccion.TransaccionDao
@@ -12,7 +11,6 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.da
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.dashboard.MovementItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.onStart
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.SimpleDateFormat
@@ -40,13 +38,11 @@ class DashboardRepositoryImpl @Inject constructor(
             add(Calendar.MILLISECOND, -1)
         }.timeInMillis
 
-        Log.d("DashboardRepo", "getDashboardMetrics: starting flows...")
         return combine(
-            prestamoDao.obtenerTodosLosPrestamos().onStart { Log.d("DashboardRepo", "Prestamos flow started") },
-            userDao.getAllUsers().onStart { Log.d("DashboardRepo", "Users flow started") },
-            transaccionDao.obtenerTransaccionesPorDia(inicioDia, finDia).onStart { Log.d("DashboardRepo", "Transacciones flow started") }
+            prestamoDao.obtenerTodosLosPrestamos(),
+            userDao.getAllUsers(),
+            transaccionDao.obtenerTransaccionesPorDia(inicioDia, finDia)
         ) { prestamos, users, transacciones ->
-            Log.d("DashboardRepo", "Flows combined! P:${prestamos.size}, U:${users.size}, T:${transacciones.size}")
             val totalCobradoHoy = transacciones
                 .filter { it.tipo == TipoTransaccion.INGRESO }
                 .fold(BigDecimal.ZERO) { total, transaccion -> total.add(transaccion.monto) }
@@ -103,6 +99,6 @@ class DashboardRepositoryImpl @Inject constructor(
                 },
                 recentMovements = recentMovements
             )
-        }.onStart { Log.d("DashboardRepo", "Combined flow fully started") }
+        }
     }
 }

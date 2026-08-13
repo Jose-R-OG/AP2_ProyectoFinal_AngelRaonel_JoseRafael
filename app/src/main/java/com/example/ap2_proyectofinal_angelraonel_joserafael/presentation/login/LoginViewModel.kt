@@ -85,19 +85,28 @@ class LoginViewModel @Inject constructor(
 
     fun signInWithGoogle(context: Context) {
         viewModelScope.launch {
-            Log.d("LoginViewModel", "signInWithGoogle started")
             uiState = LoginUiState.Loading
+            
+            kotlinx.coroutines.delay(200)
+            
             try {
                 val googleAuthUiClient = GoogleAuthUiClient(context)
-                val email = googleAuthUiClient.signIn()
                 
-                Log.d("LoginViewModel", "Google sign in result email: $email")
-                if (email != null) {
-                    var user = authRepository.loginWithGoogle(email)
-                    Log.d("LoginViewModel", "User found in DB: ${user?.username}")
+                val email = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    googleAuthUiClient.signIn()
+                }
+                
+                if (email == null) {
+                    uiState = LoginUiState.Error("Google no devolvió ningún correo. Verifique su conexión o intente de nuevo.")
+                    return@launch
+                }
+
+                var user = authRepository.loginWithGoogle(email)
+                
+                if (user == null) {
+                    val hasUsers = authRepository.hasAnyUser()
                     
-                    if (user == null && !authRepository.hasAnyUser()) {
-                        Log.d("LoginViewModel", "System is empty, registering first admin: $email")
+                    if (!hasUsers) {
                         val newUser = User(
                             id = 0,
                             nombreCompleto = email.substringBefore("@").replaceFirstChar { it.uppercase() },
@@ -111,24 +120,23 @@ class LoginViewModel @Inject constructor(
                         )
                         authRepository.registerUser(newUser)
                         user = authRepository.loginWithGoogle(email)
-                        Log.d("LoginViewModel", "User registered and re-fetched: ${user?.username}")
                     }
-
-                    if (user != null) {
-                        Log.d("LoginViewModel", "Success! Saving session for userId: ${user.id}")
-                        sessionManager.saveUserId(user.id)
-                        uiState = LoginUiState.Success(user)
-                    } else {
-                        Log.w("LoginViewModel", "User not registered and system not empty")
-                        uiState = LoginUiState.Error("Este correo ($email) no está registrado. Pida al administrador que lo registre.")
-                    }
-                } else {
-                    Log.w("LoginViewModel", "Email is null (cancelled or error)")
-                    uiState = LoginUiState.Idle
                 }
+
+                if (user != null) {
+                    sessionManager.saveUserId(user.id)
+                    uiState = LoginUiState.Success(user)
+                } else {
+                    uiState = LoginUiState.Error("La cuenta $email no está autorizada. Contacte al administrador.")
+                }
+                
             } catch (e: Exception) {
-                Log.e("LoginViewModel", "Unexpected error in signInWithGoogle", e)
-                uiState = LoginUiState.Error("Error con Google: ${e.message}")
+                val friendlyMessage = if (e.message?.contains("28444") == true) {
+                    "Error de configuración (28444): Verifique SHA-1 en Google Console."
+                } else {
+                    "Error de autenticación: ${e.message ?: "Desconocido"}"
+                }
+                uiState = LoginUiState.Error(friendlyMessage)
             }
         }
     }

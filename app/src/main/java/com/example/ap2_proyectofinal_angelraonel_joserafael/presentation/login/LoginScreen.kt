@@ -20,6 +20,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +38,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
+
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun LoginScreen(
@@ -59,6 +64,22 @@ fun LoginScreen(
                 }
             }
             else -> {}
+        }
+    }
+
+    if (viewModel.uiState is LoginUiState.Loading) {
+        Dialog(
+            onDismissRequest = { },
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(Color.White, RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = primaryGreen)
+            }
         }
     }
 
@@ -164,7 +185,7 @@ fun LoginScreen(
                             trailingIcon = {
                                 IconButton(onClick = { viewModel.onEvent(LoginUiEvent.TogglePinVisibility) }) {
                                     Icon(
-                                        imageVector = Icons.Default.Lock,
+                                        imageVector = if (viewModel.isPinVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                         contentDescription = "Mostrar/Ocultar PIN"
                                     )
                                 }
