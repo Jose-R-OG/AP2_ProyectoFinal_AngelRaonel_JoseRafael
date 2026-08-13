@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "384429348767-1154r77vn9o89ceum5bg4k4m9h1dsmuh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ap2_proyectofinal_angelraonel_joserafael",
+            "certificate_hash": "32324289275331759e9e400273ffc5f736a20e32"
+          }
+        },
+        {
           "client_id": "384429348767-3r047asqk9ah3d02k7alvm7htsugsh52.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

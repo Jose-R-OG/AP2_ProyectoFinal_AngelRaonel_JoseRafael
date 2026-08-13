@@ -1,51 +1,59 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.util.auth
 
 import android.content.Context
-import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import java.security.SecureRandom
+import android.util.Base64
+import androidx.credentials.CustomCredential
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 
 class GoogleAuthUiClient(
     private val context: Context
 ) {
     private val credentialManager = CredentialManager.create(context)
-    private val TAG = "GoogleAuthUiClient"
+
+    private fun generateNonce(): String {
+        val bytes = ByteArray(32)
+        SecureRandom().nextBytes(bytes)
+        return Base64.encodeToString(bytes, Base64.NO_WRAP or Base64.URL_SAFE or Base64.NO_PADDING)
+    }
 
     suspend fun signIn(): String? {
-        val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
-            .setFilterByAuthorizedAccounts(false)
-            .setServerClientId("384429348767-0rog4pg4shgslcduio18kc33tmocm1gm.apps.googleusercontent.com")
-            .setAutoSelectEnabled(false)
-            .build()
+        val googleIdOption = GetSignInWithGoogleOption.Builder(
+            serverClientId = "384429348767-0rog4pg4shgslcduio18kc33tmocm1gm.apps.googleusercontent.com"
+        ).setNonce(generateNonce())
+        .build()
 
         val request = GetCredentialRequest.Builder()
             .addCredentialOption(googleIdOption)
             .build()
 
         return try {
-            Log.d(TAG, "Initiating CredentialManager.getCredential...")
             val result = credentialManager.getCredential(
                 context = context,
                 request = request
             )
-            Log.d(TAG, "Credential received. Type: ${result.credential.type}")
-            val credential = result.credential
             
+            val credential = result.credential
+
             if (credential is GoogleIdTokenCredential) {
-                Log.d(TAG, "Sign in successful. Email: ${credential.id}")
                 credential.id
+            } else if (credential is CustomCredential) {
+                try {
+                    val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                    googleIdTokenCredential.id
+                } catch (e: Exception) {
+                    null
+                }
             } else {
-                Log.e(TAG, "Received unexpected credential type: ${credential.type}")
                 null
             }
         } catch (e: GetCredentialCancellationException) {
-            Log.w(TAG, "Sign in cancelled by user")
             null
         } catch (e: Exception) {
-            Log.e(TAG, "Error during sign in. Exception type: ${e::class.java.simpleName}", e)
             throw e
         }
     }

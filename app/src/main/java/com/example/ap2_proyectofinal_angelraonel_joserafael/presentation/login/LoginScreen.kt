@@ -1,6 +1,5 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +39,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
 
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+
 @Composable
 fun LoginScreen(
     onNavigateToAdminHome: () -> Unit,
@@ -53,22 +55,31 @@ fun LoginScreen(
     val context = LocalContext.current
 
     LaunchedEffect(viewModel.uiState) {
-        Log.d("LoginScreen", "uiState changed to: ${viewModel.uiState}")
         when (val state = viewModel.uiState) {
             is LoginUiState.Success -> {
-                Log.d("LoginScreen", "Login Success! Role: ${state.user.role}")
                 if (state.user.role == UserRole.ADMINISTRADOR) {
-                    Log.d("LoginScreen", "Navigating to Admin Home...")
                     onNavigateToAdminHome()
                 } else {
-                    Log.d("LoginScreen", "Navigating to Empleado Home...")
                     onNavigateToEmpleadoHome()
                 }
             }
-            is LoginUiState.Error -> {
-                Log.e("LoginScreen", "Login Error: ${state.message}")
-            }
             else -> {}
+        }
+    }
+
+    if (viewModel.uiState is LoginUiState.Loading) {
+        Dialog(
+            onDismissRequest = { },
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(Color.White, RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = primaryGreen)
+            }
         }
     }
 
