@@ -41,6 +41,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 
 @Composable
 fun ActivationCodeScreen(
@@ -187,5 +189,17 @@ fun ActivationCodeScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ActivationCodeScreenPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        ActivationCodeScreen(
+            email = "usuario@ejemplo.com",
+            expectedCode = "123456",
+            onActivationSuccess = {}
+        )
     }
 }
