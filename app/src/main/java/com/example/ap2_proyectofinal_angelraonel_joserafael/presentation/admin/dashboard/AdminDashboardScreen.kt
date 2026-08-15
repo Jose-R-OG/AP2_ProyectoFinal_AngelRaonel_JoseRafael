@@ -458,7 +458,7 @@ fun AdminDashboardScreenPreview() {
     AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
         AdminDashboardContent(
             uiState = AdminDashboardUiState(
-                businessName = "TacoBrao",
+                businessName = "TaCobrao",
                 totalCollectedToday = "RD$ 15,200.00",
                 capitalInStreet = "RD$ 250,000.00",
                 outstandingPortfolio = "RD$ 45,000.00",

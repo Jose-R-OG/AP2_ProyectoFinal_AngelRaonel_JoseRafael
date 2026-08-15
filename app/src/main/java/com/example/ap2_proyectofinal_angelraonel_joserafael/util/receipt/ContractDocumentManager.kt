@@ -61,7 +61,7 @@ object ContractDocumentManager {
         line("____________________________________")
         line("Firma digital o manuscrita del cliente", true)
         line("────────────────────────────────────")
-        line("Documento emitido por TacoBrao. Conserve una copia.")
+        line("Documento emitido por TaCobrao. Conserve una copia.")
         pdf.finishPage(page)
         FileOutputStream(file).use { pdf.writeTo(it) }
         pdf.close()
@@ -74,7 +74,7 @@ object ContractDocumentManager {
         val base = Intent(Intent.ACTION_SEND).apply {
             type = "application/pdf"
             putExtra(Intent.EXTRA_STREAM, uri)
-            putExtra(Intent.EXTRA_TEXT, "Contrato TacoBrao TB-PR-${contract.loanId}")
+            putExtra(Intent.EXTRA_TEXT, "Contrato TaCobrao TB-PR-${contract.loanId}")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         try {

@@ -82,7 +82,7 @@ fun RegisterAdminScreen(
                 try {
                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:${state.email}")
-                        putExtra(Intent.EXTRA_SUBJECT, "Código de Activación TacoBrao")
+                        putExtra(Intent.EXTRA_SUBJECT, "Código de Activación TaCobrao")
                         putExtra(
                             Intent.EXTRA_TEXT,
                             "¡Hola ${fullName}!\n\nTu registro ha sido enviado exitosamente.\n\nTu código de activación es: ${state.activationCode}\n\nConsérvalo para verificar tu cuenta."
@@ -122,7 +122,7 @@ fun RegisterAdminScreen(
             ) {
                 Icon(Icons.Default.AccountBalance, contentDescription = null, tint = Color.Black, modifier = Modifier.size(28.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("TacoBrao", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text("TaCobrao", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             }
 
             Text("Registrar Empresa", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.Black)

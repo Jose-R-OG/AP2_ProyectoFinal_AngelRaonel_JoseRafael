@@ -48,7 +48,7 @@ fun EmployeeManagementScreen(
         containerColor = Page,
         topBar = {
             TopAppBar(
-                title = { Text("TacoBrao · Empleados", fontWeight = FontWeight.Bold) },
+                title = { Text("TaCobrao · Empleados", fontWeight = FontWeight.Bold) },
                 navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver") } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Page)
             )

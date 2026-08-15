@@ -54,7 +54,7 @@ private fun ScreenPreviewFrame(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.AccountBalance, null)
-                    Text("  TacoBrao", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("  TaCobrao", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
                 Icon(Icons.Default.Notifications, null)
             }
@@ -96,7 +96,7 @@ private fun ScreenPreviewFrame(
 @Composable private fun RegisterAdminPreview() = ScreenPreviewFrame("Crear administrador", "Solo disponible si el teléfono aún no tiene administrador", sections = listOf("Datos personales", "Negocio y comprobante", "Crear cuenta"), bottom = "Volver al acceso")
 
 @Preview(name = "03 · Activación", showBackground = true, showSystemUi = true)
-@Composable private fun ActivationPreview() = ScreenPreviewFrame("Código de activación", "Confirma el registro inicial", sections = listOf("Código de 6 dígitos", "Verificar"), bottom = "TacoBrao")
+@Composable private fun ActivationPreview() = ScreenPreviewFrame("Código de activación", "Confirma el registro inicial", sections = listOf("Código de 6 dígitos", "Verificar"), bottom = "TaCobrao")
 
 @Preview(name = "04 · Inicio administrador", showBackground = true, showSystemUi = true)
 @Composable private fun AdminHomePreview() = ScreenPreviewFrame("Resumen de operaciones", "Métricas reales sin botón flotante", metrics = listOf("Cobrado hoy" to "RD$ 0.00", "Capital en la calle" to "RD$ 0.00", "Cartera por cobrar" to "RD$ 0.00"), sections = listOf("Acciones rápidas", "Movimientos recientes"))

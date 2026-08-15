@@ -41,7 +41,7 @@ data class PaymentReceipt(
     val remainingBalance: BigDecimal = BigDecimal.ZERO,
     val debtPaidOff: Boolean = false,
     val signaturePath: String? = null,
-    val businessName: String = "TacoBrao",
+    val businessName: String = "TaCobrao",
     val businessRnc: String = "",
     val businessAddress: String = ""
 )
@@ -137,7 +137,7 @@ object PaymentReceiptManager {
             runCatching {
                 val file = createPdf(context, receipt)
                 val manager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
-                manager.print("TacoBrao ${receipt.receiptNumber}", PdfAdapter(file), PrintAttributes.Builder().build())
+                manager.print("TaCobrao ${receipt.receiptNumber}", PdfAdapter(file), PrintAttributes.Builder().build())
                 Unit
             }
         }
@@ -149,7 +149,7 @@ object PaymentReceiptManager {
         val base = Intent(Intent.ACTION_SEND).apply {
             type = "application/pdf"
             putExtra(Intent.EXTRA_STREAM, uri)
-            putExtra(Intent.EXTRA_TEXT, "Comprobante de pago TacoBrao ${receipt.receiptNumber}")
+            putExtra(Intent.EXTRA_TEXT, "Comprobante de pago TaCobrao ${receipt.receiptNumber}")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         val whatsapp = Intent(base).setPackage("com.whatsapp")

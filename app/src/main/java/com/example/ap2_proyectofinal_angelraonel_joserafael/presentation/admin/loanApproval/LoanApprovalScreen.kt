@@ -89,7 +89,7 @@ fun LoanApprovalContent(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AccountBalance, contentDescription = null, tint = PrimaryColor)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("TacoBrao", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = PrimaryColor)
+                        Text("TaCobrao", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = PrimaryColor)
                     }
                 },
                 navigationIcon = {

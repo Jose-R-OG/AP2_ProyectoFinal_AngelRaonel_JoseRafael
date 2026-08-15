@@ -117,7 +117,7 @@ fun ClientesScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "TacoBrao",
+                            text = "TaCobrao",
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = ClientesPrimary

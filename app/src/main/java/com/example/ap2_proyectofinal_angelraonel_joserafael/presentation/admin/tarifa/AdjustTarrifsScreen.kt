@@ -107,7 +107,7 @@ fun AdjustTariffsContent(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "TacoBrao",
+                                text = "TaCobrao",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp,
                                 color = PrimaryColor
@@ -179,7 +179,7 @@ fun AdjustTariffsContent(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Las tasas configuradas aquí se aplicarán automáticamente a todas las nuevas solicitudes de préstamo de TacoBrao.",
+                                text = "Las tasas configuradas aquí se aplicarán automáticamente a todas las nuevas solicitudes de préstamo de TaCobrao.",
                                 fontSize = 13.sp,
                                 color = OnSurfaceVariant
                             )
