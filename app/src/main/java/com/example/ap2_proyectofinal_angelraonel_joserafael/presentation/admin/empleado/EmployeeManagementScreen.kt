@@ -37,13 +37,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import java.io.File
-
-private val Page = Color(0xFFF8F9FF)
-private val Ink = Color(0xFF111318)
-private val Muted = Color(0xFF30323A)
-private val Green = Color(0xFF006C49)
-private val Red = Color(0xFFBA1A1A)
-private val Border = Color(0xFFC6C6CD)
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Border
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Green
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Ink
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Muted
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Page
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -322,4 +323,46 @@ fun EmployeeManagementScreen(
         } },
         confirmButton = { TextButton(onClick = { onEvent(EmployeeUiEvent.CloseAssignment) }) { Text("Cerrar") } }
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EmployeeManagementScreenPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        EmployeeManagementScreen(
+            uiState = EmployeeUiState(
+                employees = listOf(
+                    Employee(
+                        id = "1",
+                        name = "Juan Pérez",
+                        username = "jperez",
+                        identification = "402-1234567-8",
+                        phone = "809-555-0123",
+                        address = "Calle Falsa 123",
+                        route = "Zona Norte",
+                        clientsAssigned = 15,
+                        collectionCount = 45,
+                        isActive = true
+                    ),
+                    Employee(
+                        id = "2",
+                        name = "Maria Rodriguez",
+                        username = "mrodriguez",
+                        identification = "402-8765432-1",
+                        phone = "829-555-4321",
+                        address = "Av. Independencia 456",
+                        route = "Zona Sur",
+                        clientsAssigned = 8,
+                        collectionCount = 20,
+                        isActive = false
+                    )
+                ),
+                totalAgents = 2,
+                activeAgents = 1,
+                pendingRoutes = 0
+            ),
+            onEvent = {},
+            onBackClick = {}
+        )
+    }
 }
