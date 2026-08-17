@@ -79,6 +79,7 @@ fun RegisterAdminScreen(
                 } catch (e: Exception) {
                 }
 
+                Toast.makeText(context, "Solicitud enviada. Revisa tu correo electrónico.", Toast.LENGTH_LONG).show()
                 onNavigateToActivation(state.email, state.activationCode)
             }
             is RegisterState.Error -> {
