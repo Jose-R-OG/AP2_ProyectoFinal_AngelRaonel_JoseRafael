@@ -1,6 +1,7 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.cierre
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,12 +12,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.platform.LocalContext
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
@@ -41,6 +47,7 @@ fun CierreCajaScreen(
     onNavigateToProfile: () -> Unit = {},
     viewModel: CierreCajaViewModel = hiltViewModel()
 ) {
+    val focusManager = LocalFocusManager.current
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     Scaffold(
@@ -80,7 +87,12 @@ fun CierreCajaScreen(
                 onProfile = onNavigateToProfile
             )
         },
-        containerColor = SurfaceColor
+        containerColor = SurfaceColor,
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = {
+                focusManager.clearFocus()
+            })
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -308,7 +320,13 @@ fun CierreCajaScreen(
                                 prefix = { Text("RD$ ") },
                                 singleLine = true,
                                 enabled = uiState.isTurnActive,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Decimal,
+                                    imeAction = ImeAction.Done
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onDone = { focusManager.clearFocus() }
+                                )
                             )
                         }
                     }

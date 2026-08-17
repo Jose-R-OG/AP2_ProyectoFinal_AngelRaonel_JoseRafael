@@ -3,6 +3,7 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.client
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -59,9 +61,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -92,6 +98,7 @@ fun ClientesScreen(
     onNewLoan: (Long) -> Unit = {},
     viewModel: ClientesViewModel = hiltViewModel()
 ) {
+    val focusManager = LocalFocusManager.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val visibleClientes = uiState.filteredClientes(isAdmin)
     val snackbarHostState = remember { SnackbarHostState() }
@@ -147,7 +154,12 @@ fun ClientesScreen(
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = ClientesSurface
+        containerColor = ClientesSurface,
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = {
+                focusManager.clearFocus()
+            })
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -177,7 +189,9 @@ fun ClientesScreen(
                 placeholder = { Text("Nombre, cédula o teléfono") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -545,6 +559,7 @@ private fun EditClienteDialog(
     errorMessage: String?,
     onEvent: (ClientesUiEvent) -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
     AlertDialog(
         onDismissRequest = { onEvent(ClientesUiEvent.DismissEditor) },
         title = { Text("Modificar cliente") },
@@ -552,7 +567,12 @@ private fun EditClienteDialog(
             Column(
                 modifier = Modifier
                     .heightIn(max = 480.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
+                    .pointerInput(Unit) {
+                        detectTapGestures(onTap = {
+                            focusManager.clearFocus()
+                        })
+                    },
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 OutlinedTextField(
@@ -561,7 +581,9 @@ private fun EditClienteDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Nombre completo") },
                     supportingText = { Text("${editor.fullName.length}/80 caracteres") },
-                    singleLine = true
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                 )
                 OutlinedTextField(
                     value = editor.dni,
@@ -569,7 +591,9 @@ private fun EditClienteDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Cédula") },
                     supportingText = { Text("${editor.dni.length}/11 dígitos") },
-                    singleLine = true
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                 )
                 OutlinedTextField(
                     value = editor.phone,
@@ -577,7 +601,8 @@ private fun EditClienteDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Teléfono") },
                     supportingText = { Text("${editor.phone.length}/10 dígitos") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                     singleLine = true
                 )
                 OutlinedTextField(
@@ -587,7 +612,12 @@ private fun EditClienteDialog(
                     label = { Text("Dirección") },
                     supportingText = { Text("${editor.address.length}/160 caracteres") },
                     minLines = 2,
-                    maxLines = 3
+                    maxLines = 3,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
+                        focusManager.clearFocus()
+                        onEvent(ClientesUiEvent.SaveEdit)
+                    })
                 )
                 Text("Zona de cobro", fontWeight = FontWeight.SemiBold)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {

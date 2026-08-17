@@ -1,6 +1,7 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -26,9 +28,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -92,6 +98,8 @@ fun LoginContent(
     val primaryBlack = Color(0xFF000000)
     val primaryGreen = Color(0xFF006C49)
 
+    val focusManager = LocalFocusManager.current
+
     if (uiState is LoginUiState.Loading) {
         Dialog(
             onDismissRequest = { },
@@ -112,6 +120,11 @@ fun LoginContent(
         modifier = Modifier
             .fillMaxSize()
             .background(surfaceColor)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
             .padding(20.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -184,6 +197,13 @@ fun LoginContent(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            ),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedBorderColor = Color(0xFF494949),
                                 focusedBorderColor = primaryGreen
@@ -219,7 +239,16 @@ fun LoginContent(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.NumberPassword,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                    onEvent(LoginUiEvent.SubmitLogin)
+                                }
+                            ),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedBorderColor = Color(0xFFC6C6CD),
                                 focusedBorderColor = primaryGreen

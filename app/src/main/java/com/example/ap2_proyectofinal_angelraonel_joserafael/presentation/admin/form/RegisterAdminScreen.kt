@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -31,9 +33,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -50,6 +56,7 @@ fun RegisterAdminScreen(
     onNavigateToActivation: (email: String, code: String) -> Unit = { _, _ -> },
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
+    val focusManager = LocalFocusManager.current
     var fullName by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -105,6 +112,11 @@ fun RegisterAdminScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF8F9FF))
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
             .padding(16.dp),
         contentAlignment = Alignment.TopCenter
     ) {
@@ -149,7 +161,9 @@ fun RegisterAdminScreen(
                         value = fullName, onValueChange = { fullName = it },
                         label = { Text("Nombre Completo") },
                         trailingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -158,7 +172,9 @@ fun RegisterAdminScreen(
                         value = username, onValueChange = { username = it },
                         label = { Text("Usuario (Login)") },
                         trailingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -167,7 +183,9 @@ fun RegisterAdminScreen(
                         value = email, onValueChange = { email = it },
                         label = { Text("Correo Electrónico") },
                         trailingIcon = { Icon(Icons.Default.Mail, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -183,7 +201,8 @@ fun RegisterAdminScreen(
                             }
                         },
                         visualTransformation = if (isPinVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
                         singleLine = true
                     )
@@ -194,7 +213,9 @@ fun RegisterAdminScreen(
                         value = phone, onValueChange = { phone = it },
                         label = { Text("Teléfono de Contacto") },
                         trailingIcon = { Icon(Icons.Default.Call, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -216,7 +237,9 @@ fun RegisterAdminScreen(
                                 Icon(Icons.Default.QrCodeScanner, contentDescription = "Escanear Cédula", tint = Color(0xFF006C49))
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 20.dp), color = Color(0xFFC6C6CD))
@@ -295,7 +318,9 @@ fun RegisterAdminScreen(
                     OutlinedTextField(
                         value = transferNumber, onValueChange = { transferNumber = it },
                         label = { Text("Número de Transferencia") },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -303,7 +328,25 @@ fun RegisterAdminScreen(
                     OutlinedTextField(
                         value = depositorName, onValueChange = { depositorName = it },
                         label = { Text("Nombre del Depositante") },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            viewModel.onEvent(
+                                RegisterUiEvent.SubmitRegistration(
+                                    fullName = fullName,
+                                    username = username,
+                                    email = email,
+                                    phone = phone,
+                                    cedula = cedula,
+                                    bank = selectedBank,
+                                    transferNum = transferNumber,
+                                    depositor = depositorName,
+                                    voucherUri = voucherUri,
+                                    pin = pin
+                                )
+                            )
+                        })
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))

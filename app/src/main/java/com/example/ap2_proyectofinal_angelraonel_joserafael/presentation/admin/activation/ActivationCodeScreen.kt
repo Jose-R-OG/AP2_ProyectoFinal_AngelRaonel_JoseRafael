@@ -1,6 +1,7 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.activation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MarkEmailRead
@@ -36,7 +38,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -50,6 +55,7 @@ fun ActivationCodeScreen(
     expectedCode: String,
     onActivationSuccess: () -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
     var codeInput by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -61,6 +67,11 @@ fun ActivationCodeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(surfaceColor)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -138,7 +149,20 @@ fun ActivationCodeScreen(
                                 color = Color(0xFFC6C6CD)
                             )
                         },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                                if (codeInput == expectedCode) {
+                                    onActivationSuccess()
+                                } else {
+                                    errorMessage = "El código ingresado es incorrecto."
+                                }
+                            }
+                        ),
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp)
                     )

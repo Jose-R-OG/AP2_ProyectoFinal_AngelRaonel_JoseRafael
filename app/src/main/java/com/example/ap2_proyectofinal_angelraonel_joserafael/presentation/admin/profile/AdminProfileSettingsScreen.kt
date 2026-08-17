@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -55,10 +57,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -84,6 +90,7 @@ fun AdminProfileSettingsScreen(
     onRoutes: () -> Unit,
     viewModel: AdminProfileViewModel = hiltViewModel()
 ) {
+    val focusManager = LocalFocusManager.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val profilePicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -127,7 +134,12 @@ fun AdminProfileSettingsScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
-        containerColor = ProfileSurface
+        containerColor = ProfileSurface,
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = {
+                focusManager.clearFocus()
+            })
+        }
     ) { padding ->
         if (uiState.isLoading) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
@@ -209,7 +221,13 @@ fun AdminProfileSettingsScreen(
             title = { Text("Editar perfil y negocio") },
             text = {
                 Column(
-                    Modifier.verticalScroll(rememberScrollState()),
+                    Modifier
+                        .verticalScroll(rememberScrollState())
+                        .pointerInput(Unit) {
+                            detectTapGestures(onTap = {
+                                focusManager.clearFocus()
+                            })
+                        },
                     verticalArrangement = Arrangement.spacedBy(9.dp)
                 ) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -224,10 +242,45 @@ fun AdminProfileSettingsScreen(
                             modifier = Modifier.weight(1f)
                         ) { logoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                     }
-                    OutlinedTextField(uiState.editName, { viewModel.onEvent(AdminProfileUiEvent.NameChanged(it)) }, label = { Text("Nombre") }, supportingText = { Text("${uiState.editName.length}/80") }, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(uiState.editEmail, { viewModel.onEvent(AdminProfileUiEvent.EmailChanged(it)) }, label = { Text("Correo") }, supportingText = { Text("${uiState.editEmail.length}/120") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
-                    OutlinedTextField(uiState.editPhone, { viewModel.onEvent(AdminProfileUiEvent.PhoneChanged(it)) }, label = { Text("Teléfono") }, supportingText = { Text("${uiState.editPhone.length}/10 dígitos") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone))
-                    OutlinedTextField(uiState.editBusinessName, { viewModel.onEvent(AdminProfileUiEvent.BusinessNameChanged(it)) }, label = { Text("Nombre del negocio") }, supportingText = { Text("${uiState.editBusinessName.length}/60") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(
+                        uiState.editName,
+                        { viewModel.onEvent(AdminProfileUiEvent.NameChanged(it)) },
+                        label = { Text("Nombre") },
+                        supportingText = { Text("${uiState.editName.length}/80") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                    )
+                    OutlinedTextField(
+                        uiState.editEmail,
+                        { viewModel.onEvent(AdminProfileUiEvent.EmailChanged(it)) },
+                        label = { Text("Correo") },
+                        supportingText = { Text("${uiState.editEmail.length}/120") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                    )
+                    OutlinedTextField(
+                        uiState.editPhone,
+                        { viewModel.onEvent(AdminProfileUiEvent.PhoneChanged(it)) },
+                        label = { Text("Teléfono") },
+                        supportingText = { Text("${uiState.editPhone.length}/10 dígitos") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                    )
+                    OutlinedTextField(
+                        uiState.editBusinessName,
+                        { viewModel.onEvent(AdminProfileUiEvent.BusinessNameChanged(it)) },
+                        label = { Text("Nombre del negocio") },
+                        supportingText = { Text("${uiState.editBusinessName.length}/60") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            viewModel.onEvent(AdminProfileUiEvent.SaveProfile)
+                        })
+                    )
                     uiState.message?.let { Text(it, color = Color(0xFFBA1A1A), fontSize = 12.sp) }
                 }
             },
@@ -321,14 +374,49 @@ private fun EditableImage(path: String?, label: String, modifier: Modifier, onCl
 
 @Composable
 private fun PinDialog(uiState: AdminProfileUiState, onEvent: (AdminProfileUiEvent) -> Unit) {
+    val focusManager = LocalFocusManager.current
     AlertDialog(
         onDismissRequest = { onEvent(AdminProfileUiEvent.HidePinDialog) },
         title = { Text("Cambiar PIN") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(uiState.oldPin, { onEvent(AdminProfileUiEvent.OldPinChanged(it)) }, label = { Text("PIN actual") }, supportingText = { Text("${uiState.oldPin.length}/8 dígitos") }, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword))
-                OutlinedTextField(uiState.newPin, { onEvent(AdminProfileUiEvent.NewPinChanged(it)) }, label = { Text("PIN nuevo") }, supportingText = { Text("${uiState.newPin.length}/8 (mínimo 4)") }, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword))
-                OutlinedTextField(uiState.confirmPin, { onEvent(AdminProfileUiEvent.ConfirmPinChanged(it)) }, label = { Text("Confirmar PIN") }, supportingText = { Text("${uiState.confirmPin.length}/8 dígitos") }, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword))
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        focusManager.clearFocus()
+                    })
+                }
+            ) {
+                OutlinedTextField(
+                    uiState.oldPin,
+                    { onEvent(AdminProfileUiEvent.OldPinChanged(it)) },
+                    label = { Text("PIN actual") },
+                    supportingText = { Text("${uiState.oldPin.length}/8 dígitos") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                )
+                OutlinedTextField(
+                    uiState.newPin,
+                    { onEvent(AdminProfileUiEvent.NewPinChanged(it)) },
+                    label = { Text("PIN nuevo") },
+                    supportingText = { Text("${uiState.newPin.length}/8 (mínimo 4)") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                )
+                OutlinedTextField(
+                    uiState.confirmPin,
+                    { onEvent(AdminProfileUiEvent.ConfirmPinChanged(it)) },
+                    label = { Text("Confirmar PIN") },
+                    supportingText = { Text("${uiState.confirmPin.length}/8 dígitos") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
+                        focusManager.clearFocus()
+                        onEvent(AdminProfileUiEvent.SavePin)
+                    })
+                )
                 uiState.message?.let { Text(it, color = Color(0xFFBA1A1A), fontSize = 12.sp) }
             }
         },

@@ -6,12 +6,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,8 +24,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -44,6 +52,7 @@ fun EmployeeManagementScreen(
     onEvent: (EmployeeUiEvent) -> Unit,
     onBackClick: () -> Unit = {}
 ) {
+    val focusManager = LocalFocusManager.current
     Scaffold(
         containerColor = Page,
         topBar = {
@@ -60,7 +69,15 @@ fun EmployeeManagementScreen(
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        focusManager.clearFocus()
+                    })
+                }
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 96.dp)
         ) {
             item {
@@ -73,7 +90,9 @@ fun EmployeeManagementScreen(
                     onValueChange = { onEvent(EmployeeUiEvent.SearchChanged(it)) },
                     label = { Text("Buscar por nombre, cédula, teléfono o zona") },
                     leadingIcon = { Icon(Icons.Default.Search, null) },
-                    modifier = Modifier.fillMaxWidth(), singleLine = true
+                    modifier = Modifier.fillMaxWidth(), singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
                 )
             }
             item {
@@ -155,6 +174,7 @@ fun EmployeeManagementScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable private fun EmployeeEditor(ui: EmployeeUiState, onEvent: (EmployeeUiEvent) -> Unit) {
+    val focusManager = LocalFocusManager.current
     var expanded by remember { mutableStateOf(false) }
     val profile = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let { onEvent(EmployeeUiEvent.PhotoChanged(EmployeePhotoType.PROFILE, it.toString())) }
@@ -170,13 +190,27 @@ fun EmployeeManagementScreen(
         onDismissRequest = { onEvent(EmployeeUiEvent.CloseModal) },
         title = { Text(if (ui.editingEmployeeId == null) "Agregar empleado" else "Editar empleado") },
         text = {
-            Column(Modifier.fillMaxWidth().heightIn(max = 620.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                EditorField(ui.name, { onEvent(EmployeeUiEvent.NameChanged(it)) }, "Nombre completo", "${ui.name.length}/80", KeyboardType.Text)
-                EditorField(ui.username, { onEvent(EmployeeUiEvent.UsernameChanged(it)) }, "Usuario de acceso", "${ui.username.length}/24 (mínimo 4)", KeyboardType.Text)
-                EditorField(ui.pin, { onEvent(EmployeeUiEvent.PinChanged(it)) }, "PIN", "${ui.pin.length}/4 dígitos", KeyboardType.NumberPassword, true)
-                EditorField(ui.phone, { onEvent(EmployeeUiEvent.PhoneChanged(it)) }, "Teléfono", "${ui.phone.length}/10 dígitos", KeyboardType.Phone)
-                EditorField(ui.identification, { onEvent(EmployeeUiEvent.IdentificationChanged(it)) }, "Cédula", "${ui.identification.length}/11 dígitos", KeyboardType.Number)
-                EditorField(ui.address, { onEvent(EmployeeUiEvent.AddressChanged(it)) }, "Dirección donde vive", "${ui.address.length}/160", KeyboardType.Text)
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 620.dp)
+                    .verticalScroll(rememberScrollState())
+                    .pointerInput(Unit) {
+                        detectTapGestures(onTap = {
+                            focusManager.clearFocus()
+                        })
+                    },
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                EditorField(ui.name, { onEvent(EmployeeUiEvent.NameChanged(it)) }, "Nombre completo", "${ui.name.length}/80", KeyboardType.Text, imeAction = ImeAction.Next, focusManager = focusManager)
+                EditorField(ui.username, { onEvent(EmployeeUiEvent.UsernameChanged(it)) }, "Usuario de acceso", "${ui.username.length}/24 (mínimo 4)", KeyboardType.Text, imeAction = ImeAction.Next, focusManager = focusManager)
+                EditorField(ui.pin, { onEvent(EmployeeUiEvent.PinChanged(it)) }, "PIN", "${ui.pin.length}/4 dígitos", KeyboardType.NumberPassword, true, imeAction = ImeAction.Next, focusManager = focusManager)
+                EditorField(ui.phone, { onEvent(EmployeeUiEvent.PhoneChanged(it)) }, "Teléfono", "${ui.phone.length}/10 dígitos", KeyboardType.Phone, imeAction = ImeAction.Next, focusManager = focusManager)
+                EditorField(ui.identification, { onEvent(EmployeeUiEvent.IdentificationChanged(it)) }, "Cédula", "${ui.identification.length}/11 dígitos", KeyboardType.Number, imeAction = ImeAction.Next, focusManager = focusManager)
+                EditorField(ui.address, { onEvent(EmployeeUiEvent.AddressChanged(it)) }, "Dirección donde vive", "${ui.address.length}/160", KeyboardType.Text, imeAction = ImeAction.Done, focusManager = focusManager, onDone = {
+                    focusManager.clearFocus()
+                    onEvent(EmployeeUiEvent.SaveEmployee)
+                })
                 ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
                     OutlinedTextField(ui.route, {}, readOnly = true, label = { Text("Zona / ruta") }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) }, modifier = Modifier.fillMaxWidth().menuAnchor())
                     ExposedDropdownMenu(expanded, { expanded = false }) { ui.availableRoutes.forEach { route ->
@@ -206,10 +240,27 @@ fun EmployeeManagementScreen(
     }
 }
 
-@Composable private fun EditorField(value: String, onChange: (String) -> Unit, label: String, support: String, type: KeyboardType, password: Boolean = false) {
+@Composable private fun EditorField(
+    value: String,
+    onChange: (String) -> Unit,
+    label: String,
+    support: String,
+    type: KeyboardType,
+    password: Boolean = false,
+    imeAction: ImeAction = ImeAction.Next,
+    focusManager: FocusManager? = null,
+    onDone: () -> Unit = {}
+) {
     OutlinedTextField(
         value, onChange, label = { Text(label) }, supportingText = { Text(support) },
-        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = type),
+        keyboardOptions = KeyboardOptions(keyboardType = type, imeAction = imeAction),
+        keyboardActions = KeyboardActions(
+            onNext = { focusManager?.moveFocus(FocusDirection.Down) },
+            onDone = {
+                focusManager?.clearFocus()
+                onDone()
+            }
+        ),
         visualTransformation = if (password) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
         modifier = Modifier.fillMaxWidth(), singleLine = label != "Dirección donde vive"
     )
