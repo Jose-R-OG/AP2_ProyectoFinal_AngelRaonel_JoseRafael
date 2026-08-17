@@ -27,3 +27,10 @@ val Muted = Color(0xFF30323A)
 val Green = Color(0xFF006C49)
 val Red = Color(0xFFBA1A1A)
 val Border = Color(0xFFC6C6CD)
+
+//Loan Approval Screen Colors
+val PrimaryColor = Color(0xFF000000)
+val SurfaceContainerLowest = Color(0xFFFFFFFF)
+val SurfaceContainerLow = Color(0xFFEFF4FF)
+val SurfaceContainerHigh = Color(0xFFDCE9FF)
+val OnTertiaryContainer = Color(0xFF3980F4)

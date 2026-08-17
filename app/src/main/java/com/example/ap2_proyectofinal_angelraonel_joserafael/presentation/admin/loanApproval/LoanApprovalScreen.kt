@@ -5,9 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -25,29 +24,31 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.prestamo.PrestamoEntity
-import java.util.Locale
-import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
-import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatusHistory
-import coil.compose.AsyncImage
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
+import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ErrorColor
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnSecondaryContainer
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnTertiaryContainer
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.PrimaryColor
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SurfaceColor
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnSurfaceVariant
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OutlineVariant
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryContainer
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryGreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SurfaceContainerLow
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SurfaceContainerLowest
 import java.io.File
+import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
-
-private val SurfaceColor = Color(0xFFF8F9FF)
-private val PrimaryColor = Color(0xFF000000)
-private val OnSurfaceVariant = Color(0xFF30323A)
-private val SecondaryGreen = Color(0xFF006C49)
-private val SecondaryContainer = Color(0xFF6CF8BB)
-private val OnSecondaryContainer = Color(0xFF00714D)
-private val OutlineVariant = Color(0xFFC6C6CD)
-private val SurfaceContainerLowest = Color(0xFFFFFFFF)
-private val SurfaceContainerLow = Color(0xFFEFF4FF)
-private val SurfaceContainerHigh = Color(0xFFDCE9FF)
-private val OnTertiaryContainer = Color(0xFF3980F4)
-private val ErrorColor = Color(0xFFBA1A1A)
+import java.util.Locale
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
 
 @Composable
 fun LoanApprovalScreen(
@@ -605,5 +606,62 @@ fun MetadataRow(label: String, value: String) {
     ) {
         Text(label, fontSize = 13.sp, color = OnSurfaceVariant)
         Text(value, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun LoanApprovalScreenPreview() {
+    val samplePrestamo = PrestamoEntity(
+        id = 1,
+        clienteId = 101,
+        empleadoId = 50,
+        aprobadoPorAdminId = null,
+        montoSolicitado = BigDecimal("10000"),
+        porcentajeInteres = BigDecimal("10"),
+        interesTotal = BigDecimal("1000"),
+        totalAPagar = BigDecimal("11000"),
+        totalPagado = BigDecimal("0"),
+        montoCuota = BigDecimal("1100"),
+        cantidadCuotas = 10,
+        frecuenciaPago = FrecuenciaPago.SEMANAL,
+        diaPagoPreferido = 1,
+        diaPagoDescripcion = "Lunes",
+        fechaCreacion = System.currentTimeMillis(),
+        fechaInicio = null,
+        fechaFin = null,
+        estado = LoanStatus.PENDIENTE_REVISION,
+        motivoRechazo = null,
+        rutaFotoContratoFirmado = null,
+        contratoFisicoEntregado = false
+    )
+
+    val sampleClient = LoanClientSummary(
+        name = "Juan Pérez",
+        dni = "402-1234567-8",
+        phone = "809-555-0123",
+        address = "Calle Principal #123, Ensanche La Fe",
+        zone = "Norte"
+    )
+
+    val uiState = LoanApprovalUiState(
+        pendingPrestamos = listOf(samplePrestamo),
+        selectedTab = LoanListTab.EN_ESPERA,
+        clientSummaries = mapOf(101L to sampleClient),
+        totalPendingCount = 1,
+        totalRequestedVolume = BigDecimal("10000"),
+        avgInterestRate = BigDecimal("10")
+    )
+
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        LoanApprovalContent(
+            uiState = uiState,
+            onEvent = {},
+            onBackClick = {},
+            onHome = {},
+            onClients = {},
+            onRoutes = {},
+            onProfile = {}
+        )
     }
 }
