@@ -40,6 +40,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -70,7 +71,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.ap2_proyectofinal_angelraonel_joserafael.R
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
@@ -86,6 +90,7 @@ fun AdminProfileSettingsScreen(
     onClients: () -> Unit,
     onLoans: () -> Unit,
     onRoutes: () -> Unit,
+    onBack: () -> Unit = {},
     viewModel: AdminProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -114,6 +119,7 @@ fun AdminProfileSettingsScreen(
         onClients = onClients,
         onLoans = onLoans,
         onRoutes = onRoutes,
+        onBack = onBack,
         onProfilePicker = { profilePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
         onLogoPicker = { logoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
         snackbar = snackbar
@@ -129,6 +135,7 @@ fun AdminProfileSettingsContent(
     onClients: () -> Unit,
     onLoans: () -> Unit,
     onRoutes: () -> Unit,
+    onBack: () -> Unit = {},
     onProfilePicker: () -> Unit,
     onLogoPicker: () -> Unit,
     snackbar: SnackbarHostState
@@ -143,6 +150,14 @@ fun AdminProfileSettingsContent(
                         Icon(Icons.Default.AccountBalance, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
                         Text(uiState.businessName, fontWeight = FontWeight.Bold)
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_arrow_back),
+                            contentDescription = stringResource(id = R.string.back)
+                        )
                     }
                 }
             )
