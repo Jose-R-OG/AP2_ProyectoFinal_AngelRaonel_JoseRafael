@@ -28,6 +28,7 @@ import coil.compose.AsyncImage
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryGreen
 
 @Composable
 fun AdminDashboardScreen(
@@ -352,7 +353,7 @@ fun MetricCard(title: String, value: String, badge: String, icon: ImageVector, i
             }
             Spacer(modifier = Modifier.height(12.dp))
             Text(title, fontSize = 12.sp, color = colorScheme.onSurfaceVariant)
-            Text(value, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = colorScheme.primary)
+            Text(value, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = SecondaryGreen)
         }
     }
 }
