@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.adminrequest.AdminRegisterRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.CedulaValidator
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.mail.EmailSenderUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -91,6 +92,15 @@ class RegisterViewModel @Inject constructor(
             )
             
             result.onSuccess { activationCode ->
+                // Enviar correo de forma silenciosa
+                viewModelScope.launch {
+                    EmailSenderUtil.sendActivationCode(
+                        recipientEmail = email,
+                        activationCode = activationCode,
+                        senderEmail = com.example.ap2_proyectofinal_angelraonel_joserafael.BuildConfig.EMAIL_SENDER,
+                        appPassword = com.example.ap2_proyectofinal_angelraonel_joserafael.BuildConfig.EMAIL_PASSWORD
+                    )
+                }
                 _registerState.value = RegisterState.Success(activationCode, email)
             }.onFailure { e ->
                 _registerState.value = RegisterState.Error(e.message ?: "Error al enviar la solicitud.")

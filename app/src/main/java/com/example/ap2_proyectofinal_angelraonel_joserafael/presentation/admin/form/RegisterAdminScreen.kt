@@ -77,21 +77,7 @@ fun RegisterAdminScreen(
     LaunchedEffect(registerState) {
         when (val state = registerState) {
             is RegisterState.Success -> {
-                Toast.makeText(context, "Solicitud enviada. Código enviado al correo: ${state.activationCode}", Toast.LENGTH_LONG).show()
-
-                try {
-                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                        data = Uri.parse("mailto:${state.email}")
-                        putExtra(Intent.EXTRA_SUBJECT, "Código de Activación TacoBrao")
-                        putExtra(
-                            Intent.EXTRA_TEXT,
-                            "¡Hola ${fullName}!\n\nTu registro ha sido enviado exitosamente.\n\nTu código de activación es: ${state.activationCode}\n\nConsérvalo para verificar tu cuenta."
-                        )
-                    }
-                    context.startActivity(Intent.createChooser(emailIntent, "Enviar Código por Correo"))
-                } catch (e: Exception) {
-                }
-
+                Toast.makeText(context, "Solicitud enviada. Revisa tu correo electrónico.", Toast.LENGTH_LONG).show()
                 onNavigateToActivation(state.email, state.activationCode)
             }
             is RegisterState.Error -> {
