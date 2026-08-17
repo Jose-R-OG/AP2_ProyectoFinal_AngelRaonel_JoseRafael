@@ -98,13 +98,12 @@ class RegisterViewModel @Inject constructor(
                 // Enviar correo de forma silenciosa
                 viewModelScope.launch {
                     EmailSenderUtil.sendActivationCode(
-                        recipientEmail = email,
+                        recipientEmail = currentState.email,
                         activationCode = activationCode,
                         senderEmail = com.example.ap2_proyectofinal_angelraonel_joserafael.BuildConfig.EMAIL_SENDER,
                         appPassword = com.example.ap2_proyectofinal_angelraonel_joserafael.BuildConfig.EMAIL_PASSWORD
                     )
                 }
-                _registerState.value = RegisterState.Success(activationCode, email)
             }.onFailure { e ->
                 _uiState.update { it.copy(registerState = RegisterState.Error(e.message ?: "Error al enviar la solicitud.")) }
             }
