@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -41,7 +40,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -71,16 +69,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.profile.ConfirmarCerrarSesionDialog
 import coil.compose.AsyncImage
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.profile.ConfirmarCerrarSesionDialog
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ProfileGreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ProfileOutline
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ProfileSurface
 
-private val ProfileSurface = Color(0xFFF8F9FF)
-private val ProfileGreen = Color(0xFF006C49)
-private val ProfileOutline = Color(0xFFC6C6CD)
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminProfileSettingsScreen(
     onLogoutSuccess: () -> Unit,
@@ -90,7 +88,6 @@ fun AdminProfileSettingsScreen(
     onRoutes: () -> Unit,
     viewModel: AdminProfileViewModel = hiltViewModel()
 ) {
-    val focusManager = LocalFocusManager.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val profilePicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -109,6 +106,34 @@ fun AdminProfileSettingsScreen(
             viewModel.onEvent(AdminProfileUiEvent.MessageShown)
         }
     }
+
+    AdminProfileSettingsContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onHome = onHome,
+        onClients = onClients,
+        onLoans = onLoans,
+        onRoutes = onRoutes,
+        onProfilePicker = { profilePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+        onLogoPicker = { logoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+        snackbar = snackbar
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AdminProfileSettingsContent(
+    uiState: AdminProfileUiState,
+    onEvent: (AdminProfileUiEvent) -> Unit,
+    onHome: () -> Unit,
+    onClients: () -> Unit,
+    onLoans: () -> Unit,
+    onRoutes: () -> Unit,
+    onProfilePicker: () -> Unit,
+    onLogoPicker: () -> Unit,
+    snackbar: SnackbarHostState
+) {
+    val focusManager = LocalFocusManager.current
 
     Scaffold(
         topBar = {
@@ -166,13 +191,13 @@ fun AdminProfileSettingsScreen(
                                 path = uiState.profilePhotoPath,
                                 fallbackIcon = Icons.Default.Person,
                                 label = "Foto de perfil",
-                                onClick = { viewModel.onEvent(AdminProfileUiEvent.StartEdit) }
+                                onClick = { onEvent(AdminProfileUiEvent.StartEdit) }
                             )
                             ImageEditor(
                                 path = uiState.businessLogoPath,
                                 fallbackIcon = Icons.Default.Business,
                                 label = "Logotipo",
-                                onClick = { viewModel.onEvent(AdminProfileUiEvent.StartEdit) }
+                                onClick = { onEvent(AdminProfileUiEvent.StartEdit) }
                             )
                         }
                         Spacer(Modifier.height(12.dp))
@@ -181,7 +206,7 @@ fun AdminProfileSettingsScreen(
                         Text(uiState.adminPhone, fontSize = 13.sp, color = Color(0xFF30323A))
                         Spacer(Modifier.height(12.dp))
                         Button(
-                            onClick = { viewModel.onEvent(AdminProfileUiEvent.StartEdit) },
+                            onClick = { onEvent(AdminProfileUiEvent.StartEdit) },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
                         ) {
                             Icon(Icons.Default.Edit, null, Modifier.size(18.dp))
@@ -192,17 +217,17 @@ fun AdminProfileSettingsScreen(
                 }
 
                 FunctionalOption(Icons.Default.LockReset, "Cambiar PIN", "Actualiza tus credenciales locales") {
-                    viewModel.onEvent(AdminProfileUiEvent.ShowPinDialog)
+                    onEvent(AdminProfileUiEvent.ShowPinDialog)
                 }
                 FunctionalOption(Icons.Default.Notifications, "Preferencias de notificación", "Activa o desactiva los avisos dentro de la aplicación") {
-                    viewModel.onEvent(AdminProfileUiEvent.ShowNotifications)
+                    onEvent(AdminProfileUiEvent.ShowNotifications)
                 }
                 FunctionalOption(Icons.Default.HelpCenter, "Ayuda", "Explicación de los módulos principales") {
-                    viewModel.onEvent(AdminProfileUiEvent.ShowHelp)
+                    onEvent(AdminProfileUiEvent.ShowHelp)
                 }
 
                 Button(
-                    onClick = { viewModel.onEvent(AdminProfileUiEvent.RequestLogout) },
+                    onClick = { onEvent(AdminProfileUiEvent.RequestLogout) },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFDAD6), contentColor = Color(0xFFBA1A1A))
                 ) {
@@ -217,7 +242,7 @@ fun AdminProfileSettingsScreen(
 
     if (uiState.isEditing) {
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(AdminProfileUiEvent.CancelEdit) },
+            onDismissRequest = { onEvent(AdminProfileUiEvent.CancelEdit) },
             title = { Text("Editar perfil y negocio") },
             text = {
                 Column(
@@ -235,16 +260,16 @@ fun AdminProfileSettingsScreen(
                             path = uiState.pendingProfilePhoto,
                             label = "Foto",
                             modifier = Modifier.weight(1f)
-                        ) { profilePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                        ) { onProfilePicker() }
                         EditableImage(
                             path = uiState.pendingBusinessLogo,
                             label = "Logo",
                             modifier = Modifier.weight(1f)
-                        ) { logoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                        ) { onLogoPicker() }
                     }
                     OutlinedTextField(
                         uiState.editName,
-                        { viewModel.onEvent(AdminProfileUiEvent.NameChanged(it)) },
+                        { onEvent(AdminProfileUiEvent.NameChanged(it)) },
                         label = { Text("Nombre") },
                         supportingText = { Text("${uiState.editName.length}/80") },
                         modifier = Modifier.fillMaxWidth(),
@@ -253,7 +278,7 @@ fun AdminProfileSettingsScreen(
                     )
                     OutlinedTextField(
                         uiState.editEmail,
-                        { viewModel.onEvent(AdminProfileUiEvent.EmailChanged(it)) },
+                        { onEvent(AdminProfileUiEvent.EmailChanged(it)) },
                         label = { Text("Correo") },
                         supportingText = { Text("${uiState.editEmail.length}/120") },
                         modifier = Modifier.fillMaxWidth(),
@@ -262,7 +287,7 @@ fun AdminProfileSettingsScreen(
                     )
                     OutlinedTextField(
                         uiState.editPhone,
-                        { viewModel.onEvent(AdminProfileUiEvent.PhoneChanged(it)) },
+                        { onEvent(AdminProfileUiEvent.PhoneChanged(it)) },
                         label = { Text("Teléfono") },
                         supportingText = { Text("${uiState.editPhone.length}/10 dígitos") },
                         modifier = Modifier.fillMaxWidth(),
@@ -271,14 +296,14 @@ fun AdminProfileSettingsScreen(
                     )
                     OutlinedTextField(
                         uiState.editBusinessName,
-                        { viewModel.onEvent(AdminProfileUiEvent.BusinessNameChanged(it)) },
+                        { onEvent(AdminProfileUiEvent.BusinessNameChanged(it)) },
                         label = { Text("Nombre del negocio") },
                         supportingText = { Text("${uiState.editBusinessName.length}/60") },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = {
                             focusManager.clearFocus()
-                            viewModel.onEvent(AdminProfileUiEvent.SaveProfile)
+                            onEvent(AdminProfileUiEvent.SaveProfile)
                         })
                     )
                     uiState.message?.let { Text(it, color = Color(0xFFBA1A1A), fontSize = 12.sp) }
@@ -286,43 +311,43 @@ fun AdminProfileSettingsScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = { viewModel.onEvent(AdminProfileUiEvent.SaveProfile) },
+                    onClick = { onEvent(AdminProfileUiEvent.SaveProfile) },
                     enabled = !uiState.isSaving
                 ) {
                     if (uiState.isSaving) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                     else Text("Guardar")
                 }
             },
-            dismissButton = { TextButton(onClick = { viewModel.onEvent(AdminProfileUiEvent.CancelEdit) }) { Text("Cancelar") } }
+            dismissButton = { TextButton(onClick = { onEvent(AdminProfileUiEvent.CancelEdit) }) { Text("Cancelar") } }
         )
     }
     if (uiState.showLogoutConfirmation) {
         ConfirmarCerrarSesionDialog(
-            onConfirm = { viewModel.onEvent(AdminProfileUiEvent.ConfirmLogout) },
-            onDismiss = { viewModel.onEvent(AdminProfileUiEvent.CancelLogout) }
+            onConfirm = { onEvent(AdminProfileUiEvent.ConfirmLogout) },
+            onDismiss = { onEvent(AdminProfileUiEvent.CancelLogout) }
         )
     }
 
-    if (uiState.showPinDialog) PinDialog(uiState, viewModel::onEvent)
+    if (uiState.showPinDialog) PinDialog(uiState, onEvent)
     if (uiState.showNotificationDialog) {
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(AdminProfileUiEvent.HideNotifications) },
+            onDismissRequest = { onEvent(AdminProfileUiEvent.HideNotifications) },
             title = { Text("Notificaciones") },
             text = {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text("Avisos de solicitudes y cobros")
-                    Switch(uiState.notificationsEnabled, { viewModel.onEvent(AdminProfileUiEvent.NotificationsChanged(it)) })
+                    Switch(uiState.notificationsEnabled, { onEvent(AdminProfileUiEvent.NotificationsChanged(it)) })
                 }
             },
-            confirmButton = { TextButton(onClick = { viewModel.onEvent(AdminProfileUiEvent.HideNotifications) }) { Text("Listo") } }
+            confirmButton = { TextButton(onClick = { onEvent(AdminProfileUiEvent.HideNotifications) }) { Text("Listo") } }
         )
     }
     if (uiState.showHelpDialog) {
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(AdminProfileUiEvent.HideHelp) },
+            onDismissRequest = { onEvent(AdminProfileUiEvent.HideHelp) },
             title = { Text("Ayuda rápida") },
             text = { Text("Clientes administra expedientes. Préstamos aprueba o rechaza solicitudes. Rutas muestra cobros pendientes. Ajustar tarifas define el interés usado en solicitudes nuevas.") },
-            confirmButton = { TextButton(onClick = { viewModel.onEvent(AdminProfileUiEvent.HideHelp) }) { Text("Entendido") } }
+            confirmButton = { TextButton(onClick = { onEvent(AdminProfileUiEvent.HideHelp) }) { Text("Entendido") } }
         )
     }
 }
@@ -423,4 +448,75 @@ private fun PinDialog(uiState: AdminProfileUiState, onEvent: (AdminProfileUiEven
         confirmButton = { Button(onClick = { onEvent(AdminProfileUiEvent.SavePin) }) { Text("Actualizar") } },
         dismissButton = { TextButton(onClick = { onEvent(AdminProfileUiEvent.HidePinDialog) }) { Text("Cancelar") } }
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AdminProfileSettingsScreenPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        AdminProfileSettingsContent(
+            uiState = AdminProfileUiState(
+                adminName = "Angel Raonel",
+                adminEmail = "angel@example.com",
+                adminPhone = "809-555-5555",
+                businessName = "TaCobrao Admin",
+                isLoading = false
+            ),
+            onEvent = {},
+            onHome = {},
+            onClients = {},
+            onLoans = {},
+            onRoutes = {},
+            onProfilePicker = {},
+            onLogoPicker = {},
+            snackbar = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AdminProfileSettingsLoadingPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        AdminProfileSettingsContent(
+            uiState = AdminProfileUiState(isLoading = true),
+            onEvent = {},
+            onHome = {},
+            onClients = {},
+            onLoans = {},
+            onRoutes = {},
+            onProfilePicker = {},
+            onLogoPicker = {},
+            snackbar = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AdminProfileSettingsEditingPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        AdminProfileSettingsContent(
+            uiState = AdminProfileUiState(
+                adminName = "Angel Raonel",
+                adminEmail = "angel@example.com",
+                adminPhone = "809-555-5555",
+                businessName = "TaCobrao Admin",
+                isLoading = false,
+                isEditing = true,
+                editName = "Angel Raonel",
+                editEmail = "angel@example.com",
+                editPhone = "809-555-5555",
+                editBusinessName = "TaCobrao Admin"
+            ),
+            onEvent = {},
+            onHome = {},
+            onClients = {},
+            onLoans = {},
+            onRoutes = {},
+            onProfilePicker = {},
+            onLogoPicker = {},
+            snackbar = remember { SnackbarHostState() }
+        )
+    }
 }

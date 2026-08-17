@@ -34,3 +34,8 @@ val SurfaceContainerLowest = Color(0xFFFFFFFF)
 val SurfaceContainerLow = Color(0xFFEFF4FF)
 val SurfaceContainerHigh = Color(0xFFDCE9FF)
 val OnTertiaryContainer = Color(0xFF3980F4)
+
+//Admin Profile Settings Screen Colors
+val ProfileSurface = Color(0xFFF8F9FF)
+val ProfileGreen = Color(0xFF006C49)
+val ProfileOutline = Color(0xFFC6C6CD)
