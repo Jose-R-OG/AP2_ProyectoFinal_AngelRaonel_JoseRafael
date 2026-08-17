@@ -70,6 +70,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -78,13 +79,13 @@ import coil.compose.AsyncImage
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
-
-private val ClientesSurface = Color(0xFFF8F9FF)
-private val ClientesPrimary = Color(0xFF000000)
-private val ClientesGreen = Color(0xFF006C49)
-private val ClientesTextSecondary = Color(0xFF30323A)
-private val ClientesOutline = Color(0xFFC6C6CD)
-private val ClientesError = Color(0xFFBA1A1A)
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesError
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesGreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesOutline
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesPrimary
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesSurface
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesTextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,8 +99,34 @@ fun ClientesScreen(
     onNewLoan: (Long) -> Unit = {},
     viewModel: ClientesViewModel = hiltViewModel()
 ) {
-    val focusManager = LocalFocusManager.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ClientesContent(
+        isAdmin = isAdmin,
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onNavigateHome = onNavigateHome,
+        onNavigateLoans = onNavigateLoans,
+        onNavigateProfile = onNavigateProfile,
+        onNavigateRoutes = onNavigateRoutes,
+        onAddCliente = onAddCliente,
+        onNewLoan = onNewLoan
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ClientesContent(
+    isAdmin: Boolean,
+    uiState: ClientesUiState,
+    onEvent: (ClientesUiEvent) -> Unit,
+    onNavigateHome: () -> Unit,
+    onNavigateLoans: () -> Unit,
+    onNavigateProfile: () -> Unit,
+    onNavigateRoutes: () -> Unit,
+    onAddCliente: () -> Unit,
+    onNewLoan: (Long) -> Unit
+) {
+    val focusManager = LocalFocusManager.current
     val visibleClientes = uiState.filteredClientes(isAdmin)
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -107,7 +134,7 @@ fun ClientesScreen(
         if (uiState.editor == null) {
             uiState.message?.let { message ->
                 snackbarHostState.showSnackbar(message)
-                viewModel.onEvent(ClientesUiEvent.MessageShown)
+                onEvent(ClientesUiEvent.MessageShown)
             }
         }
     }
@@ -183,7 +210,7 @@ fun ClientesScreen(
 
             OutlinedTextField(
                 value = uiState.searchQuery,
-                onValueChange = { viewModel.onEvent(ClientesUiEvent.SearchChanged(it)) },
+                onValueChange = { onEvent(ClientesUiEvent.SearchChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Buscar cliente") },
                 placeholder = { Text("Nombre, cédula o teléfono") },
@@ -232,13 +259,13 @@ fun ClientesScreen(
                                 isAdmin = isAdmin,
                                 canCreateLoans = uiState.canCreateLoans,
                                 onEdit = {
-                                    viewModel.onEvent(ClientesUiEvent.EditRequested(cliente))
+                                    onEvent(ClientesUiEvent.EditRequested(cliente))
                                 },
                                 onDeactivate = {
-                                    viewModel.onEvent(ClientesUiEvent.DeactivationRequested(cliente))
+                                    onEvent(ClientesUiEvent.DeactivationRequested(cliente))
                                 },
                                 onAssign = {
-                                    viewModel.onEvent(ClientesUiEvent.AssignmentRequested(cliente))
+                                    onEvent(ClientesUiEvent.AssignmentRequested(cliente))
                                 },
                                 onNewLoan = { onNewLoan(cliente.id) }
                             )
@@ -255,14 +282,14 @@ fun ClientesScreen(
             editor = editor,
             isSaving = uiState.isMutating,
             errorMessage = uiState.message,
-            onEvent = viewModel::onEvent
+            onEvent = onEvent
         )
     }
 
     uiState.pendingDeactivation?.let { cliente ->
         AlertDialog(
             onDismissRequest = {
-                viewModel.onEvent(ClientesUiEvent.DismissDeactivation)
+                onEvent(ClientesUiEvent.DismissDeactivation)
             },
             icon = {
                 Icon(
@@ -280,7 +307,7 @@ fun ClientesScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = { viewModel.onEvent(ClientesUiEvent.ConfirmDeactivation) },
+                    onClick = { onEvent(ClientesUiEvent.ConfirmDeactivation) },
                     enabled = !uiState.isMutating,
                     colors = ButtonDefaults.buttonColors(containerColor = ClientesError)
                 ) {
@@ -297,7 +324,7 @@ fun ClientesScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { viewModel.onEvent(ClientesUiEvent.DismissDeactivation) },
+                    onClick = { onEvent(ClientesUiEvent.DismissDeactivation) },
                     enabled = !uiState.isMutating
                 ) {
                     Text("Cancelar")
@@ -308,7 +335,7 @@ fun ClientesScreen(
 
     uiState.pendingAssignment?.let { cliente ->
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(ClientesUiEvent.DismissAssignment) },
+            onDismissRequest = { onEvent(ClientesUiEvent.DismissAssignment) },
             title = { Text("Asignar ${cliente.fullName}") },
             text = {
                 LazyColumn(modifier = Modifier.heightIn(max = 420.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -316,7 +343,7 @@ fun ClientesScreen(
                     items(uiState.employeeOptions, key = { it.id }) { employee ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            onClick = { viewModel.onEvent(ClientesUiEvent.AssignToEmployee(employee.id)) },
+                            onClick = { onEvent(ClientesUiEvent.AssignToEmployee(employee.id)) },
                             border = BorderStroke(1.dp, ClientesOutline),
                             colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
@@ -328,7 +355,7 @@ fun ClientesScreen(
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { viewModel.onEvent(ClientesUiEvent.DismissAssignment) }) { Text("Cerrar") } }
+            confirmButton = { TextButton(onClick = { onEvent(ClientesUiEvent.DismissAssignment) }) { Text("Cerrar") } }
         )
     }
 }
@@ -681,3 +708,52 @@ private fun Cliente.initials(): String = fullName
     .joinToString("")
     .uppercase()
     .ifBlank { "C" }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun ClientesScreenPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        ClientesContent(
+            isAdmin = true,
+            uiState = ClientesUiState(
+                clientes = listOf(
+                    Cliente(1, "Juan Perez", "12345678901", "8095551234", "Calle A", "Zona Norte"),
+                    Cliente(2, "Maria Garcia", "09876543210", "8095555678", "Calle B", "Zona Sur", isActive = false)
+                ),
+                isLoading = false
+            ),
+            onEvent = {},
+            onNavigateHome = {},
+            onNavigateLoans = {},
+            onNavigateProfile = {},
+            onNavigateRoutes = {},
+            onAddCliente = {},
+            onNewLoan = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun ClientesScreenNonAdminPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        ClientesContent(
+            isAdmin = false,
+            uiState = ClientesUiState(
+                clientes = listOf(
+                    Cliente(1, "Juan Perez", "12345678901", "8095551234", "Calle A", "Zona Norte"),
+                    Cliente(2, "Maria Garcia", "09876543210", "8095555678", "Calle B", "Zona Sur", isActive = false)
+                ),
+                assignedClientIds = setOf(1),
+                isLoading = false
+            ),
+            onEvent = {},
+            onNavigateHome = {},
+            onNavigateLoans = {},
+            onNavigateProfile = {},
+            onNavigateRoutes = {},
+            onAddCliente = {},
+            onNewLoan = {}
+        )
+    }
+}

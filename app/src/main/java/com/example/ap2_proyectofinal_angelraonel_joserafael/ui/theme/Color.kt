@@ -43,3 +43,13 @@ val ProfileOutline = Color(0xFFC6C6CD)
 //Adjust TarrifsScreen Colors
 val PrimaryContainer = Color(0xFF131B2E)
 val OnPrimaryContainer = Color(0xFF7C839B)
+
+
+//ClientesScreen Colors
+
+val ClientesSurface = Color(0xFFF8F9FF)
+val ClientesPrimary = Color(0xFF000000)
+val ClientesGreen = Color(0xFF006C49)
+val ClientesTextSecondary = Color(0xFF30323A)
+val ClientesOutline = Color(0xFFC6C6CD)
+val ClientesError = Color(0xFFBA1A1A)
