@@ -18,6 +18,9 @@ android {
         versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        buildConfigField("String", "EMAIL_SENDER", "\"correopruebasjoser@gmail.com\"")
+        buildConfigField("String", "EMAIL_PASSWORD", "\"rrbk dljl uykn xdmh\"")
     }
 
     buildTypes {
@@ -31,10 +34,19 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/NOTICE.md"
         }
     }
 }
@@ -86,6 +98,9 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    implementation("com.sun.mail:android-mail:1.6.8")
+    implementation("com.sun.mail:android-activation:1.6.8")
 
     implementation(libs.coil.compose.v270)
     implementation(libs.escpos.thermalprinter.android)
