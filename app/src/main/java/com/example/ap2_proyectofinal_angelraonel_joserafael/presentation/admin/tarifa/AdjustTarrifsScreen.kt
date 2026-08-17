@@ -65,18 +65,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-
-private val SurfaceColor = Color(0xFFF8F9FF)
-private val PrimaryColor = Color(0xFF000000)
-private val PrimaryContainer = Color(0xFF131B2E)
-private val OnPrimaryContainer = Color(0xFF7C839B)
-private val SecondaryGreen = Color(0xFF006C49)
-private val SecondaryContainer = Color(0xFF6CF8BB)
-private val OnSecondaryContainer = Color(0xFF00714D)
-private val OnSurfaceVariant = Color(0xFF30323A)
-private val OutlineVariant = Color(0xFFC6C6CD)
-private val ErrorContainer = Color(0xFFFFDAD6)
-private val OnErrorContainer = Color(0xFF93000A)
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ErrorContainer
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnErrorContainer
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnSecondaryContainer
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnSurfaceVariant
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OutlineVariant
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.PrimaryColor
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryContainer
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryGreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SurfaceColor
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnPrimaryContainer
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.PrimaryContainer
 
 @Composable
 fun AdjustTariffsScreen(
@@ -512,6 +513,26 @@ private fun MetricRow(label: String, value: String, isSecondary: Boolean = false
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = if (isSecondary) SecondaryGreen else PrimaryColor
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AdjustTariffsScreenPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        AdjustTariffsContent(
+            uiState = TariffsUiState(
+                dailyRate = "5",
+                biweeklyRate = "10",
+                monthlyRate = "15",
+                fourWeeksRate = "10",
+                sixWeeksRate = "15",
+                twelveWeeksRate = "25",
+                projectedNetMargin = "8.6%",
+                averageMarketRate = "13.3%",
+                riskScore = "BAJO"
+            )
         )
     }
 }
