@@ -3,6 +3,7 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.client
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -59,11 +61,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -72,13 +79,13 @@ import coil.compose.AsyncImage
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
-
-private val ClientesSurface = Color(0xFFF8F9FF)
-private val ClientesPrimary = Color(0xFF000000)
-private val ClientesGreen = Color(0xFF006C49)
-private val ClientesTextSecondary = Color(0xFF30323A)
-private val ClientesOutline = Color(0xFFC6C6CD)
-private val ClientesError = Color(0xFFBA1A1A)
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesError
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesGreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesOutline
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesPrimary
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesSurface
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesTextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,6 +100,33 @@ fun ClientesScreen(
     viewModel: ClientesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ClientesContent(
+        isAdmin = isAdmin,
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onNavigateHome = onNavigateHome,
+        onNavigateLoans = onNavigateLoans,
+        onNavigateProfile = onNavigateProfile,
+        onNavigateRoutes = onNavigateRoutes,
+        onAddCliente = onAddCliente,
+        onNewLoan = onNewLoan
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ClientesContent(
+    isAdmin: Boolean,
+    uiState: ClientesUiState,
+    onEvent: (ClientesUiEvent) -> Unit,
+    onNavigateHome: () -> Unit,
+    onNavigateLoans: () -> Unit,
+    onNavigateProfile: () -> Unit,
+    onNavigateRoutes: () -> Unit,
+    onAddCliente: () -> Unit,
+    onNewLoan: (Long) -> Unit
+) {
+    val focusManager = LocalFocusManager.current
     val visibleClientes = uiState.filteredClientes(isAdmin)
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -100,7 +134,7 @@ fun ClientesScreen(
         if (uiState.editor == null) {
             uiState.message?.let { message ->
                 snackbarHostState.showSnackbar(message)
-                viewModel.onEvent(ClientesUiEvent.MessageShown)
+                onEvent(ClientesUiEvent.MessageShown)
             }
         }
     }
@@ -117,7 +151,7 @@ fun ClientesScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "TacoBrao",
+                            text = "TaCobrao",
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = ClientesPrimary
@@ -147,7 +181,12 @@ fun ClientesScreen(
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = ClientesSurface
+        containerColor = ClientesSurface,
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = {
+                focusManager.clearFocus()
+            })
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -171,13 +210,15 @@ fun ClientesScreen(
 
             OutlinedTextField(
                 value = uiState.searchQuery,
-                onValueChange = { viewModel.onEvent(ClientesUiEvent.SearchChanged(it)) },
+                onValueChange = { onEvent(ClientesUiEvent.SearchChanged(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Buscar cliente") },
                 placeholder = { Text("Nombre, cédula o teléfono") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -218,13 +259,13 @@ fun ClientesScreen(
                                 isAdmin = isAdmin,
                                 canCreateLoans = uiState.canCreateLoans,
                                 onEdit = {
-                                    viewModel.onEvent(ClientesUiEvent.EditRequested(cliente))
+                                    onEvent(ClientesUiEvent.EditRequested(cliente))
                                 },
                                 onDeactivate = {
-                                    viewModel.onEvent(ClientesUiEvent.DeactivationRequested(cliente))
+                                    onEvent(ClientesUiEvent.DeactivationRequested(cliente))
                                 },
                                 onAssign = {
-                                    viewModel.onEvent(ClientesUiEvent.AssignmentRequested(cliente))
+                                    onEvent(ClientesUiEvent.AssignmentRequested(cliente))
                                 },
                                 onNewLoan = { onNewLoan(cliente.id) }
                             )
@@ -241,14 +282,14 @@ fun ClientesScreen(
             editor = editor,
             isSaving = uiState.isMutating,
             errorMessage = uiState.message,
-            onEvent = viewModel::onEvent
+            onEvent = onEvent
         )
     }
 
     uiState.pendingDeactivation?.let { cliente ->
         AlertDialog(
             onDismissRequest = {
-                viewModel.onEvent(ClientesUiEvent.DismissDeactivation)
+                onEvent(ClientesUiEvent.DismissDeactivation)
             },
             icon = {
                 Icon(
@@ -266,7 +307,7 @@ fun ClientesScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = { viewModel.onEvent(ClientesUiEvent.ConfirmDeactivation) },
+                    onClick = { onEvent(ClientesUiEvent.ConfirmDeactivation) },
                     enabled = !uiState.isMutating,
                     colors = ButtonDefaults.buttonColors(containerColor = ClientesError)
                 ) {
@@ -283,7 +324,7 @@ fun ClientesScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { viewModel.onEvent(ClientesUiEvent.DismissDeactivation) },
+                    onClick = { onEvent(ClientesUiEvent.DismissDeactivation) },
                     enabled = !uiState.isMutating
                 ) {
                     Text("Cancelar")
@@ -294,7 +335,7 @@ fun ClientesScreen(
 
     uiState.pendingAssignment?.let { cliente ->
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(ClientesUiEvent.DismissAssignment) },
+            onDismissRequest = { onEvent(ClientesUiEvent.DismissAssignment) },
             title = { Text("Asignar ${cliente.fullName}") },
             text = {
                 LazyColumn(modifier = Modifier.heightIn(max = 420.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -302,7 +343,7 @@ fun ClientesScreen(
                     items(uiState.employeeOptions, key = { it.id }) { employee ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            onClick = { viewModel.onEvent(ClientesUiEvent.AssignToEmployee(employee.id)) },
+                            onClick = { onEvent(ClientesUiEvent.AssignToEmployee(employee.id)) },
                             border = BorderStroke(1.dp, ClientesOutline),
                             colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
@@ -314,7 +355,7 @@ fun ClientesScreen(
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { viewModel.onEvent(ClientesUiEvent.DismissAssignment) }) { Text("Cerrar") } }
+            confirmButton = { TextButton(onClick = { onEvent(ClientesUiEvent.DismissAssignment) }) { Text("Cerrar") } }
         )
     }
 }
@@ -545,6 +586,7 @@ private fun EditClienteDialog(
     errorMessage: String?,
     onEvent: (ClientesUiEvent) -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
     AlertDialog(
         onDismissRequest = { onEvent(ClientesUiEvent.DismissEditor) },
         title = { Text("Modificar cliente") },
@@ -552,7 +594,12 @@ private fun EditClienteDialog(
             Column(
                 modifier = Modifier
                     .heightIn(max = 480.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
+                    .pointerInput(Unit) {
+                        detectTapGestures(onTap = {
+                            focusManager.clearFocus()
+                        })
+                    },
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 OutlinedTextField(
@@ -561,7 +608,9 @@ private fun EditClienteDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Nombre completo") },
                     supportingText = { Text("${editor.fullName.length}/80 caracteres") },
-                    singleLine = true
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                 )
                 OutlinedTextField(
                     value = editor.dni,
@@ -569,7 +618,9 @@ private fun EditClienteDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Cédula") },
                     supportingText = { Text("${editor.dni.length}/11 dígitos") },
-                    singleLine = true
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                 )
                 OutlinedTextField(
                     value = editor.phone,
@@ -577,7 +628,8 @@ private fun EditClienteDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Teléfono") },
                     supportingText = { Text("${editor.phone.length}/10 dígitos") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                     singleLine = true
                 )
                 OutlinedTextField(
@@ -587,7 +639,12 @@ private fun EditClienteDialog(
                     label = { Text("Dirección") },
                     supportingText = { Text("${editor.address.length}/160 caracteres") },
                     minLines = 2,
-                    maxLines = 3
+                    maxLines = 3,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
+                        focusManager.clearFocus()
+                        onEvent(ClientesUiEvent.SaveEdit)
+                    })
                 )
                 Text("Zona de cobro", fontWeight = FontWeight.SemiBold)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -651,3 +708,52 @@ private fun Cliente.initials(): String = fullName
     .joinToString("")
     .uppercase()
     .ifBlank { "C" }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun ClientesScreenPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        ClientesContent(
+            isAdmin = true,
+            uiState = ClientesUiState(
+                clientes = listOf(
+                    Cliente(1, "Juan Perez", "12345678901", "8095551234", "Calle A", "Zona Norte"),
+                    Cliente(2, "Maria Garcia", "09876543210", "8095555678", "Calle B", "Zona Sur", isActive = false)
+                ),
+                isLoading = false
+            ),
+            onEvent = {},
+            onNavigateHome = {},
+            onNavigateLoans = {},
+            onNavigateProfile = {},
+            onNavigateRoutes = {},
+            onAddCliente = {},
+            onNewLoan = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun ClientesScreenNonAdminPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        ClientesContent(
+            isAdmin = false,
+            uiState = ClientesUiState(
+                clientes = listOf(
+                    Cliente(1, "Juan Perez", "12345678901", "8095551234", "Calle A", "Zona Norte"),
+                    Cliente(2, "Maria Garcia", "09876543210", "8095555678", "Calle B", "Zona Sur", isActive = false)
+                ),
+                assignedClientIds = setOf(1),
+                isLoading = false
+            ),
+            onEvent = {},
+            onNavigateHome = {},
+            onNavigateLoans = {},
+            onNavigateProfile = {},
+            onNavigateRoutes = {},
+            onAddCliente = {},
+            onNewLoan = {}
+        )
+    }
+}

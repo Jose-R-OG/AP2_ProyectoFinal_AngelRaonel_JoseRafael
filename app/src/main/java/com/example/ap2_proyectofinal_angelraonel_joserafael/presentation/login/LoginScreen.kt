@@ -1,10 +1,10 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -27,17 +28,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -49,9 +56,6 @@ fun LoginScreen(
     onNavigateToRegisterAdmin: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
 ) {
-    val surfaceColor = Color(0xFFF8F9FF)
-    val primaryBlack = Color(0xFF000000)
-    val primaryGreen = Color(0xFF006C49)
     val context = LocalContext.current
 
     LaunchedEffect(viewModel.uiState) {
@@ -67,7 +71,36 @@ fun LoginScreen(
         }
     }
 
-    if (viewModel.uiState is LoginUiState.Loading) {
+    LoginContent(
+        uiState = viewModel.uiState,
+        username = viewModel.username,
+        pin = viewModel.pin,
+        isPinVisible = viewModel.isPinVisible,
+        canRegisterAdmin = viewModel.canRegisterAdmin,
+        onEvent = viewModel::onEvent,
+        onSignInWithGoogle = { viewModel.signInWithGoogle(context) },
+        onNavigateToRegisterAdmin = onNavigateToRegisterAdmin
+    )
+}
+
+@Composable
+fun LoginContent(
+    uiState: LoginUiState,
+    username: String,
+    pin: String,
+    isPinVisible: Boolean,
+    canRegisterAdmin: Boolean,
+    onEvent: (LoginUiEvent) -> Unit,
+    onSignInWithGoogle: () -> Unit,
+    onNavigateToRegisterAdmin: () -> Unit
+) {
+    val surfaceColor = Color(0xFFF8F9FF)
+    val primaryBlack = Color(0xFF000000)
+    val primaryGreen = Color(0xFF006C49)
+
+    val focusManager = LocalFocusManager.current
+
+    if (uiState is LoginUiState.Loading) {
         Dialog(
             onDismissRequest = { },
             properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
@@ -87,6 +120,11 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(surfaceColor)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
             .padding(20.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -145,13 +183,13 @@ fun LoginScreen(
                             text = "USUARIO",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF30323A)
+                                color = Color(0xFF75767C)
                             )
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         OutlinedTextField(
-                            value = viewModel.username,
-                            onValueChange = { viewModel.onEvent(LoginUiEvent.OnUsernameChanged(it)) },
+                            value = username,
+                            onValueChange = { onEvent(LoginUiEvent.OnUsernameChanged(it)) },
                             placeholder = { Text("Ej. jperez") },
                             leadingIcon = {
                                 Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF76777D))
@@ -159,8 +197,15 @@ fun LoginScreen(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            ),
                             colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor = Color(0xFFC6C6CD),
+                                unfocusedBorderColor = Color(0xFF494949),
                                 focusedBorderColor = primaryGreen
                             )
                         )
@@ -176,25 +221,34 @@ fun LoginScreen(
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         OutlinedTextField(
-                            value = viewModel.pin,
-                            onValueChange = { viewModel.onEvent(LoginUiEvent.OnPinChanged(it)) },
+                            value = pin,
+                            onValueChange = { onEvent(LoginUiEvent.OnPinChanged(it)) },
                             placeholder = { Text("••••") },
                             leadingIcon = {
                                 Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF76777D))
                             },
                             trailingIcon = {
-                                IconButton(onClick = { viewModel.onEvent(LoginUiEvent.TogglePinVisibility) }) {
+                                IconButton(onClick = { onEvent(LoginUiEvent.TogglePinVisibility) }) {
                                     Icon(
-                                        imageVector = if (viewModel.isPinVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                        imageVector = if (isPinVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                         contentDescription = "Mostrar/Ocultar PIN"
                                     )
                                 }
                             },
-                            visualTransformation = if (viewModel.isPinVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            visualTransformation = if (isPinVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.NumberPassword,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                    onEvent(LoginUiEvent.SubmitLogin)
+                                }
+                            ),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedBorderColor = Color(0xFFC6C6CD),
                                 focusedBorderColor = primaryGreen
@@ -205,15 +259,15 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Button(
-                        onClick = { viewModel.onEvent(LoginUiEvent.SubmitLogin) },
-                        enabled = viewModel.uiState !is LoginUiState.Loading,
+                        onClick = { onEvent(LoginUiEvent.SubmitLogin) },
+                        enabled = uiState !is LoginUiState.Loading,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = primaryBlack)
                     ) {
-                        if (viewModel.uiState is LoginUiState.Loading) {
+                        if (uiState is LoginUiState.Loading) {
                             CircularProgressIndicator(
                                 color = Color.White,
                                 modifier = Modifier.size(24.dp)
@@ -229,8 +283,8 @@ fun LoginScreen(
                     }
 
                     OutlinedButton(
-                        onClick = { viewModel.signInWithGoogle(context) },
-                        enabled = viewModel.uiState !is LoginUiState.Loading,
+                        onClick = { onSignInWithGoogle() },
+                        enabled = uiState !is LoginUiState.Loading,
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -241,15 +295,15 @@ fun LoginScreen(
                     }
 
 
-                    if (viewModel.canRegisterAdmin) {
-                        Row(
+                    if (canRegisterAdmin) {
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
                                 text = "¿Es la primera vez en este dispositivo?",
-                                style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF30323A))
+                                style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF30323A)),
+                                textAlign = TextAlign.Center
                             )
                             TextButton(onClick = { onNavigateToRegisterAdmin() }) {
                                 Text(
@@ -267,17 +321,34 @@ fun LoginScreen(
         }
     }
 
-    if (viewModel.uiState is LoginUiState.Error) {
-        val errorMessage = (viewModel.uiState as LoginUiState.Error).message
+    if (uiState is LoginUiState.Error) {
+        val errorMessage = uiState.message
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(LoginUiEvent.ClearError) },
+            onDismissRequest = { onEvent(LoginUiEvent.ClearError) },
             confirmButton = {
-                TextButton(onClick = { viewModel.onEvent(LoginUiEvent.ClearError) }) {
+                TextButton(onClick = { onEvent(LoginUiEvent.ClearError) }) {
                     Text("OK", color = primaryGreen)
                 }
             },
             title = { Text("Error de Autenticación") },
             text = { Text(errorMessage) }
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun LoginScreenPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        LoginContent(
+            uiState = LoginUiState.Idle,
+            username = "admin",
+            pin = "1234",
+            isPinVisible = false,
+            canRegisterAdmin = true,
+            onEvent = {},
+            onSignInWithGoogle = {},
+            onNavigateToRegisterAdmin = {}
         )
     }
 }

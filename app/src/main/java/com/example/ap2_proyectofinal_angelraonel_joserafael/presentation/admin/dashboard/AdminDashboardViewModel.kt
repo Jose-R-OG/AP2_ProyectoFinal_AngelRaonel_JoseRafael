@@ -41,7 +41,7 @@ class AdminDashboardViewModel @Inject constructor(
                         _uiState.update { state ->
                             state.copy(
                                 adminAvatarUrl = it.profilePhotoPath,
-                                businessName = it.businessName?.takeIf(String::isNotBlank) ?: "TacoBrao",
+                                businessName = it.businessName?.takeIf(String::isNotBlank) ?: "TaCobrao",
                                 businessLogoUrl = it.businessLogoPath
                             )
                         }

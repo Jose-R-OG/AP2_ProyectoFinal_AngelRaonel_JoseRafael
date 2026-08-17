@@ -7,7 +7,7 @@ data class AdminProfileUiState(
     val adminName: String = "",
     val adminEmail: String = "",
     val adminPhone: String = "",
-    val businessName: String = "TacoBrao",
+    val businessName: String = "TaCobrao",
     val profilePhotoPath: String? = null,
     val businessLogoPath: String? = null,
     val editName: String = "",

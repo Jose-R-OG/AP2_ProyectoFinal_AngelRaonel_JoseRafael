@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -27,19 +27,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryGreen
 
-val SurfaceColor = Color(0xFFF8F9FF)
-val PrimaryColor = Color(0xFF000000)
-val SecondaryGreen = Color(0xFF006C49)
-val SecondaryContainer = Color(0xFF6CF8BB)
-val OnSecondaryContainer = Color(0xFF00714D)
-val OnSurfaceVariant = Color(0xFF30323A)
-val OutlineVariant = Color(0xFFC6C6CD)
-val ErrorColor = Color(0xFFBA1A1A)
-val ErrorContainer = Color(0xFFFFDAD6)
-val OnErrorContainer = Color(0xFF93000A)
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
     onAddEmployee: () -> Unit = {},
@@ -55,6 +45,38 @@ fun AdminDashboardScreen(
     viewModel: AdminDashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    AdminDashboardContent(
+        uiState = uiState,
+        onAddEmployee = onAddEmployee,
+        onNuevoCliente = onNuevoCliente,
+        onRealizarCobro = onRealizarCobro,
+        onAdjustTariffs = onAdjustTariffs,
+        onViewAllMovements = onViewAllMovements,
+        onNavigateToLoans = onNavigateToLoans,
+        onNavigateToClients = onNavigateToClients,
+        onNavigateToProfile = onNavigateToProfile,
+        onNavigateToRoutes = onNavigateToRoutes,
+        onNavigateToNotifications = onNavigateToNotifications
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AdminDashboardContent(
+    uiState: AdminDashboardUiState,
+    onAddEmployee: () -> Unit = {},
+    onNuevoCliente: () -> Unit = {},
+    onRealizarCobro: () -> Unit = {},
+    onAdjustTariffs: () -> Unit = {},
+    onViewAllMovements: () -> Unit = {},
+    onNavigateToLoans: () -> Unit = {},
+    onNavigateToClients: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
+    onNavigateToRoutes: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {},
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -71,7 +93,7 @@ fun AdminDashboardScreen(
                             Icon(
                                 imageVector = Icons.Default.AccountBalance,
                                 contentDescription = null,
-                                tint = PrimaryColor
+                                tint = colorScheme.primary
                             )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
@@ -79,7 +101,7 @@ fun AdminDashboardScreen(
                             text = uiState.businessName,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
-                            color = PrimaryColor
+                            color = colorScheme.primary
                         )
                     }
                 },
@@ -102,7 +124,7 @@ fun AdminDashboardScreen(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .border(1.dp, OutlineVariant, CircleShape)
+                                .border(1.dp, colorScheme.outlineVariant, CircleShape)
                                 .clickable(onClick = onNavigateToProfile),
                             contentScale = ContentScale.Crop
                         )
@@ -111,20 +133,20 @@ fun AdminDashboardScreen(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .background(OutlineVariant)
+                                .background(colorScheme.outlineVariant)
                                 .clickable(onClick = onNavigateToProfile),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = "Admin Avatar",
-                                tint = Color.White
+                                tint = colorScheme.surface
                             )
                         }
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surface)
             )
         },
         bottomBar = {
@@ -138,7 +160,7 @@ fun AdminDashboardScreen(
                 onProfile = onNavigateToProfile
             )
         },
-        containerColor = SurfaceColor
+        containerColor = colorScheme.surface
     ) { paddingValues ->
         if (uiState.isLoading) {
             Box(
@@ -147,7 +169,7 @@ fun AdminDashboardScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = SecondaryGreen)
+                CircularProgressIndicator(color = colorScheme.secondary)
             }
         } else {
             LazyColumn(
@@ -163,12 +185,12 @@ fun AdminDashboardScreen(
                             text = "Dashboard Overview",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = PrimaryColor
+                            color = colorScheme.primary
                         )
                         Text(
                             text = "Resumen de operaciones en tiempo real.",
                             fontSize = 14.sp,
-                            color = OnSurfaceVariant
+                            color = colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -179,7 +201,7 @@ fun AdminDashboardScreen(
                         value = uiState.totalCollectedToday,
                         badge = uiState.collectedPercentage,
                         icon = Icons.Default.AccountBalanceWallet,
-                        iconTint = SecondaryGreen
+                        iconTint = colorScheme.secondary
                     )
                 }
 
@@ -226,7 +248,7 @@ fun AdminDashboardScreen(
                         text = "Acciones Rápidas",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = PrimaryColor
+                        color = colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -256,11 +278,11 @@ fun AdminDashboardScreen(
                             text = "Movimientos Recientes",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = PrimaryColor
+                            color = colorScheme.primary
                         )
                         if (uiState.recentMovements.isNotEmpty()) {
                             TextButton(onClick = onViewAllMovements) {
-                                Text("Ver todo", color = OnSecondaryContainer)
+                                Text("Ver todo", color = colorScheme.onSecondaryContainer)
                             }
                         }
                     }
@@ -271,8 +293,8 @@ fun AdminDashboardScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+                            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outlineVariant)
                         ) {
                             Box(
                                 modifier = Modifier
@@ -283,7 +305,7 @@ fun AdminDashboardScreen(
                                 Text(
                                     text = "No hay movimientos registrados hoy.",
                                     fontSize = 14.sp,
-                                    color = OnSurfaceVariant
+                                    color = colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -303,11 +325,12 @@ fun AdminDashboardScreen(
 
 @Composable
 fun MetricCard(title: String, value: String, badge: String, icon: ImageVector, iconTint: Color) {
+    val colorScheme = MaterialTheme.colorScheme
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -321,69 +344,72 @@ fun MetricCard(title: String, value: String, badge: String, icon: ImageVector, i
                         text = badge,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = SecondaryGreen,
+                        color = colorScheme.secondary,
                         modifier = Modifier
-                            .background(SecondaryGreen.copy(alpha = 0.1f), RoundedCornerShape(6.dp))
+                            .background(colorScheme.secondary.copy(alpha = 0.1f), RoundedCornerShape(6.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
-            Text(title, fontSize = 12.sp, color = OnSurfaceVariant)
-            Text(value, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
+            Text(title, fontSize = 12.sp, color = colorScheme.onSurfaceVariant)
+            Text(value, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = SecondaryGreen)
         }
     }
 }
 
 @Composable
 fun MetricCardSmall(title: String, value: String, subtitle: String, icon: ImageVector, isError: Boolean = false) {
+    val colorScheme = MaterialTheme.colorScheme
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(
             width = 1.dp,
-            color = if (isError) ErrorColor else OutlineVariant
+            color = if (isError) colorScheme.error else colorScheme.outlineVariant
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Icon(
                 icon,
                 contentDescription = null,
-                tint = if (isError) ErrorColor else OnSurfaceVariant,
+                tint = if (isError) colorScheme.error else colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(title, fontSize = 11.sp, color = OnSurfaceVariant)
-            Text(value, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = PrimaryColor, maxLines = 1)
-            if (subtitle.isNotEmpty()) Text(subtitle, fontSize = 11.sp, color = OnSurfaceVariant)
+            Text(title, fontSize = 11.sp, color = colorScheme.onSurfaceVariant)
+            Text(value, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = colorScheme.primary, maxLines = 1)
+            if (subtitle.isNotEmpty()) Text(subtitle, fontSize = 11.sp, color = colorScheme.onSurfaceVariant)
         }
     }
 }
 
 @Composable
 fun QuickActionButton(label: String, icon: ImageVector, modifier: Modifier, onClick: () -> Unit) {
+    val colorScheme = MaterialTheme.colorScheme
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.height(60.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+        colors = ButtonDefaults.outlinedButtonColors(containerColor = colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outlineVariant)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(icon, contentDescription = null, tint = PrimaryColor, modifier = Modifier.size(20.dp))
-            Text(label, fontSize = 11.sp, color = PrimaryColor, fontWeight = FontWeight.SemiBold)
+            Icon(icon, contentDescription = null, tint = colorScheme.primary, modifier = Modifier.size(20.dp))
+            Text(label, fontSize = 11.sp, color = colorScheme.primary, fontWeight = FontWeight.SemiBold)
         }
     }
 }
 
 @Composable
 fun MovementRow(item: MovementItem, onClick: () -> Unit = {}) {
+    val colorScheme = MaterialTheme.colorScheme
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant.copy(alpha = 0.5f))
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier
@@ -398,20 +424,20 @@ fun MovementRow(item: MovementItem, onClick: () -> Unit = {}) {
                         .size(40.dp)
                         .clip(CircleShape)
                         .background(
-                            if (item.isAlert) ErrorContainer else SecondaryContainer
+                            if (item.isAlert) colorScheme.errorContainer else colorScheme.secondaryContainer
                         ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = if (item.isAlert) Icons.Default.ReportProblem else Icons.Default.Payments,
                         contentDescription = null,
-                        tint = if (item.isAlert) OnErrorContainer else OnSecondaryContainer
+                        tint = if (item.isAlert) colorScheme.onErrorContainer else colorScheme.onSecondaryContainer
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(item.title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text(item.subtitle, fontSize = 12.sp, color = OnSurfaceVariant)
+                    Text(item.subtitle, fontSize = 12.sp, color = colorScheme.onSurfaceVariant)
                 }
             }
             Column(horizontalAlignment = Alignment.End) {
@@ -419,10 +445,33 @@ fun MovementRow(item: MovementItem, onClick: () -> Unit = {}) {
                     text = item.amountOrStatus,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
-                    color = if (item.isAlert) ErrorColor else SecondaryGreen
+                    color = if (item.isAlert) colorScheme.error else colorScheme.secondary
                 )
-                Text(item.time, fontSize = 10.sp, color = OnSurfaceVariant)
+                Text(item.time, fontSize = 10.sp, color = colorScheme.onSurfaceVariant)
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AdminDashboardScreenPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        AdminDashboardContent(
+            uiState = AdminDashboardUiState(
+                businessName = "TaCobrao",
+                totalCollectedToday = "RD$ 15,200.00",
+                capitalInStreet = "RD$ 250,000.00",
+                outstandingPortfolio = "RD$ 45,000.00",
+                collectedPercentage = "+12%",
+                activeEmployees = 3,
+                totalEmployees = 5,
+                pendingApprovals = 2,
+                recentMovements = listOf(
+                    MovementItem("1", "Cobro - Juan Perez", "Ruta A", "RD$ 500.00", "10:30 AM"),
+                    MovementItem("2", "Nuevo Préstamo", "Maria Lopez", "RD$ 5,000.00", "09:45 AM", isAlert = true)
+                )
+            )
+        )
     }
 }

@@ -341,7 +341,7 @@ fun EmpleadoPerfilScreen(
                 Button(onClick = {
                     val reportIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
-                        putExtra(Intent.EXTRA_SUBJECT, "Reporte de problema - TacoBraoApp")
+                        putExtra(Intent.EXTRA_SUBJECT, "Reporte de problema - TaCobraoApp")
                         putExtra(
                             Intent.EXTRA_TEXT,
                             "Usuario: ${uiState.name} (${uiState.agentId})\nRuta: ${uiState.activeRouteText}\n\nDescripción del problema:\n"

@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -64,8 +66,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -83,6 +88,7 @@ fun RegistroClienteConCuotas(
     viewModel: RegistroClienteViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
+    val focusManager = LocalFocusManager.current
     var showDniScanner by remember { mutableStateOf(false) }
 
     val surfaceColor = Color(0xFFF8F9FF)
@@ -135,7 +141,12 @@ fun RegistroClienteConCuotas(
                 }
             }
         },
-        containerColor = surfaceColor
+        containerColor = surfaceColor,
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = {
+                focusManager.clearFocus()
+            })
+        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -295,7 +306,12 @@ fun RegistroClienteConCuotas(
                             placeholder = "Usar tarifa configurada",
                             icon = Icons.Default.Percent,
                             keyboardType = KeyboardType.Decimal,
-                            supportingText = "0 a 100% · úsala para ampliar o renovar el préstamo"
+                            supportingText = "0 a 100% · úsala para ampliar o renovar el préstamo",
+                            imeAction = ImeAction.Done,
+                            onImeAction = {
+                                focusManager.clearFocus()
+                                viewModel.onEvent(RegistroClienteUiEvent.SaveCliente)
+                            }
                         )
                     }
                 }
@@ -471,8 +487,11 @@ fun FormTextField(
     icon: ImageVector,
     keyboardType: KeyboardType = KeyboardType.Text,
     supportingText: String? = null,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    imeAction: ImeAction = ImeAction.Next,
+    onImeAction: () -> Unit = {}
 ) {
+    val focusManager = LocalFocusManager.current
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(label, style = MaterialTheme.typography.labelMedium, color = Color(0xFF30323A))
         OutlinedTextField(
@@ -483,7 +502,14 @@ fun FormTextField(
             leadingIcon = { Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp)) },
             trailingIcon = trailingIcon,
             shape = RoundedCornerShape(12.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
+            keyboardActions = KeyboardActions(
+                onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Next) },
+                onDone = {
+                    focusManager.clearFocus()
+                    onImeAction()
+                }
+            ),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = Color(0xFFC6C6CD),
                 focusedBorderColor = Color(0xFF006C49)

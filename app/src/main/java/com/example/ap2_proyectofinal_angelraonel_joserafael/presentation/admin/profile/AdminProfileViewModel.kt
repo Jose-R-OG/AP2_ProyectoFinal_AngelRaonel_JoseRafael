@@ -75,7 +75,7 @@ class AdminProfileViewModel @Inject constructor(
                         _uiState.update { it.copy(
                             currentUser = user, adminName = user.nombreCompleto,
                             adminEmail = user.email ?: "", adminPhone = user.telefono,
-                            businessName = user.businessName ?: "TacoBrao",
+                            businessName = user.businessName ?: "TaCobrao",
                             profilePhotoPath = user.profilePhotoPath,
                             businessLogoPath = user.businessLogoPath,
                             isLoading = false

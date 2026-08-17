@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -31,9 +33,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -42,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.components.DniScannerDialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,33 +58,27 @@ fun RegisterAdminScreen(
     onNavigateToActivation: (email: String, code: String) -> Unit = { _, _ -> },
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
-    var fullName by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var pin by remember { mutableStateOf("") }
-    var isPinVisible by remember { mutableStateOf(false) }
-    var phone by remember { mutableStateOf("") }
-    var cedula by remember { mutableStateOf("") }
-
-    var selectedBank by remember { mutableStateOf("") }
-    var expandedBankMenu by remember { mutableStateOf(false) }
-    var transferNumber by remember { mutableStateOf("") }
-    var depositorName by remember { mutableStateOf("") }
-    var voucherUri by remember { mutableStateOf<Uri?>(null) }
-
-    var termsAccepted by remember { mutableStateOf(false) }
-    var showDniScanner by remember { mutableStateOf(false) }
-
+    val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val registerState by viewModel.registerState.collectAsState()
 
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri -> voucherUri = uri }
-
-    LaunchedEffect(registerState) {
-        when (val state = registerState) {
+    LaunchedEffect(uiState.registerState) {
+        when (val state = uiState.registerState) {
             is RegisterState.Success -> {
+                Toast.makeText(context, "Solicitud enviada. Código enviado al correo: ${state.activationCode}", Toast.LENGTH_LONG).show()
+
+                try {
+                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                        data = Uri.parse("mailto:${state.email}")
+                        putExtra(Intent.EXTRA_SUBJECT, "Código de Activación TaCobrao")
+                        putExtra(
+                            Intent.EXTRA_TEXT,
+                            "¡Hola ${uiState.fullName}!\n\nTu registro ha sido enviado exitosamente.\n\nTu código de activación es: ${state.activationCode}\n\nConsérvalo para verificar tu cuenta."
+                        )
+                    }
+                    context.startActivity(Intent.createChooser(emailIntent, "Enviar Código por Correo"))
+                } catch (e: Exception) {
+                }
+
                 Toast.makeText(context, "Solicitud enviada. Revisa tu correo electrónico.", Toast.LENGTH_LONG).show()
                 onNavigateToActivation(state.email, state.activationCode)
             }
@@ -87,10 +89,33 @@ fun RegisterAdminScreen(
         }
     }
 
+    RegisterAdminContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RegisterAdminContent(
+    uiState: RegisterUiState,
+    onEvent: (RegisterUiEvent) -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri -> onEvent(RegisterUiEvent.VoucherUriChanged(uri)) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF8F9FF))
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
             .padding(16.dp),
         contentAlignment = Alignment.TopCenter
     ) {
@@ -108,7 +133,7 @@ fun RegisterAdminScreen(
             ) {
                 Icon(Icons.Default.AccountBalance, contentDescription = null, tint = Color.Black, modifier = Modifier.size(28.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("TacoBrao", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text("TaCobrao", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             }
 
             Text("Registrar Empresa", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.Black)
@@ -132,44 +157,51 @@ fun RegisterAdminScreen(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
-                        value = fullName, onValueChange = { fullName = it },
+                        value = uiState.fullName, onValueChange = { onEvent(RegisterUiEvent.FullNameChanged(it)) },
                         label = { Text("Nombre Completo") },
                         trailingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
-                        value = username, onValueChange = { username = it },
+                        value = uiState.username, onValueChange = { onEvent(RegisterUiEvent.UsernameChanged(it)) },
                         label = { Text("Usuario (Login)") },
                         trailingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
-                        value = email, onValueChange = { email = it },
+                        value = uiState.email, onValueChange = { onEvent(RegisterUiEvent.EmailChanged(it)) },
                         label = { Text("Correo Electrónico") },
                         trailingIcon = { Icon(Icons.Default.Mail, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
-                        value = pin, onValueChange = { pin = it },
+                        value = uiState.pin, onValueChange = { onEvent(RegisterUiEvent.PinChanged(it)) },
                         label = { Text("PIN / Contraseña de Acceso") },
                         placeholder = { Text("Mínimo 4 dígitos") },
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                         trailingIcon = {
-                            IconButton(onClick = { isPinVisible = !isPinVisible }) {
+                            IconButton(onClick = { onEvent(RegisterUiEvent.TogglePinVisibility) }) {
                                 Icon(Icons.Default.Lock, contentDescription = "Mostrar/Ocultar PIN")
                             }
                         },
-                        visualTransformation = if (isPinVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        visualTransformation = if (uiState.isPinVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
                         singleLine = true
                     )
@@ -177,32 +209,29 @@ fun RegisterAdminScreen(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
-                        value = phone, onValueChange = { phone = it },
+                        value = uiState.phone, onValueChange = { onEvent(RegisterUiEvent.PhoneChanged(it)) },
                         label = { Text("Teléfono de Contacto") },
                         trailingIcon = { Icon(Icons.Default.Call, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
-                        value = cedula,
-                        onValueChange = { input ->
-                            val digits = input.filter { it.isDigit() }.take(11)
-                            cedula = when {
-                                digits.length > 10 -> "${digits.substring(0, 3)}-${digits.substring(3, 10)}-${digits.substring(10)}"
-                                digits.length > 3 -> "${digits.substring(0, 3)}-${digits.substring(3)}"
-                                else -> digits
-                            }
-                        },
+                        value = uiState.cedula,
+                        onValueChange = { onEvent(RegisterUiEvent.CedulaChanged(it)) },
                         label = { Text("Cédula de Identidad (Dominicana)") },
                         placeholder = { Text("001-0000000-0") },
                         trailingIcon = {
-                            IconButton(onClick = { showDniScanner = true }) {
+                            IconButton(onClick = { onEvent(RegisterUiEvent.ShowDniScannerChanged(true)) }) {
                                 Icon(Icons.Default.QrCodeScanner, contentDescription = "Escanear Cédula", tint = Color(0xFF006C49))
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 20.dp), color = Color(0xFFC6C6CD))
@@ -216,6 +245,7 @@ fun RegisterAdminScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            @Suppress("SpellCheckingInspection")
                             Text("Precio Mensual", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                             Text("RD$ 2,500.00", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
                         }
@@ -224,28 +254,27 @@ fun RegisterAdminScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     ExposedDropdownMenuBox(
-                        expanded = expandedBankMenu,
-                        onExpandedChange = { expandedBankMenu = !expandedBankMenu }
+                        expanded = uiState.expandedBankMenu,
+                        onExpandedChange = { onEvent(RegisterUiEvent.ToggleBankMenu) }
                     ) {
                         OutlinedTextField(
-                            value = selectedBank,
+                            value = uiState.selectedBank,
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Seleccionar Banco") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedBankMenu) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.expandedBankMenu) },
                             modifier = Modifier.menuAnchor().fillMaxWidth(),
                             shape = RoundedCornerShape(8.dp)
                         )
                         ExposedDropdownMenu(
-                            expanded = expandedBankMenu,
-                            onDismissRequest = { expandedBankMenu = false }
+                            expanded = uiState.expandedBankMenu,
+                            onDismissRequest = { onEvent(RegisterUiEvent.ToggleBankMenu) }
                         ) {
                             listOf("Banreservas", "Banco Popular", "Banco BHD").forEach { bank ->
                                 DropdownMenuItem(
                                     text = { Text(bank) },
                                     onClick = {
-                                        selectedBank = bank
-                                        expandedBankMenu = false
+                                        onEvent(RegisterUiEvent.BankSelected(bank))
                                     }
                                 )
                             }
@@ -263,7 +292,7 @@ fun RegisterAdminScreen(
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text("Datos de Transferencia:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             Text(
-                                text = when (selectedBank) {
+                                text = when (uiState.selectedBank) {
                                     "Banreservas" -> "Cta. Corriente: 960-123456-7"
                                     "Banco Popular" -> "Cta. Ahorros: 792-883920-1"
                                     "Banco BHD" -> "Cta. Corriente: 102-492019-3"
@@ -279,17 +308,24 @@ fun RegisterAdminScreen(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
-                        value = transferNumber, onValueChange = { transferNumber = it },
+                        value = uiState.transferNumber, onValueChange = { onEvent(RegisterUiEvent.TransferNumberChanged(it)) },
                         label = { Text("Número de Transferencia") },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
-                        value = depositorName, onValueChange = { depositorName = it },
+                        value = uiState.depositorName, onValueChange = { onEvent(RegisterUiEvent.DepositorNameChanged(it)) },
                         label = { Text("Nombre del Depositante") },
-                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+                        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = {
+                            focusManager.clearFocus()
+                            onEvent(RegisterUiEvent.SubmitRegistration)
+                        })
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -309,7 +345,7 @@ fun RegisterAdminScreen(
                             Icon(Icons.Default.CloudUpload, contentDescription = null, tint = Color(0xFF3980F4))
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = if (voucherUri != null) "Voucher adjuntado correctamente" else "Toca para subir el Comprobante (Voucher)",
+                                text = if (uiState.voucherUri != null) "Voucher adjuntado correctamente" else "Toca para subir el Comprobante (Voucher)",
                                 fontSize = 12.sp,
                                 color = Color(0xFF3980F4),
                                 fontWeight = FontWeight.Bold
@@ -321,8 +357,8 @@ fun RegisterAdminScreen(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
-                            checked = termsAccepted,
-                            onCheckedChange = { termsAccepted = it }
+                            checked = uiState.termsAccepted,
+                            onCheckedChange = { onEvent(RegisterUiEvent.TermsAcceptedChanged(it)) }
                         )
                         Text(
                             "Certifico que la información provista es verídica y corresponde a mi identidad legal en la República Dominicana.",
@@ -335,27 +371,14 @@ fun RegisterAdminScreen(
 
                     Button(
                         onClick = {
-                            viewModel.onEvent(
-                                RegisterUiEvent.SubmitRegistration(
-                                    fullName = fullName,
-                                    username = username,
-                                    email = email,
-                                    phone = phone,
-                                    cedula = cedula,
-                                    bank = selectedBank,
-                                    transferNum = transferNumber,
-                                    depositor = depositorName,
-                                    voucherUri = voucherUri,
-                                    pin = pin
-                                )
-                            )
+                            onEvent(RegisterUiEvent.SubmitRegistration)
                         },
-                        enabled = termsAccepted && registerState !is RegisterState.Loading,
+                        enabled = uiState.termsAccepted && uiState.registerState !is RegisterState.Loading,
                         modifier = Modifier.fillMaxWidth().height(52.dp),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
                     ) {
-                        if (registerState is RegisterState.Loading) {
+                        if (uiState.registerState is RegisterState.Loading) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                         } else {
                             Text("Registrar Cuenta", fontSize = 16.sp, fontWeight = FontWeight.Bold)
@@ -368,13 +391,29 @@ fun RegisterAdminScreen(
         }
     }
 
-    if (showDniScanner) {
+    if (uiState.showDniScanner) {
         DniScannerDialog(
             onDniDetected = { detectedDni ->
-                cedula = detectedDni
-                showDniScanner = false
+                onEvent(RegisterUiEvent.CedulaChanged(detectedDni))
+                onEvent(RegisterUiEvent.ShowDniScannerChanged(false))
             },
-            onDismiss = { showDniScanner = false }
+            onDismiss = { onEvent(RegisterUiEvent.ShowDniScannerChanged(false)) }
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun RegisterAdminPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        RegisterAdminContent(
+            uiState = RegisterUiState(
+                fullName = "Juan Pérez",
+                email = "juan.perez@example.com",
+                phone = "809-555-1234",
+                cedula = "402-1234567-8"
+            ),
+            onEvent = {}
         )
     }
 }
