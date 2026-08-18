@@ -3,10 +3,14 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.data
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.transaccion.TransaccionDao
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.transaccion.TransaccionEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.repository.TransaccionRepositoryImpl
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.PaymentMethod
+import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.TipoTransaccion
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Transaccion
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import junit.framework.TestCase
@@ -37,13 +41,13 @@ class TransaccionRepositoryImplTest {
             empleadoId = 3L,
             monto = BigDecimal("1500.00"),
             fecha = 1620000000000L,
-            tipo = mockk(),
-            paymentMethod = mockk(),
+            tipo = TipoTransaccion.INGRESO,
+            paymentMethod = PaymentMethod.EFECTIVO,
             nota = "Pago de cuota"
         )
 
         val slot = slot<TransaccionEntity>()
-        coEvery { transaccionDao.insertarTransaccion(capture(slot)) } returns Unit
+        coEvery { transaccionDao.insertarTransaccion(capture(slot)) } just Runs
 
         repository.guardarTransaccion(transaccion)
 
@@ -62,12 +66,12 @@ class TransaccionRepositoryImplTest {
         val entities = listOf(
             TransaccionEntity(
                 id = 1L, prestamoId = 1L, cuotaId = null, empleadoId = 2L,
-                monto = BigDecimal("500"), fecha = 1000L, tipo = mockk(),
+                monto = BigDecimal("500"), fecha = 1000L, tipo = TipoTransaccion.INGRESO,
                 paymentMethod = "EFECTIVO", nota = "Nota 1"
             ),
             TransaccionEntity(
                 id = 2L, prestamoId = 2L, cuotaId = 3L, empleadoId = 2L,
-                monto = BigDecimal("1000"), fecha = 2000L, tipo = mockk(),
+                monto = BigDecimal("1000"), fecha = 2000L, tipo = TipoTransaccion.EGRESO,
                 paymentMethod = "TRANSFERENCIA", nota = "Nota 2"
             )
         )
@@ -87,7 +91,7 @@ class TransaccionRepositoryImplTest {
         val entities = listOf(
             TransaccionEntity(
                 id = 3L, prestamoId = prestamoId, cuotaId = 1L, empleadoId = 1L,
-                monto = BigDecimal("300"), fecha = 1500L, tipo = mockk(),
+                monto = BigDecimal("300"), fecha = 1500L, tipo = TipoTransaccion.INGRESO,
                 paymentMethod = "EFECTIVO", nota = "Historial"
             )
         )
@@ -106,12 +110,12 @@ class TransaccionRepositoryImplTest {
         val entities = listOf(
             TransaccionEntity(
                 id = 1L, prestamoId = 1L, cuotaId = null, empleadoId = 1L,
-                monto = BigDecimal("100"), fecha = 1000L, tipo = mockk(),
+                monto = BigDecimal("100"), fecha = 1000L, tipo = TipoTransaccion.INGRESO,
                 paymentMethod = "EFECTIVO", nota = "Nota A"
             ),
             TransaccionEntity(
                 id = 2L, prestamoId = 2L, cuotaId = null, empleadoId = 2L,
-                monto = BigDecimal("200"), fecha = 2000L, tipo = mockk(),
+                monto = BigDecimal("200"), fecha = 2000L, tipo = TipoTransaccion.EGRESO,
                 paymentMethod = "EFECTIVO", nota = "Nota B"
             )
         )
