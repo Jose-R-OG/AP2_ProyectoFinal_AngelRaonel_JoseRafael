@@ -205,31 +205,40 @@ fun EmployeeManagementScreen(
                     },
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                EditorField(ui.name, { onEvent(EmployeeUiEvent.NameChanged(it)) }, "Nombre completo", "${ui.name.length}/80", KeyboardType.Text, imeAction = ImeAction.Next, focusManager = focusManager)
-                EditorField(ui.username, { onEvent(EmployeeUiEvent.UsernameChanged(it)) }, "Usuario de acceso", "${ui.username.length}/24 (mínimo 4)", KeyboardType.Text, imeAction = ImeAction.Next, focusManager = focusManager)
-                EditorField(ui.pin, { onEvent(EmployeeUiEvent.PinChanged(it)) }, "PIN", "${ui.pin.length}/4 dígitos", KeyboardType.NumberPassword, true, imeAction = ImeAction.Next, focusManager = focusManager)
-                EditorField(ui.phone, { onEvent(EmployeeUiEvent.PhoneChanged(it)) }, "Teléfono", "${ui.phone.length}/10 dígitos", KeyboardType.Phone, imeAction = ImeAction.Next, focusManager = focusManager)
-                EditorField(ui.identification, { onEvent(EmployeeUiEvent.IdentificationChanged(it)) }, "Cédula", "${ui.identification.length}/11 dígitos", KeyboardType.Number, imeAction = ImeAction.Next, focusManager = focusManager)
-                EditorField(ui.address, { onEvent(EmployeeUiEvent.AddressChanged(it)) }, "Dirección donde vive", "${ui.address.length}/160", KeyboardType.Text, imeAction = ImeAction.Done, focusManager = focusManager, onDone = {
+                EditorField(ui.name, ui.nameError, { onEvent(EmployeeUiEvent.NameChanged(it)) }, "Nombre completo", "${ui.name.length}/80", KeyboardType.Text, imeAction = ImeAction.Next, focusManager = focusManager)
+                EditorField(ui.username, ui.usernameError, { onEvent(EmployeeUiEvent.UsernameChanged(it)) }, "Usuario de acceso", "${ui.username.length}/24 (mínimo 4)", KeyboardType.Text, imeAction = ImeAction.Next, focusManager = focusManager)
+                EditorField(ui.pin, ui.pinError, { onEvent(EmployeeUiEvent.PinChanged(it)) }, "PIN", "${ui.pin.length}/4 dígitos", KeyboardType.NumberPassword, true, imeAction = ImeAction.Next, focusManager = focusManager)
+                EditorField(ui.phone, ui.phoneError, { onEvent(EmployeeUiEvent.PhoneChanged(it)) }, "Teléfono", "${ui.phone.length}/10 dígitos", KeyboardType.Phone, imeAction = ImeAction.Next, focusManager = focusManager)
+                EditorField(ui.identification, ui.identificationError, { onEvent(EmployeeUiEvent.IdentificationChanged(it)) }, "Cédula", "${ui.identification.length}/11 dígitos", KeyboardType.Number, imeAction = ImeAction.Next, focusManager = focusManager)
+                EditorField(ui.address, ui.addressError, { onEvent(EmployeeUiEvent.AddressChanged(it)) }, "Dirección donde vive", "${ui.address.length}/160", KeyboardType.Text, imeAction = ImeAction.Done, focusManager = focusManager, onDone = {
                     focusManager.clearFocus()
                     onEvent(EmployeeUiEvent.SaveEmployee)
                 })
-                ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                    OutlinedTextField(
-                        ui.route, {}, 
-                        readOnly = true, 
-                        label = { Text("Zona / ruta") }, 
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) }, 
-                        modifier = Modifier.fillMaxWidth().menuAnchor(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                
+                Column {
+                    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                        OutlinedTextField(
+                            ui.route, {}, 
+                            readOnly = true, 
+                            label = { Text("Zona / ruta") }, 
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) }, 
+                            modifier = Modifier.fillMaxWidth().menuAnchor(),
+                            isError = ui.routeError != null,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                            )
                         )
-                    )
-                    ExposedDropdownMenu(expanded, { expanded = false }) { ui.availableRoutes.forEach { route ->
-                        DropdownMenuItem({ Text(route) }, { onEvent(EmployeeUiEvent.RouteSelected(route)); expanded = false })
-                    } }
+                        ExposedDropdownMenu(expanded, { expanded = false }) { ui.availableRoutes.forEach { route ->
+                            DropdownMenuItem(
+                                text = { Text(route) },
+                                onClick = { onEvent(EmployeeUiEvent.RouteSelected(route)); expanded = false }
+                            )
+                        } }
+                    }
+                    ui.routeError?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp, modifier = Modifier.padding(start = 16.dp, top = 4.dp)) }
                 }
+
                 PhotoButton("Foto del empleado", ui.profilePhotoPath) { profile.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 PhotoButton("Cédula · frente", ui.dniFrontPhotoPath) { front.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 PhotoButton("Cédula · reverso", ui.dniBackPhotoPath) { back.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
@@ -255,6 +264,7 @@ fun EmployeeManagementScreen(
 
 @Composable private fun EditorField(
     value: String,
+    error: String?,
     onChange: (String) -> Unit,
     label: String,
     support: String,
@@ -265,7 +275,10 @@ fun EmployeeManagementScreen(
     onDone: () -> Unit = {}
 ) {
     OutlinedTextField(
-        value, onChange, label = { Text(label) }, supportingText = { Text(support) },
+        value, onChange, 
+        label = { Text(label) }, 
+        supportingText = { Text(error ?: support) },
+        isError = error != null,
         keyboardOptions = KeyboardOptions(keyboardType = type, imeAction = imeAction),
         keyboardActions = KeyboardActions(
             onNext = { focusManager?.moveFocus(FocusDirection.Down) },

@@ -12,6 +12,7 @@ data class CierreCajaUiState(
     val registeredCash: String = "RD$ 0.00",
     val cashInHand: String = "RD$ 0.00",
     val cashInHandInput: String = "0.00",
+    val cashInHandError: String? = null,
     val differenceAmount: String = "RD$ 0.00",
     val isPrinting: Boolean = false,
     val isFinalizingTurn: Boolean = false,

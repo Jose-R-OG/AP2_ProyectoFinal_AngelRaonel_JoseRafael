@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontStyle
@@ -206,6 +205,7 @@ fun AdjustTariffsContent(
                                 title = "Diario",
                                 subtitle = "Frecuencia Diaria",
                                 value = uiState.dailyRate,
+                                error = uiState.dailyRateError,
                                 onValueChange = { onEvent(TariffsUiEvent.DailyRateChanged(it)) },
                                 focusManager = focusManager,
                                 imeAction = ImeAction.Next
@@ -216,6 +216,7 @@ fun AdjustTariffsContent(
                                 title = "Quincenal",
                                 subtitle = "Frecuencia Bi-mensual",
                                 value = uiState.biweeklyRate,
+                                error = uiState.biweeklyRateError,
                                 onValueChange = { onEvent(TariffsUiEvent.BiweeklyRateChanged(it)) },
                                 focusManager = focusManager,
                                 imeAction = ImeAction.Next
@@ -226,6 +227,7 @@ fun AdjustTariffsContent(
                                 title = "Mensual",
                                 subtitle = "Frecuencia Mensual Estándar",
                                 value = uiState.monthlyRate,
+                                error = uiState.monthlyRateError,
                                 onValueChange = { onEvent(TariffsUiEvent.MonthlyRateChanged(it)) },
                                 focusManager = focusManager,
                                 imeAction = ImeAction.Next
@@ -238,6 +240,7 @@ fun AdjustTariffsContent(
                                 title = "Semanal (4 semanas)",
                                 subtitle = "Préstamo a Corto Plazo",
                                 value = uiState.fourWeeksRate,
+                                error = uiState.fourWeeksRateError,
                                 onValueChange = { onEvent(TariffsUiEvent.FourWeeksChanged(it)) },
                                 focusManager = focusManager,
                                 imeAction = ImeAction.Next
@@ -248,6 +251,7 @@ fun AdjustTariffsContent(
                                 title = "Semanal (6 semanas)",
                                 subtitle = "Préstamo Intermedio",
                                 value = uiState.sixWeeksRate,
+                                error = uiState.sixWeeksRateError,
                                 onValueChange = { onEvent(TariffsUiEvent.SixWeeksChanged(it)) },
                                 focusManager = focusManager,
                                 imeAction = ImeAction.Next
@@ -258,6 +262,7 @@ fun AdjustTariffsContent(
                                 title = "Semanal (12 semanas)",
                                 subtitle = "Préstamo Extendido",
                                 value = uiState.twelveWeeksRate,
+                                error = uiState.twelveWeeksRateError,
                                 onValueChange = { onEvent(TariffsUiEvent.TwelveWeeksChanged(it)) },
                                 focusManager = focusManager,
                                 imeAction = ImeAction.Done,
@@ -399,6 +404,7 @@ private fun TariffInputRow(
     title: String,
     subtitle: String,
     value: String,
+    error: String?,
     onValueChange: (String) -> Unit,
     focusManager: androidx.compose.ui.focus.FocusManager? = null,
     imeAction: ImeAction = ImeAction.Next,
@@ -408,7 +414,7 @@ private fun TariffInputRow(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        border = androidx.compose.foundation.BorderStroke(1.dp, if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -435,7 +441,7 @@ private fun TariffInputRow(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
-                    Text(subtitle, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(error ?: subtitle, fontSize = 11.sp, color = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -444,6 +450,7 @@ private fun TariffInputRow(
                 onValueChange = onValueChange,
                 modifier = Modifier.width(90.dp),
                 shape = RoundedCornerShape(8.dp),
+                isError = error != null,
                 textStyle = LocalTextStyle.current.copy(
                     textAlign = TextAlign.End,
                     fontWeight = FontWeight.Bold,

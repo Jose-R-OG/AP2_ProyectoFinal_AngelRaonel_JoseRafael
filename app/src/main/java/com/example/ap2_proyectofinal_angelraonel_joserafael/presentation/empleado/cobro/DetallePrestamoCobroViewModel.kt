@@ -122,13 +122,20 @@ class DetallePrestamoCobroViewModel @Inject constructor(
         } else {
             selectedCuotaIds + cuotaId
         }
+        _uiState.update { it.copy(selectedCountError = null) }
         actualizarUiState()
     }
 
     private fun realizarCobro() {
         val prestamo = prestamoActual ?: return
         val cuotasAPagar = cuotasActuales.filter { it.id in selectedCuotaIds && !it.estaPagada }
-        if (cuotasAPagar.isEmpty()) return
+        
+        val selectedError = if (cuotasAPagar.isEmpty()) "Debe seleccionar al menos una cuota para cobrar" else null
+        
+        if (selectedError != null) {
+            _uiState.update { it.copy(selectedCountError = selectedError) }
+            return
+        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isProcessingPayment = true) }

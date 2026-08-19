@@ -32,6 +32,7 @@ data class DetallePrestamoCobroUiState(
     val totalPlanFormatted: String = "",
     val progress: Float = 0f,
     val selectedCount: Int = 0,
+    val selectedCountError: String? = null,
     val paymentMethod: PaymentMethod = PaymentMethod.EFECTIVO,
     val cuotasList: List<CuotaItemState> = emptyList(),
     val isProcessingPayment: Boolean = false,

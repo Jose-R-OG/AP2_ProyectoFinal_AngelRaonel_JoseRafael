@@ -7,40 +7,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Percent
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import androidx.compose.material.icons.filled.QrCodeScanner
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.components.DniScannerDialog
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
@@ -68,6 +43,7 @@ fun RegistroClienteConCuotas(
     onNavigateBack: () -> Unit,
     viewModel: RegistroClienteViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
     val focusManager = LocalFocusManager.current
     var showDniScanner by remember { mutableStateOf(false) }
@@ -96,7 +72,7 @@ fun RegistroClienteConCuotas(
         bottomBar = {
             Button(
                 onClick = { viewModel.onEvent(RegistroClienteUiEvent.SaveCliente) },
-                enabled = !viewModel.isLoading,
+                enabled = !uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -104,7 +80,7 @@ fun RegistroClienteConCuotas(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                if (viewModel.isLoading) {
+                if (uiState.isLoading) {
                     androidx.compose.material3.CircularProgressIndicator(
                         modifier = Modifier.size(22.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -114,7 +90,7 @@ fun RegistroClienteConCuotas(
                     Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        if (viewModel.isExistingClient) "Solicitar nuevo préstamo" else "Guardar Cliente", 
+                        if (uiState.isExistingClient) "Solicitar nuevo préstamo" else "Guardar Cliente", 
                         fontSize = 16.sp, 
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -138,7 +114,8 @@ fun RegistroClienteConCuotas(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ProfilePhotoPicker(
-                photoPath = viewModel.profilePhotoPath,
+                photoPath = uiState.profilePhotoPath,
+                error = uiState.profilePhotoError,
                 onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.ProfilePhotoChanged(it)) }
             )
 
@@ -154,21 +131,23 @@ fun RegistroClienteConCuotas(
                     FormSectionTitle(Icons.Default.Person, "Información Personal")
                     
                     FormTextField(
-                        value = viewModel.fullName,
+                        value = uiState.fullName,
+                        error = uiState.fullNameError,
                         onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.FullNameChanged(it)) },
                         label = "Nombre Completo",
                         placeholder = "Ej. Juan Pérez",
                         icon = Icons.Default.Person,
-                        supportingText = "${viewModel.fullName.length}/80 caracteres"
+                        supportingText = "${uiState.fullName.length}/80 caracteres"
                     )
 
                     FormTextField(
-                        value = viewModel.dni,
+                        value = uiState.dni,
+                        error = uiState.dniError,
                         onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.DniChanged(it)) },
                         label = "Número de Identificación (DNI/ID)",
                         placeholder = "000-0000000-0",
                         icon = Icons.Default.AccountBox,
-                        supportingText = "${viewModel.dni.length}/11 dígitos",
+                        supportingText = "${uiState.dni.length}/11 dígitos",
                         trailingIcon = {
                             IconButton(onClick = { showDniScanner = true }) {
                                 Icon(
@@ -193,40 +172,38 @@ fun RegistroClienteConCuotas(
                         IdPhotoBox(
                             modifier = Modifier.weight(1f),
                             label = "Parte Frontal",
-                            photoPath = viewModel.dniFrontPhotoPath,
+                            photoPath = uiState.dniFrontPhotoPath,
+                            error = uiState.dniFrontPhotoError,
                             onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.DniFrontPhotoChanged(it)) }
                         )
                         IdPhotoBox(
                             modifier = Modifier.weight(1f),
                             label = "Parte Trasera",
-                            photoPath = viewModel.dniBackPhotoPath,
+                            photoPath = uiState.dniBackPhotoPath,
+                            error = uiState.dniBackPhotoError,
                             onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.DniBackPhotoChanged(it)) }
                         )
                     }
-                    Text(
-                        "JPG, PNG o PDF (Máx. 5MB)",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
 
                     FormTextField(
-                        value = viewModel.phone,
+                        value = uiState.phone,
+                        error = uiState.phoneError,
                         onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.PhoneChanged(it)) },
                         label = "Teléfono de Contacto",
                         placeholder = "+1 (555) 000-0000",
                         icon = Icons.Default.Phone,
                         keyboardType = KeyboardType.Phone,
-                        supportingText = "${viewModel.phone.length}/10 dígitos"
+                        supportingText = "${uiState.phone.length}/10 dígitos"
                     )
 
                     FormTextField(
-                        value = viewModel.address,
+                        value = uiState.address,
+                        error = uiState.addressError,
                         onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.AddressChanged(it)) },
                         label = "Dirección",
                         placeholder = "Calle, Número, Ciudad...",
                         icon = Icons.Default.LocationOn,
-                        supportingText = "${viewModel.address.length}/160 caracteres"
+                        supportingText = "${uiState.address.length}/160 caracteres"
                     )
 
                     Text("Zona de cobro", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -236,8 +213,8 @@ fun RegistroClienteConCuotas(
                                 onClick = { viewModel.onEvent(RegistroClienteUiEvent.ZoneChanged(zone)) },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = if (viewModel.zone == zone) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                                    contentColor = if (viewModel.zone == zone) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                    containerColor = if (uiState.zone == zone) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                                    contentColor = if (uiState.zone == zone) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             ) { Text(zone.removePrefix("Zona "), fontSize = 11.sp) }
                         }
@@ -247,42 +224,46 @@ fun RegistroClienteConCuotas(
                     FormSectionTitle(Icons.Default.ShoppingCart, "Detalles del Préstamo")
 
                     FormTextField(
-                        value = viewModel.montoPrestamo,
+                        value = uiState.montoPrestamo,
+                        error = uiState.montoPrestamoError,
                         onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.MontoChanged(it)) },
                         label = "Monto del Préstamo Inicial",
                         placeholder = "$ 0.00",
                         icon = Icons.Default.Add,
                         keyboardType = KeyboardType.Decimal,
-                        supportingText = "${viewModel.montoPrestamo.length}/10 dígitos"
+                        supportingText = "${uiState.montoPrestamo.length}/10 dígitos"
                     )
 
                     FormTextField(
-                        value = viewModel.numCuotas,
+                        value = uiState.numCuotas,
+                        error = uiState.numCuotasError,
                         onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.CuotasChanged(it)) },
                         label = "Número de Cuotas",
                         placeholder = "Ej. 12",
                         icon = Icons.Default.List,
                         keyboardType = KeyboardType.Number,
-                        supportingText = "${viewModel.numCuotas.length}/3 dígitos"
+                        supportingText = "${uiState.numCuotas.length}/3 dígitos"
                     )
 
                     FrecuenciaDropdown(
-                        selected = viewModel.frecuenciaPago,
+                        selected = uiState.frecuenciaPago,
                         onSelected = { viewModel.onEvent(RegistroClienteUiEvent.FrecuenciaChanged(it)) }
                     )
 
                     PaymentDaySelector(
-                        frequency = viewModel.frecuenciaPago,
-                        selectedValue = viewModel.diaPagoPreferido,
-                        selectedDescription = viewModel.diaPagoDescripcion,
+                        frequency = uiState.frecuenciaPago,
+                        selectedValue = uiState.diaPagoPreferido,
+                        selectedDescription = uiState.diaPagoDescripcion,
+                        error = uiState.diaPagoError,
                         onSelected = { value, description ->
                             viewModel.onEvent(RegistroClienteUiEvent.DiaPagoChanged(value, description))
                         }
                     )
 
-                    if (viewModel.canUseCustomRate) {
+                    if (uiState.canUseCustomRate) {
                         FormTextField(
-                            value = viewModel.tasaPersonalizada,
+                            value = uiState.tasaPersonalizada,
+                            error = uiState.tasaPersonalizadaError,
                             onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.TasaPersonalizadaChanged(it)) },
                             label = "Tasa personalizada (opcional)",
                             placeholder = "Usar tarifa configurada",
@@ -313,7 +294,7 @@ fun RegistroClienteConCuotas(
         )
     }
 
-    if (viewModel.success) {
+    if (uiState.success) {
         AlertDialog(
             onDismissRequest = {},
             title = { Text("Solicitud enviada") },
@@ -322,7 +303,7 @@ fun RegistroClienteConCuotas(
         )
     }
 
-    viewModel.error?.let { err ->
+    uiState.error?.let { err ->
         AlertDialog(
             onDismissRequest = { viewModel.onEvent(RegistroClienteUiEvent.ClearError) },
             confirmButton = { TextButton(onClick = { viewModel.onEvent(RegistroClienteUiEvent.ClearError) }) { Text("OK") } },
@@ -338,6 +319,7 @@ fun PaymentDaySelector(
     frequency: FrecuenciaPago,
     selectedValue: Int?,
     selectedDescription: String?,
+    error: String?,
     onSelected: (Int, String) -> Unit
 ) {
     if (frequency == FrecuenciaPago.DIARIO) {
@@ -360,9 +342,11 @@ fun PaymentDaySelector(
                 onValueChange = {},
                 readOnly = true,
                 placeholder = { Text("El cliente elige cuándo pagar") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
+                isError = error != null,
+                supportingText = error?.let { { Text(it) } },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface
@@ -374,13 +358,13 @@ fun PaymentDaySelector(
                 }
             }
         }
-        Text(if (selectedValue == null) "Obligatorio para esta frecuencia" else "Seleccionado: $selectedDescription", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
 fun ProfilePhotoPicker(
     photoPath: String?,
+    error: String?,
     onPhotoPicked: (String) -> Unit
 ) {
     val launcher = rememberLauncherForActivityResult(
@@ -388,28 +372,31 @@ fun ProfilePhotoPicker(
         onResult = { uri -> uri?.let { onPhotoPicked(it.toString()) } }
     )
 
-    Box(
-        modifier = Modifier
-            .size(120.dp)
-            .border(2.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .clickable { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-        contentAlignment = Alignment.Center
-    ) {
-        if (photoPath != null) {
-            AsyncImage(
-                model = photoPath,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.AddCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("Añadir Foto", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .border(2.dp, if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+            contentAlignment = Alignment.Center
+        ) {
+            if (photoPath != null) {
+                AsyncImage(
+                    model = photoPath,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.AddCircle, contentDescription = null, tint = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Añadir Foto", style = MaterialTheme.typography.bodySmall, color = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
+        error?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp)) }
     }
 }
 
@@ -418,6 +405,7 @@ fun IdPhotoBox(
     modifier: Modifier = Modifier,
     label: String,
     photoPath: String?,
+    error: String?,
     onPhotoPicked: (String) -> Unit
 ) {
     val launcher = rememberLauncherForActivityResult(
@@ -430,7 +418,7 @@ fun IdPhotoBox(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
+                .border(1.dp, if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
                 .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
@@ -444,15 +432,16 @@ fun IdPhotoBox(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(Icons.Default.Add, contentDescription = null, tint = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Text(
             label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+        error?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 10.sp, modifier = Modifier.align(Alignment.CenterHorizontally)) }
     }
 }
 
@@ -468,6 +457,7 @@ fun FormSectionTitle(icon: ImageVector, title: String) {
 @Composable
 fun FormTextField(
     value: String,
+    error: String?,
     onValueChange: (String) -> Unit,
     label: String,
     placeholder: String,
@@ -488,6 +478,8 @@ fun FormTextField(
             placeholder = { Text(placeholder) },
             leadingIcon = { Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp)) },
             trailingIcon = trailingIcon,
+            isError = error != null,
+            supportingText = error?.let { { Text(it) } } ?: supportingText?.let { { Text(it) } },
             shape = RoundedCornerShape(12.dp),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
             keyboardActions = KeyboardActions(
@@ -504,7 +496,6 @@ fun FormTextField(
                 focusedBorderColor = MaterialTheme.colorScheme.primary
             )
         )
-        supportingText?.let { Text(it, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 12.dp, top = 2.dp)) }
     }
 }
 
@@ -620,6 +611,7 @@ private fun RegistroClienteContentPreview() {
         ) {
             ProfilePhotoPicker(
                 photoPath = null,
+                error = null,
                 onPhotoPicked = {}
             )
 
@@ -636,6 +628,7 @@ private fun RegistroClienteContentPreview() {
 
                     FormTextField(
                         value = fullName,
+                        error = null,
                         onValueChange = { fullName = it },
                         label = "Nombre Completo",
                         placeholder = "Ej. Juan Pérez",
@@ -644,6 +637,7 @@ private fun RegistroClienteContentPreview() {
 
                     FormTextField(
                         value = dni,
+                        error = null,
                         onValueChange = { dni = it },
                         label = "Número de Cédula (DNI/ID)",
                         placeholder = "000-0000000-0",
@@ -664,12 +658,14 @@ private fun RegistroClienteContentPreview() {
                             modifier = Modifier.weight(1f),
                             label = "Parte Frontal",
                             photoPath = null,
+                            error = null,
                             onPhotoPicked = {}
                         )
                         IdPhotoBox(
                             modifier = Modifier.weight(1f),
                             label = "Parte Trasera",
                             photoPath = null,
+                            error = null,
                             onPhotoPicked = {}
                         )
                     }
@@ -682,6 +678,7 @@ private fun RegistroClienteContentPreview() {
 
                     FormTextField(
                         value = phone,
+                        error = null,
                         onValueChange = { phone = it },
                         label = "Teléfono de Contacto",
                         placeholder = "+1 (555) 000-0000",
@@ -691,6 +688,7 @@ private fun RegistroClienteContentPreview() {
 
                     FormTextField(
                         value = address,
+                        error = null,
                         onValueChange = { address = it },
                         label = "Dirección",
                         placeholder = "Calle, Número, Ciudad...",
@@ -702,6 +700,7 @@ private fun RegistroClienteContentPreview() {
 
                     FormTextField(
                         value = monto,
+                        error = null,
                         onValueChange = { monto = it },
                         label = "Monto del Préstamo Inicial",
                         placeholder = "$ 0.00",
@@ -711,6 +710,7 @@ private fun RegistroClienteContentPreview() {
 
                     FormTextField(
                         value = cuotas,
+                        error = null,
                         onValueChange = { cuotas = it },
                         label = "Número de Cuotas",
                         placeholder = "Ej. 12",
