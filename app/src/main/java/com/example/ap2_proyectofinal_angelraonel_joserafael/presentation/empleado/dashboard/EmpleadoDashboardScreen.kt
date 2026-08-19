@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,6 +51,36 @@ fun EmpleadoDashboardScreen(
     viewModel: EmpleadoDashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    EmpleadoDashboardContent(
+        uiState = uiState,
+        onNuevoClienteClick = onNuevoClienteClick,
+        onRealizarCobroClick = onRealizarCobroClick,
+        onVerRutaClick = onVerRutaClick,
+        onCierreCajaClick = onCierreCajaClick,
+        onVerTodosCobrosClick = onVerTodosCobrosClick,
+        onNavigateToAdminDashboard = onNavigateToAdminDashboard,
+        onNavigateToClients = onNavigateToClients,
+        onNavigateToLoans = onNavigateToLoans,
+        onNavigateToProfile = onNavigateToProfile,
+        onNavigateToNotifications = onNavigateToNotifications
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EmpleadoDashboardContent(
+    uiState: EmpleadoDashboardUiState,
+    onNuevoClienteClick: () -> Unit = {},
+    onRealizarCobroClick: () -> Unit = {},
+    onVerRutaClick: () -> Unit = {},
+    onCierreCajaClick: () -> Unit = {},
+    onVerTodosCobrosClick: () -> Unit = {},
+    onNavigateToAdminDashboard: () -> Unit = {},
+    onNavigateToClients: () -> Unit = {},
+    onNavigateToLoans: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {}
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -500,5 +531,28 @@ private fun RecentCobroRow(cobro: RecentCobroItem, onClick: () -> Unit) {
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun EmpleadoDashboardScreenPreview() {
+    val sampleUiState = EmpleadoDashboardUiState(
+        userName = "Angel Raonel",
+        formattedDate = "Lunes, 22 de Mayo",
+        totalCollectedToday = "RD$ 15,200.00",
+        totalToCollectToday = "RD$ 25,000.00",
+        pendingAmountToday = "RD$ 9,800.00",
+        pendingCount = 12,
+        activeRoute = "Zona Metropolitana",
+        recentCobros = listOf(
+            RecentCobroItem("1", "JP", "Juan Pérez", "Hace 5 min", "RD$ 1,500.00"),
+            RecentCobroItem("2", "MC", "María Castro", "Hace 15 min", "RD$ 2,200.00"),
+            RecentCobroItem("3", "RL", "Ricardo Luna", "Hace 1 hora", "RD$ 800.00")
+        )
+    )
+
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        EmpleadoDashboardContent(uiState = sampleUiState)
     }
 }
