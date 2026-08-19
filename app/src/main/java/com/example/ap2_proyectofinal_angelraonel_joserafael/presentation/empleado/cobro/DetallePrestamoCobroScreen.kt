@@ -35,6 +35,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -357,7 +358,7 @@ fun DetallePrestamoCobroContent(
             item {
                 Column {
                     Button(
-                        onClick = { viewModel.onEvent(DetallePrestamoCobroUiEvent.RealizarCobroSeleccionado) },
+                        onClick = { onEvent(DetallePrestamoCobroUiEvent.RealizarCobroSeleccionado) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
@@ -368,7 +369,7 @@ fun DetallePrestamoCobroContent(
                         if (uiState.isProcessingPayment) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                         } else {
-                            Icon(Icons.Default.ReceiptLong, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                            Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 if (uiState.selectedCount == 0) "Seleccione cuotas a pagar" else "Cobrar ${uiState.selectedCount} cuota(s)",
@@ -446,7 +447,7 @@ fun DetallePrestamoCobroContent(
         )
     }
     if (showSignaturePad && uiState.generatedReceipt != null) {
-        val receipt = uiState.generatedReceipt!!
+        val receipt = uiState.generatedReceipt
         AlertDialog(
             onDismissRequest = { showSignaturePad = false },
             title = { Text("Firma del comprobante") },
