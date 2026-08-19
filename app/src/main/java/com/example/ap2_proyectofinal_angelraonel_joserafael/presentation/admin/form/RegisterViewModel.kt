@@ -25,12 +25,12 @@ class RegisterViewModel @Inject constructor(
 
     fun onEvent(event: RegisterUiEvent) {
         when (event) {
-            is RegisterUiEvent.FullNameChanged -> _uiState.update { it.copy(fullName = event.value) }
-            is RegisterUiEvent.UsernameChanged -> _uiState.update { it.copy(username = event.value) }
-            is RegisterUiEvent.EmailChanged -> _uiState.update { it.copy(email = event.value) }
-            is RegisterUiEvent.PinChanged -> _uiState.update { it.copy(pin = event.value) }
+            is RegisterUiEvent.FullNameChanged -> _uiState.update { it.copy(fullName = event.value, fullNameError = null) }
+            is RegisterUiEvent.UsernameChanged -> _uiState.update { it.copy(username = event.value, usernameError = null) }
+            is RegisterUiEvent.EmailChanged -> _uiState.update { it.copy(email = event.value, emailError = null) }
+            is RegisterUiEvent.PinChanged -> _uiState.update { it.copy(pin = event.value, pinError = null) }
             is RegisterUiEvent.TogglePinVisibility -> _uiState.update { it.copy(isPinVisible = !it.isPinVisible) }
-            is RegisterUiEvent.PhoneChanged -> _uiState.update { it.copy(phone = event.value) }
+            is RegisterUiEvent.PhoneChanged -> _uiState.update { it.copy(phone = event.value, phoneError = null) }
             is RegisterUiEvent.CedulaChanged -> {
                 val input = event.value
                 val digits = input.filter { it.isDigit() }.take(11)
@@ -39,14 +39,14 @@ class RegisterViewModel @Inject constructor(
                     digits.length > 3 -> "${digits.substring(0, 3)}-${digits.substring(3)}"
                     else -> digits
                 }
-                _uiState.update { it.copy(cedula = formattedCedula) }
+                _uiState.update { it.copy(cedula = formattedCedula, cedulaError = null) }
             }
-            is RegisterUiEvent.BankSelected -> _uiState.update { it.copy(selectedBank = event.value, expandedBankMenu = false) }
+            is RegisterUiEvent.BankSelected -> _uiState.update { it.copy(selectedBank = event.value, expandedBankMenu = false, bankError = null) }
             is RegisterUiEvent.ToggleBankMenu -> _uiState.update { it.copy(expandedBankMenu = !it.expandedBankMenu) }
-            is RegisterUiEvent.TransferNumberChanged -> _uiState.update { it.copy(transferNumber = event.value) }
-            is RegisterUiEvent.DepositorNameChanged -> _uiState.update { it.copy(depositorName = event.value) }
-            is RegisterUiEvent.VoucherUriChanged -> _uiState.update { it.copy(voucherUri = event.value) }
-            is RegisterUiEvent.TermsAcceptedChanged -> _uiState.update { it.copy(termsAccepted = event.value) }
+            is RegisterUiEvent.TransferNumberChanged -> _uiState.update { it.copy(transferNumber = event.value, transferNumberError = null) }
+            is RegisterUiEvent.DepositorNameChanged -> _uiState.update { it.copy(depositorName = event.value, depositorNameError = null) }
+            is RegisterUiEvent.VoucherUriChanged -> _uiState.update { it.copy(voucherUri = event.value, voucherError = null) }
+            is RegisterUiEvent.TermsAcceptedChanged -> _uiState.update { it.copy(termsAccepted = event.value, termsError = null) }
             is RegisterUiEvent.ShowDniScannerChanged -> _uiState.update { it.copy(showDniScanner = event.value) }
             is RegisterUiEvent.SubmitRegistration -> submitRegistration()
         }
@@ -54,22 +54,27 @@ class RegisterViewModel @Inject constructor(
 
     private fun submitRegistration() {
         val currentState = _uiState.value
-        val missingFields = mutableListOf<String>()
-        if (currentState.fullName.isBlank()) missingFields.add("Nombre")
-        if (currentState.username.isBlank()) missingFields.add("Usuario")
-        if (currentState.email.isBlank()) missingFields.add("Email")
-        if (currentState.cedula.isBlank()) missingFields.add("Cédula")
-        if (currentState.pin.isBlank()) missingFields.add("PIN")
-        if (currentState.voucherUri == null) missingFields.add("Comprobante (Voucher)")
-        if (currentState.selectedBank.isBlank()) missingFields.add("Banco")
+        
+        val fullNameError = if (currentState.fullName.isBlank()) "El nombre es obligatorio" else null
+        val usernameError = if (currentState.username.isBlank()) "El usuario es obligatorio" else null
+        val emailError = if (currentState.email.isBlank()) "El email es obligatorio" else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(currentState.email).matches()) "Email inválido" else null
+        val cedulaError = if (currentState.cedula.isBlank()) "La cédula es obligatoria" else if (!CedulaValidator.validate(currentState.cedula)) "Número de cédula inválido" else null
+        val pinError = if (currentState.pin.isBlank()) "El PIN es obligatorio" else if (currentState.pin.length < 4) "El PIN debe tener al menos 4 dígitos" else null
+        val voucherError = if (currentState.voucherUri == null) "El comprobante es obligatorio" else null
+        val bankError = if (currentState.selectedBank.isBlank()) "El banco es obligatorio" else null
+        val termsError = if (!currentState.termsAccepted) "Debe aceptar los términos y condiciones" else null
 
-        if (missingFields.isNotEmpty()) {
-            _uiState.update { it.copy(registerState = RegisterState.Error("Faltan campos obligatorios: ${missingFields.joinToString(", ")}")) }
-            return
-        }
-
-        if (!CedulaValidator.validate(currentState.cedula)) {
-            _uiState.update { it.copy(registerState = RegisterState.Error("Número de cédula inválido. Por favor verifique.")) }
+        if (fullNameError != null || usernameError != null || emailError != null || cedulaError != null || pinError != null || voucherError != null || bankError != null || termsError != null) {
+            _uiState.update { it.copy(
+                fullNameError = fullNameError,
+                usernameError = usernameError,
+                emailError = emailError,
+                cedulaError = cedulaError,
+                pinError = pinError,
+                voucherError = voucherError,
+                bankError = bankError,
+                termsError = termsError
+            ) }
             return
         }
 

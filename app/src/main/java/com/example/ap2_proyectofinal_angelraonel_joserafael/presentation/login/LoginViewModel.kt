@@ -1,10 +1,6 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login
 
 import android.content.Context
-import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
@@ -13,10 +9,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.Session
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.settings.SettingsManager
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.settings.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,14 +23,8 @@ class LoginViewModel @Inject constructor(
     private val settingsManager: SettingsManager
 ) : ViewModel() {
 
-    var username by mutableStateOf("")
-    var pin by mutableStateOf("")
-    var isPinVisible by mutableStateOf(false)
-    var canRegisterAdmin by mutableStateOf(false)
-        private set
-
-    var showThemeDialog by mutableStateOf(false)
-        private set
+    private val _uiState = MutableStateFlow(LoginState())
+    val uiState: StateFlow<LoginState> = _uiState.asStateFlow()
 
     val themeMode: StateFlow<ThemeMode> = settingsManager.themeMode.stateIn(
         scope = viewModelScope,
@@ -45,22 +32,22 @@ class LoginViewModel @Inject constructor(
         initialValue = ThemeMode.SYSTEM
     )
 
-    var uiState by mutableStateOf<LoginUiState>(LoginUiState.Idle)
-        private set
-
     init {
-        viewModelScope.launch { canRegisterAdmin = !authRepository.hasAnyAdmin() }
+        viewModelScope.launch {
+            val canRegister = !authRepository.hasAnyAdmin()
+            _uiState.update { it.copy(canRegisterAdmin = canRegister) }
+        }
     }
 
     fun onEvent(event: LoginUiEvent) {
         when (event) {
-            is LoginUiEvent.OnUsernameChanged -> username = event.username
-            is LoginUiEvent.OnPinChanged -> pin = event.pin
-            is LoginUiEvent.TogglePinVisibility -> isPinVisible = !isPinVisible
+            is LoginUiEvent.OnUsernameChanged -> _uiState.update { it.copy(username = event.username, usernameError = null) }
+            is LoginUiEvent.OnPinChanged -> _uiState.update { it.copy(pin = event.pin, pinError = null) }
+            is LoginUiEvent.TogglePinVisibility -> _uiState.update { it.copy(isPinVisible = !it.isPinVisible) }
             is LoginUiEvent.SubmitLogin -> onLoginSubmitted()
             is LoginUiEvent.ClearError -> clearError()
-            LoginUiEvent.ShowThemeDialog -> showThemeDialog = true
-            LoginUiEvent.HideThemeDialog -> showThemeDialog = false
+            LoginUiEvent.ShowThemeDialog -> _uiState.update { it.copy(showThemeDialog = true) }
+            LoginUiEvent.HideThemeDialog -> _uiState.update { it.copy(showThemeDialog = false) }
             is LoginUiEvent.ThemeModeChanged -> {
                 viewModelScope.launch {
                     settingsManager.setThemeMode(event.mode)
@@ -69,46 +56,42 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun onLoginSubmitted() {
-        if (!validateInput()) return
+    private fun onLoginSubmitted() {
+        val s = _uiState.value
+        
+        val usernameError = if (s.username.isBlank()) "Ingrese su usuario" else null
+        val pinError = if (s.pin.isBlank()) "Ingrese su PIN" else null
+
+        if (usernameError != null || pinError != null) {
+            _uiState.update { it.copy(usernameError = usernameError, pinError = pinError) }
+            return
+        }
 
         viewModelScope.launch {
-            uiState = LoginUiState.Loading
+            _uiState.update { it.copy(loginStatus = LoginStatus.Loading) }
             try {
-                val user = authRepository.login(username.trim(), pin.trim())
+                val user = authRepository.login(s.username.trim(), s.pin.trim())
                 if (user != null) {
                     sessionManager.saveUserId(user.id)
-                    uiState = LoginUiState.Success(user)
+                    _uiState.update { it.copy(loginStatus = LoginStatus.Success(user)) }
                 } else {
-                    uiState = LoginUiState.Error("Usuario o PIN incorrectos")
+                    _uiState.update { it.copy(loginStatus = LoginStatus.Error("Usuario o PIN incorrectos")) }
                 }
             } catch (e: Exception) {
-                uiState = LoginUiState.Error(e.message ?: "Error al intentar iniciar sesión")
+                _uiState.update { it.copy(loginStatus = LoginStatus.Error(e.message ?: "Error al intentar iniciar sesión")) }
             }
         }
     }
 
-    private fun validateInput(): Boolean {
-        if (username.isBlank()) {
-            uiState = LoginUiState.Error("Ingrese su usuario")
-            return false
-        }
-        if (pin.isBlank()) {
-            uiState = LoginUiState.Error("Ingrese su PIN")
-            return false
-        }
-        return true
-    }
-
     fun clearError() {
-        if (uiState is LoginUiState.Idle || uiState is LoginUiState.Error) {
-            uiState = LoginUiState.Idle
+        _uiState.update { 
+            if (it.loginStatus is LoginStatus.Error) it.copy(loginStatus = LoginStatus.Idle) else it
         }
     }
 
     fun signInWithGoogle(context: Context) {
         viewModelScope.launch {
-            uiState = LoginUiState.Loading
+            _uiState.update { it.copy(loginStatus = LoginStatus.Loading) }
             
             kotlinx.coroutines.delay(200)
             
@@ -120,7 +103,7 @@ class LoginViewModel @Inject constructor(
                 }
                 
                 if (email == null) {
-                    uiState = LoginUiState.Error("Google no devolvió ningún correo. Verifique su conexión o intente de nuevo.")
+                    _uiState.update { it.copy(loginStatus = LoginStatus.Error("Google no devolvió ningún correo. Verifique su conexión o intente de nuevo.")) }
                     return@launch
                 }
 
@@ -148,9 +131,9 @@ class LoginViewModel @Inject constructor(
 
                 if (user != null) {
                     sessionManager.saveUserId(user.id)
-                    uiState = LoginUiState.Success(user)
+                    _uiState.update { it.copy(loginStatus = LoginStatus.Success(user)) }
                 } else {
-                    uiState = LoginUiState.Error("La cuenta $email no está autorizada. Contacte al administrador.")
+                    _uiState.update { it.copy(loginStatus = LoginStatus.Error("La cuenta $email no está autorizada. Contacte al administrador.")) }
                 }
                 
             } catch (e: Exception) {
@@ -159,7 +142,7 @@ class LoginViewModel @Inject constructor(
                 } else {
                     "Error de autenticación: ${e.message ?: "Desconocido"}"
                 }
-                uiState = LoginUiState.Error(friendlyMessage)
+                _uiState.update { it.copy(loginStatus = LoginStatus.Error(friendlyMessage)) }
             }
         }
     }

@@ -276,26 +276,31 @@ fun DetallePrestamoCobroScreen(
             }
 
             item {
-                Button(
-                    onClick = { viewModel.onEvent(DetallePrestamoCobroUiEvent.RealizarCobroSeleccionado) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = TealActionButtonBg),
-                    enabled = !uiState.isProcessingPayment && uiState.selectedCount > 0
-                ) {
-                    if (uiState.isProcessingPayment) {
-                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
-                    } else {
-                        Icon(Icons.Default.ReceiptLong, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            if (uiState.selectedCount == 0) "Seleccione cuotas a pagar" else "Cobrar ${uiState.selectedCount} cuota(s)",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                Column {
+                    Button(
+                        onClick = { viewModel.onEvent(DetallePrestamoCobroUiEvent.RealizarCobroSeleccionado) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = if (uiState.selectedCountError != null) MaterialTheme.colorScheme.error else TealActionButtonBg),
+                        enabled = !uiState.isProcessingPayment
+                    ) {
+                        if (uiState.isProcessingPayment) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                        } else {
+                            Icon(Icons.Default.ReceiptLong, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                if (uiState.selectedCount == 0) "Seleccione cuotas a pagar" else "Cobrar ${uiState.selectedCount} cuota(s)",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+                    uiState.selectedCountError?.let {
+                        Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
                     }
                 }
             }

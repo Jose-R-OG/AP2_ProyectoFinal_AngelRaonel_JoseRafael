@@ -66,6 +66,7 @@ class CierreCajaViewModel @Inject constructor(
             it.copy(
                 cashInHandInput = sanitized,
                 cashInHand = money(inHand),
+                cashInHandError = null,
                 differenceAmount = money(inHand.subtract(cashRegistered))
             )
         }
@@ -154,23 +155,23 @@ class CierreCajaViewModel @Inject constructor(
     }
 
     private fun finalizarTurno() {
-        if (!_uiState.value.canCloseCash) {
+        val s = _uiState.value
+        if (!s.canCloseCash) {
             _uiState.update { it.copy(errorMessage = "El administrador no te ha concedido permiso para finalizar el turno.") }
             return
         }
         val userId = currentUserId ?: return
-        val cashInHand = _uiState.value.cashInHandInput.toBigDecimalOrNull()
-        if (cashInHand == null) {
-            _uiState.update { it.copy(errorMessage = "Indica el efectivo contado en caja.") }
+        
+        val cashInHand = s.cashInHandInput.toBigDecimalOrNull()
+        val cashInHandError = if (cashInHand == null) "Indica el efectivo en caja" 
+                              else if (cashInHand.subtract(cashRegistered).compareTo(BigDecimal.ZERO) != 0) "Debe coincidir con el registrado (${money(cashRegistered)})"
+                              else null
+
+        if (cashInHandError != null) {
+            _uiState.update { it.copy(cashInHandError = cashInHandError) }
             return
         }
-        val difference = cashInHand.subtract(cashRegistered)
-        if (difference.compareTo(BigDecimal.ZERO) != 0) {
-            _uiState.update {
-                it.copy(errorMessage = "El turno no puede finalizar mientras exista una diferencia de ${money(difference)}.")
-            }
-            return
-        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isFinalizingTurn = true) }
             try {
@@ -180,10 +181,10 @@ class CierreCajaViewModel @Inject constructor(
                         businessDate = currentBusinessDate,
                         totalCollected = totalCollected,
                         cashRegistered = cashRegistered,
-                        cashInHand = cashInHand,
+                        cashInHand = cashInHand!!,
                         transferAmount = transferRegistered,
-                        transactionCount = _uiState.value.totalCobrosCount,
-                        visitedCount = _uiState.value.visitedCount
+                        transactionCount = s.totalCobrosCount,
+                        visitedCount = s.visitedCount
                     )
                 )
                 _uiState.update {

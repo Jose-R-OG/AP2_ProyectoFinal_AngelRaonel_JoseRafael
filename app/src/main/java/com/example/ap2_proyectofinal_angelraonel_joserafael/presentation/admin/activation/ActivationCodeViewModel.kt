@@ -28,17 +28,20 @@ class ActivationCodeViewModel @Inject constructor(
 
     fun onEvent(event: ActivationCodeUiEvent) {
         when (event) {
-            is ActivationCodeUiEvent.OnCodeChanged -> _uiState.update { it.copy(activationCodeInput = event.code) }
+            is ActivationCodeUiEvent.OnCodeChanged -> _uiState.update { it.copy(activationCodeInput = event.code, activationCodeError = null) }
             is ActivationCodeUiEvent.VerifyCode -> verifyActivationCode(event.expectedEmail)
             is ActivationCodeUiEvent.ClearError -> _uiState.update { it.copy(errorMessage = null) }
         }
     }
 
     private fun verifyActivationCode(email: String) {
-        val inputCode = uiState.value.activationCodeInput.trim()
+        val s = _uiState.value
+        val inputCode = s.activationCodeInput.trim()
 
-        if (inputCode.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "Ingrese el código enviado a su correo.") }
+        val codeError = if (inputCode.isBlank()) "Ingrese el código de verificación" else null
+
+        if (codeError != null) {
+            _uiState.update { it.copy(activationCodeError = codeError) }
             return
         }
 
@@ -46,7 +49,7 @@ class ActivationCodeViewModel @Inject constructor(
             _uiState.update { it.copy(isVerifying = true, errorMessage = null) }
 
             if (authRepository.hasAnyAdmin()) {
-                _uiState.update { it.copy(isVerifying = false, errorMessage = "Este teléfono ya tiene un administrador. No se puede crear otro sin borrar los datos de la aplicación.") }
+                _uiState.update { it.copy(isVerifying = false, errorMessage = "Este teléfono ya tiene un administrador.") }
                 return@launch
             }
 
@@ -54,14 +57,14 @@ class ActivationCodeViewModel @Inject constructor(
 
             if (request == null) {
                 _uiState.update {
-                    it.copy(isVerifying = false, errorMessage = "No se encontró una solicitud de registro para este correo.")
+                    it.copy(isVerifying = false, errorMessage = "No se encontró una solicitud para este correo.")
                 }
                 return@launch
             }
 
             if (!inputCode.equals(request.activationCode, ignoreCase = true)) {
                 _uiState.update {
-                    it.copy(isVerifying = false, errorMessage = "Código incorrecto. Por favor verifique el código recibido.")
+                    it.copy(isVerifying = false, activationCodeError = "Código incorrecto")
                 }
                 return@launch
             }

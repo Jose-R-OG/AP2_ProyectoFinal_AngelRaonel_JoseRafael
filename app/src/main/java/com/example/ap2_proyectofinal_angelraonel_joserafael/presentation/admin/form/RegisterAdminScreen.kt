@@ -9,18 +9,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -162,7 +151,9 @@ fun RegisterAdminContent(
                         trailingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                        isError = uiState.fullNameError != null,
+                        supportingText = uiState.fullNameError?.let { { Text(it) } }
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -173,7 +164,9 @@ fun RegisterAdminContent(
                         trailingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                        isError = uiState.usernameError != null,
+                        supportingText = uiState.usernameError?.let { { Text(it) } }
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -184,7 +177,9 @@ fun RegisterAdminContent(
                         trailingIcon = { Icon(Icons.Default.Mail, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                        isError = uiState.emailError != null,
+                        supportingText = uiState.emailError?.let { { Text(it) } }
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -203,7 +198,9 @@ fun RegisterAdminContent(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
-                        singleLine = true
+                        singleLine = true,
+                        isError = uiState.pinError != null,
+                        supportingText = uiState.pinError?.let { { Text(it) } }
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -214,7 +211,9 @@ fun RegisterAdminContent(
                         trailingIcon = { Icon(Icons.Default.Call, contentDescription = null) },
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                        isError = uiState.phoneError != null,
+                        supportingText = uiState.phoneError?.let { { Text(it) } }
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -231,7 +230,9 @@ fun RegisterAdminContent(
                         },
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                        isError = uiState.cedulaError != null,
+                        supportingText = uiState.cedulaError?.let { { Text(it) } }
                     )
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 20.dp), color = Color(0xFFC6C6CD))
@@ -264,7 +265,9 @@ fun RegisterAdminContent(
                             label = { Text("Seleccionar Banco") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.expandedBankMenu) },
                             modifier = Modifier.menuAnchor().fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(8.dp),
+                            isError = uiState.bankError != null,
+                            supportingText = uiState.bankError?.let { { Text(it) } }
                         )
                         ExposedDropdownMenu(
                             expanded = uiState.expandedBankMenu,
@@ -312,7 +315,9 @@ fun RegisterAdminContent(
                         label = { Text("Número de Transferencia") },
                         modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                        isError = uiState.transferNumberError != null,
+                        supportingText = uiState.transferNumberError?.let { { Text(it) } }
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -325,7 +330,9 @@ fun RegisterAdminContent(
                         keyboardActions = KeyboardActions(onDone = {
                             focusManager.clearFocus()
                             onEvent(RegisterUiEvent.SubmitRegistration)
-                        })
+                        }),
+                        isError = uiState.depositorNameError != null,
+                        supportingText = uiState.depositorNameError?.let { { Text(it) } }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -336,35 +343,43 @@ fun RegisterAdminContent(
                             .clickable { photoPickerLauncher.launch("image/*") },
                         shape = RoundedCornerShape(8.dp),
                         color = Color(0xFFEFF4FF),
-                        border = BorderStroke(1.dp, Color(0xFF3980F4))
+                        border = BorderStroke(1.dp, if (uiState.voucherError != null) MaterialTheme.colorScheme.error else Color(0xFF3980F4))
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Icon(Icons.Default.CloudUpload, contentDescription = null, tint = Color(0xFF3980F4))
+                            Icon(Icons.Default.CloudUpload, contentDescription = null, tint = if (uiState.voucherError != null) MaterialTheme.colorScheme.error else Color(0xFF3980F4))
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = if (uiState.voucherUri != null) "Voucher adjuntado correctamente" else "Toca para subir el Comprobante (Voucher)",
                                 fontSize = 12.sp,
-                                color = Color(0xFF3980F4),
+                                color = if (uiState.voucherError != null) MaterialTheme.colorScheme.error else Color(0xFF3980F4),
                                 fontWeight = FontWeight.Bold
                             )
+                            uiState.voucherError?.let {
+                                Text(it, color = MaterialTheme.colorScheme.error, fontSize = 11.sp)
+                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = uiState.termsAccepted,
-                            onCheckedChange = { onEvent(RegisterUiEvent.TermsAcceptedChanged(it)) }
-                        )
-                        Text(
-                            "Certifico que la información provista es verídica y corresponde a mi identidad legal en la República Dominicana.",
-                            fontSize = 11.sp,
-                            color = Color(0xFF30323A)
-                        )
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = uiState.termsAccepted,
+                                onCheckedChange = { onEvent(RegisterUiEvent.TermsAcceptedChanged(it)) }
+                            )
+                            Text(
+                                "Certifico que la información provista es verídica y corresponde a mi identidad legal en la República Dominicana.",
+                                fontSize = 11.sp,
+                                color = if (uiState.termsError != null) MaterialTheme.colorScheme.error else Color(0xFF30323A)
+                            )
+                        }
+                        uiState.termsError?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error, fontSize = 11.sp, modifier = Modifier.padding(start = 12.dp))
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -373,7 +388,7 @@ fun RegisterAdminContent(
                         onClick = {
                             onEvent(RegisterUiEvent.SubmitRegistration)
                         },
-                        enabled = uiState.termsAccepted && uiState.registerState !is RegisterState.Loading,
+                        enabled = uiState.registerState !is RegisterState.Loading,
                         modifier = Modifier.fillMaxWidth().height(52.dp),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Black)

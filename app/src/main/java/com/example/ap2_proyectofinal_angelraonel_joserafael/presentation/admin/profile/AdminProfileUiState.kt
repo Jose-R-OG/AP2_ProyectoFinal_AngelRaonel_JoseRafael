@@ -11,15 +11,26 @@ data class AdminProfileUiState(
     val businessName: String = "TaCobrao",
     val profilePhotoPath: String? = null,
     val businessLogoPath: String? = null,
+    
     val editName: String = "",
+    val editNameError: String? = null,
     val editEmail: String = "",
+    val editEmailError: String? = null,
     val editPhone: String = "",
+    val editPhoneError: String? = null,
     val editBusinessName: String = "",
+    val editBusinessNameError: String? = null,
+    
     val pendingProfilePhoto: String? = null,
     val pendingBusinessLogo: String? = null,
+    
     val oldPin: String = "",
+    val oldPinError: String? = null,
     val newPin: String = "",
+    val newPinError: String? = null,
     val confirmPin: String = "",
+    val confirmPinError: String? = null,
+
     val notificationsEnabled: Boolean = true,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val isEditing: Boolean = false,

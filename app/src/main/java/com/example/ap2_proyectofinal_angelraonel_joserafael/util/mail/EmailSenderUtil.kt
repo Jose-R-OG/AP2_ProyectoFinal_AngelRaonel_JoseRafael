@@ -10,7 +10,7 @@ import javax.mail.internet.MimeMessage
 
 object EmailSenderUtil {
     private const val SMTP_HOST = "smtp.gmail.com"
-    private const val SMTP_PORT = "465" // SSL
+    private const val SMTP_PORT = "465"
 
     suspend fun sendActivationCode(
         recipientEmail: String,
@@ -39,13 +39,13 @@ object EmailSenderUtil {
 
         try {
             val message = MimeMessage(session).apply {
-                setFrom(InternetAddress(senderEmail, "TacoBrao App"))
+                setFrom(InternetAddress(senderEmail, "TaCobrao App"))
                 setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail))
                 subject = "Código de Activación - TacoBraoApp"
                 setText("""
                     ¡Hola!
                     
-                    Gracias por registrar tu empresa en TacoBraoApp.
+                    Gracias por registrar tu empresa en TaCobraoApp.
                     Tu código de activación es: $activationCode
                     
                     Ingresa este código en la aplicación para completar tu registro.
