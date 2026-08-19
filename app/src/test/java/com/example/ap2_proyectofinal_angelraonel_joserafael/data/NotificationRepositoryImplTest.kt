@@ -4,11 +4,13 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.notificat
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.local.notification.NotificationEntity
 import com.example.ap2_proyectofinal_angelraonel_joserafael.data.repository.NotificationRepositoryImpl
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.AppNotification
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.notification.SystemNotificationHelper
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
 import junit.framework.TestCase
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -19,16 +21,18 @@ import org.junit.Test
 class NotificationRepositoryImplTest {
 
     private lateinit var dao: NotificationDao
+    private lateinit var systemNotificationHelper: SystemNotificationHelper
     private lateinit var repository: NotificationRepositoryImpl
 
     @Before
     fun setUp() {
         dao = mockk(relaxed = true)
-        repository = NotificationRepositoryImpl(dao)
+        systemNotificationHelper = mockk(relaxed = true) // Inicializamos el helper falso
+        repository = NotificationRepositoryImpl(dao, systemNotificationHelper) // Se lo pasamos al constructor
     }
 
     @Test
-    fun `create guarda la notificacion correctamente`() = runTest {
+    fun `create guarda la notificacion correctamente y llama al helper del sistema`() = runTest {
         val notification = AppNotification(
             id = 0L,
             recipientUserId = 2L,
@@ -45,6 +49,7 @@ class NotificationRepositoryImplTest {
 
         repository.create(notification)
 
+        // Verificamos que se guarde en la BD
         coVerify { dao.insert(any()) }
         TestCase.assertEquals(0L, slot.captured.id)
         TestCase.assertEquals(2L, slot.captured.recipientUserId)
@@ -53,6 +58,9 @@ class NotificationRepositoryImplTest {
         TestCase.assertEquals(5L, slot.captured.relatedLoanId)
         TestCase.assertEquals(1620000000000L, slot.captured.createdAt)
         TestCase.assertFalse(slot.captured.isRead)
+
+        // Verificamos que también se haya llamado al SystemNotificationHelper para mostrar la notificación nativa
+        verify { systemNotificationHelper.showNotification("Nueva Notificación", "Tienes un nuevo préstamo", any()) }
     }
 
     @Test
