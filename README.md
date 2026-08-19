@@ -8,7 +8,7 @@
 [![DI](https://img.shields.io/badge/Dependency%20Injection-Dagger%20Hilt-A4C639.svg?style=for-the-badge)](https://dagger.dev/hilt/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-> **TaCobrao** es una solución móvil integral desarrollada en **Kotlin** y **Jetpack Compose** para optimizar, automatizar y auditar la administración de préstamos, gestión de clientes, rutas de cobro diarias y emisión de comprobantes o contratos de pago.
+> **TaCobrao** es una solución móvil integral desarrollada en **Kotlin** y **Jetpack Compose** para optimizar, automatizar y auditar la administración de préstamos, gestión de clientes, rutas de cobro diarias y emisión de comprobantes o contratos de pago...
 
 ---
 
