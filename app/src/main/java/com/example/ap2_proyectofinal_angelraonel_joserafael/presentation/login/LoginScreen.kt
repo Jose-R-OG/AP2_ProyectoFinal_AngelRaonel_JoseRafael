@@ -1,5 +1,6 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ap2_proyectofinal_angelraonel_joserafael.R
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.settings.ThemeMode
@@ -142,18 +145,11 @@ fun LoginContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                Surface(
-                    modifier = Modifier.size(80.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(20.dp)
-                    )
-                }
+                Image(
+                    painter = painterResource(id = R.mipmap.ic_tacobrao2_round),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(100.dp)
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
