@@ -146,7 +146,7 @@ fun LoginContent(
             ) {
 
                 Image(
-                    painter = painterResource(id = R.mipmap.ic_tacobrao2_round),
+                    painter = painterResource(id = R.mipmap.ic_tacobrao2_foreground),
                     contentDescription = "Logo",
                     modifier = Modifier.size(100.dp)
                 )
