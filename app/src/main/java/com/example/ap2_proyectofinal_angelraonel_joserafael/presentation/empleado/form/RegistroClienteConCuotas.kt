@@ -56,6 +56,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import androidx.compose.material.icons.filled.QrCodeScanner
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.components.DniScannerDialog
@@ -67,6 +68,21 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_Proyect
 fun RegistroClienteConCuotas(
     onNavigateBack: () -> Unit,
     viewModel: RegistroClienteViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    RegistroClienteContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onNavigateBack = onNavigateBack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RegistroClienteContent(
+    uiState: RegistroClienteUiState,
+    onEvent: (RegistroClienteUiEvent) -> Unit,
+    onNavigateBack: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val focusManager = LocalFocusManager.current
@@ -95,8 +111,8 @@ fun RegistroClienteConCuotas(
         },
         bottomBar = {
             Button(
-                onClick = { viewModel.onEvent(RegistroClienteUiEvent.SaveCliente) },
-                enabled = !viewModel.isLoading,
+                onClick = { onEvent(RegistroClienteUiEvent.SaveCliente) },
+                enabled = !uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -104,7 +120,7 @@ fun RegistroClienteConCuotas(
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                if (viewModel.isLoading) {
+                if (uiState.isLoading) {
                     androidx.compose.material3.CircularProgressIndicator(
                         modifier = Modifier.size(22.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -114,7 +130,7 @@ fun RegistroClienteConCuotas(
                     Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        if (viewModel.isExistingClient) "Solicitar nuevo préstamo" else "Guardar Cliente", 
+                        if (uiState.isExistingClient) "Solicitar nuevo préstamo" else "Guardar Cliente", 
                         fontSize = 16.sp, 
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -138,8 +154,8 @@ fun RegistroClienteConCuotas(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ProfilePhotoPicker(
-                photoPath = viewModel.profilePhotoPath,
-                onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.ProfilePhotoChanged(it)) }
+                photoPath = uiState.profilePhotoPath,
+                onPhotoPicked = { onEvent(RegistroClienteUiEvent.ProfilePhotoChanged(it)) }
             )
 
             Spacer(Modifier.height(24.dp))
@@ -154,21 +170,21 @@ fun RegistroClienteConCuotas(
                     FormSectionTitle(Icons.Default.Person, "Información Personal")
                     
                     FormTextField(
-                        value = viewModel.fullName,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.FullNameChanged(it)) },
+                        value = uiState.fullName,
+                        onValueChange = { onEvent(RegistroClienteUiEvent.FullNameChanged(it)) },
                         label = "Nombre Completo",
                         placeholder = "Ej. Juan Pérez",
                         icon = Icons.Default.Person,
-                        supportingText = "${viewModel.fullName.length}/80 caracteres"
+                        supportingText = "${uiState.fullName.length}/80 caracteres"
                     )
 
                     FormTextField(
-                        value = viewModel.dni,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.DniChanged(it)) },
+                        value = uiState.dni,
+                        onValueChange = { onEvent(RegistroClienteUiEvent.DniChanged(it)) },
                         label = "Número de Identificación (DNI/ID)",
                         placeholder = "000-0000000-0",
                         icon = Icons.Default.AccountBox,
-                        supportingText = "${viewModel.dni.length}/11 dígitos",
+                        supportingText = "${uiState.dni.length}/11 dígitos",
                         trailingIcon = {
                             IconButton(onClick = { showDniScanner = true }) {
                                 Icon(
@@ -193,14 +209,14 @@ fun RegistroClienteConCuotas(
                         IdPhotoBox(
                             modifier = Modifier.weight(1f),
                             label = "Parte Frontal",
-                            photoPath = viewModel.dniFrontPhotoPath,
-                            onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.DniFrontPhotoChanged(it)) }
+                            photoPath = uiState.dniFrontPhotoPath,
+                            onPhotoPicked = { onEvent(RegistroClienteUiEvent.DniFrontPhotoChanged(it)) }
                         )
                         IdPhotoBox(
                             modifier = Modifier.weight(1f),
                             label = "Parte Trasera",
-                            photoPath = viewModel.dniBackPhotoPath,
-                            onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.DniBackPhotoChanged(it)) }
+                            photoPath = uiState.dniBackPhotoPath,
+                            onPhotoPicked = { onEvent(RegistroClienteUiEvent.DniBackPhotoChanged(it)) }
                         )
                     }
                     Text(
@@ -211,33 +227,33 @@ fun RegistroClienteConCuotas(
                     )
 
                     FormTextField(
-                        value = viewModel.phone,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.PhoneChanged(it)) },
+                        value = uiState.phone,
+                        onValueChange = { onEvent(RegistroClienteUiEvent.PhoneChanged(it)) },
                         label = "Teléfono de Contacto",
                         placeholder = "+1 (555) 000-0000",
                         icon = Icons.Default.Phone,
                         keyboardType = KeyboardType.Phone,
-                        supportingText = "${viewModel.phone.length}/10 dígitos"
+                        supportingText = "${uiState.phone.length}/10 dígitos"
                     )
 
                     FormTextField(
-                        value = viewModel.address,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.AddressChanged(it)) },
+                        value = uiState.address,
+                        onValueChange = { onEvent(RegistroClienteUiEvent.AddressChanged(it)) },
                         label = "Dirección",
                         placeholder = "Calle, Número, Ciudad...",
                         icon = Icons.Default.LocationOn,
-                        supportingText = "${viewModel.address.length}/160 caracteres"
+                        supportingText = "${uiState.address.length}/160 caracteres"
                     )
 
                     Text("Zona de cobro", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         listOf("Zona Norte", "Zona Sur", "Zona Este").forEach { zone ->
                             OutlinedButton(
-                                onClick = { viewModel.onEvent(RegistroClienteUiEvent.ZoneChanged(zone)) },
+                                onClick = { onEvent(RegistroClienteUiEvent.ZoneChanged(zone)) },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = if (viewModel.zone == zone) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                                    contentColor = if (viewModel.zone == zone) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                    containerColor = if (uiState.zone == zone) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                                    contentColor = if (uiState.zone == zone) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             ) { Text(zone.removePrefix("Zona "), fontSize = 11.sp) }
                         }
@@ -247,43 +263,43 @@ fun RegistroClienteConCuotas(
                     FormSectionTitle(Icons.Default.ShoppingCart, "Detalles del Préstamo")
 
                     FormTextField(
-                        value = viewModel.montoPrestamo,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.MontoChanged(it)) },
+                        value = uiState.montoPrestamo,
+                        onValueChange = { onEvent(RegistroClienteUiEvent.MontoChanged(it)) },
                         label = "Monto del Préstamo Inicial",
                         placeholder = "$ 0.00",
                         icon = Icons.Default.Add,
                         keyboardType = KeyboardType.Decimal,
-                        supportingText = "${viewModel.montoPrestamo.length}/10 dígitos"
+                        supportingText = "${uiState.montoPrestamo.length}/10 dígitos"
                     )
 
                     FormTextField(
-                        value = viewModel.numCuotas,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.CuotasChanged(it)) },
+                        value = uiState.numCuotas,
+                        onValueChange = { onEvent(RegistroClienteUiEvent.CuotasChanged(it)) },
                         label = "Número de Cuotas",
                         placeholder = "Ej. 12",
                         icon = Icons.Default.List,
                         keyboardType = KeyboardType.Number,
-                        supportingText = "${viewModel.numCuotas.length}/3 dígitos"
+                        supportingText = "${uiState.numCuotas.length}/3 dígitos"
                     )
 
                     FrecuenciaDropdown(
-                        selected = viewModel.frecuenciaPago,
-                        onSelected = { viewModel.onEvent(RegistroClienteUiEvent.FrecuenciaChanged(it)) }
+                        selected = uiState.frecuenciaPago,
+                        onSelected = { onEvent(RegistroClienteUiEvent.FrecuenciaChanged(it)) }
                     )
 
                     PaymentDaySelector(
-                        frequency = viewModel.frecuenciaPago,
-                        selectedValue = viewModel.diaPagoPreferido,
-                        selectedDescription = viewModel.diaPagoDescripcion,
+                        frequency = uiState.frecuenciaPago,
+                        selectedValue = uiState.diaPagoPreferido,
+                        selectedDescription = uiState.diaPagoDescripcion,
                         onSelected = { value, description ->
-                            viewModel.onEvent(RegistroClienteUiEvent.DiaPagoChanged(value, description))
+                            onEvent(RegistroClienteUiEvent.DiaPagoChanged(value, description))
                         }
                     )
 
-                    if (viewModel.canUseCustomRate) {
+                    if (uiState.canUseCustomRate) {
                         FormTextField(
-                            value = viewModel.tasaPersonalizada,
-                            onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.TasaPersonalizadaChanged(it)) },
+                            value = uiState.tasaPersonalizada,
+                            onValueChange = { onEvent(RegistroClienteUiEvent.TasaPersonalizadaChanged(it)) },
                             label = "Tasa personalizada (opcional)",
                             placeholder = "Usar tarifa configurada",
                             icon = Icons.Default.Percent,
@@ -292,7 +308,7 @@ fun RegistroClienteConCuotas(
                             imeAction = ImeAction.Done,
                             onImeAction = {
                                 focusManager.clearFocus()
-                                viewModel.onEvent(RegistroClienteUiEvent.SaveCliente)
+                                onEvent(RegistroClienteUiEvent.SaveCliente)
                             }
                         )
                     }
@@ -306,14 +322,14 @@ fun RegistroClienteConCuotas(
     if (showDniScanner) {
         DniScannerDialog(
             onDniDetected = { dni ->
-                viewModel.onEvent(RegistroClienteUiEvent.DniChanged(dni))
+                onEvent(RegistroClienteUiEvent.DniChanged(dni))
                 showDniScanner = false
             },
             onDismiss = { showDniScanner = false }
         )
     }
 
-    if (viewModel.success) {
+    if (uiState.success) {
         AlertDialog(
             onDismissRequest = {},
             title = { Text("Solicitud enviada") },
@@ -322,10 +338,10 @@ fun RegistroClienteConCuotas(
         )
     }
 
-    viewModel.error?.let { err ->
+    uiState.error?.let { err ->
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(RegistroClienteUiEvent.ClearError) },
-            confirmButton = { TextButton(onClick = { viewModel.onEvent(RegistroClienteUiEvent.ClearError) }) { Text("OK") } },
+            onDismissRequest = { onEvent(RegistroClienteUiEvent.ClearError) },
+            confirmButton = { TextButton(onClick = { onEvent(RegistroClienteUiEvent.ClearError) }) { Text("OK") } },
             title = { Text("Error") },
             text = { Text(err) }
         )
@@ -558,174 +574,21 @@ fun FrecuenciaDropdown(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun RegistroClienteConCuotasPreview() {
+    val sampleUiState = RegistroClienteUiState(
+        fullName = "Juan Pérez",
+        dni = "001-0000000-0",
+        phone = "809-555-0199",
+        address = "Calle Principal #123",
+        montoPrestamo = "15000",
+        numCuotas = "12",
+        frecuenciaPago = FrecuenciaPago.SEMANAL
+    )
+    
     AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
-        RegistroClienteContentPreview()
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun RegistroClienteContentPreview() {
-    var fullName by remember { mutableStateOf("Juan Pérez") }
-    var dni by remember { mutableStateOf("001-0000000-0") }
-    var phone by remember { mutableStateOf("809-555-0199") }
-    var address by remember { mutableStateOf("Calle Principal #123") }
-    var monto by remember { mutableStateOf("15000") }
-    var cuotas by remember { mutableStateOf("12") }
-    var frecuencia by remember { mutableStateOf(FrecuenciaPago.SEMANAL) }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Nuevo Cliente",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = MaterialTheme.colorScheme.onSurface)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
-            )
-        },
-        bottomBar = {
-            Button(
-                onClick = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
-                Spacer(Modifier.width(8.dp))
-                Text("Guardar Cliente", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.surface
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            ProfilePhotoPicker(
-                photoPath = null,
-                onPhotoPicked = {}
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    FormSectionTitle(Icons.Default.Person, "Información Personal")
-
-                    FormTextField(
-                        value = fullName,
-                        onValueChange = { fullName = it },
-                        label = "Nombre Completo",
-                        placeholder = "Ej. Juan Pérez",
-                        icon = Icons.Default.Person
-                    )
-
-                    FormTextField(
-                        value = dni,
-                        onValueChange = { dni = it },
-                        label = "Número de Cédula (DNI/ID)",
-                        placeholder = "000-0000000-0",
-                        icon = Icons.Default.AccountBox
-                    )
-
-                    Spacer(Modifier.height(16.dp))
-                    Text(
-                        "Imagen de la cedula (DNI/ID)",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        IdPhotoBox(
-                            modifier = Modifier.weight(1f),
-                            label = "Parte Frontal",
-                            photoPath = null,
-                            onPhotoPicked = {}
-                        )
-                        IdPhotoBox(
-                            modifier = Modifier.weight(1f),
-                            label = "Parte Trasera",
-                            photoPath = null,
-                            onPhotoPicked = {}
-                        )
-                    }
-                    Text(
-                        "JPG, PNG o PDF (Máx. 5MB)",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-
-                    FormTextField(
-                        value = phone,
-                        onValueChange = { phone = it },
-                        label = "Teléfono de Contacto",
-                        placeholder = "+1 (555) 000-0000",
-                        icon = Icons.Default.Phone,
-                        keyboardType = KeyboardType.Phone
-                    )
-
-                    FormTextField(
-                        value = address,
-                        onValueChange = { address = it },
-                        label = "Dirección",
-                        placeholder = "Calle, Número, Ciudad...",
-                        icon = Icons.Default.LocationOn
-                    )
-
-                    Spacer(Modifier.height(24.dp))
-                    FormSectionTitle(Icons.Default.ShoppingCart, "Detalles del Préstamo")
-
-                    FormTextField(
-                        value = monto,
-                        onValueChange = { monto = it },
-                        label = "Monto del Préstamo Inicial",
-                        placeholder = "$ 0.00",
-                        icon = Icons.Default.Add,
-                        keyboardType = KeyboardType.Decimal
-                    )
-
-                    FormTextField(
-                        value = cuotas,
-                        onValueChange = { cuotas = it },
-                        label = "Número de Cuotas",
-                        placeholder = "Ej. 12",
-                        icon = Icons.Default.List,
-                        keyboardType = KeyboardType.Number
-                    )
-
-                    FrecuenciaDropdown(
-                        selected = frecuencia,
-                        onSelected = { frecuencia = it }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(100.dp))
-        }
+        RegistroClienteContent(
+            uiState = sampleUiState,
+            onEvent = {},
+            onNavigateBack = {}
+        )
     }
 }
