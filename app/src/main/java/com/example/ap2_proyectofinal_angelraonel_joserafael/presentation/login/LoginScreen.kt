@@ -392,7 +392,7 @@ private fun ThemeOption(text: String, selected: Boolean, onClick: () -> Unit) {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true, apiLevel = 34)
+@Preview(showBackground = true, showSystemUi = true, apiLevel = 37)
 @Composable
 fun LoginScreenPreview() {
     AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
