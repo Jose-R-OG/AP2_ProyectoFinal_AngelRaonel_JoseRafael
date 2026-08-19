@@ -6,12 +6,12 @@ import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.sp
 
@@ -47,7 +47,7 @@ fun RoleBottomBar(
         BottomDestination(PrimaryTab.PROFILE, "Perfil", Icons.Default.Person, onProfile)
     )
 
-    NavigationBar(containerColor = Color.White) {
+    NavigationBar {
         items.forEach { item ->
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = item.label) },

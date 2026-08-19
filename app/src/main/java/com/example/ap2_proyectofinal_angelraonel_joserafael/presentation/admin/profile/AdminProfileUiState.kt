@@ -1,6 +1,7 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.profile
 
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.User
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.settings.ThemeMode
 
 data class AdminProfileUiState(
     val currentUser: User? = null,
@@ -20,9 +21,11 @@ data class AdminProfileUiState(
     val newPin: String = "",
     val confirmPin: String = "",
     val notificationsEnabled: Boolean = true,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val isEditing: Boolean = false,
     val showPinDialog: Boolean = false,
     val showNotificationDialog: Boolean = false,
+    val showThemeDialog: Boolean = false,
     val showHelpDialog: Boolean = false,
     val showLogoutConfirmation: Boolean = false,
     val isLoading: Boolean = true,

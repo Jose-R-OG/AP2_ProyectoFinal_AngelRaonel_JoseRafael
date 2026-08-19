@@ -30,17 +30,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanSta
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatusHistory
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ErrorColor
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnSecondaryContainer
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnTertiaryContainer
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.PrimaryColor
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SurfaceColor
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnSurfaceVariant
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OutlineVariant
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryContainer
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryGreen
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SurfaceContainerLow
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SurfaceContainerLowest
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 import java.io.File
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
@@ -131,7 +121,7 @@ fun LoanApprovalContent(
                             text = "GESTIÓN DE PRÉSTAMOS",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = OnTertiaryContainer,
+                            color = MaterialTheme.colorScheme.tertiary,
                             letterSpacing = 1.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
@@ -190,7 +180,7 @@ fun LoanApprovalContent(
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             BentoStatCard("Interés promedio", "${uiState.avgInterestRate}%", SecondaryGreen, Modifier.weight(1f))
-                            BentoStatStatCard("Estado", "OPERATIVO", OnTertiaryContainer, Modifier.weight(1f))
+                            BentoStatStatCard("Estado", "OPERATIVO", MaterialTheme.colorScheme.tertiary, Modifier.weight(1f))
                         }
                     }
                 }
@@ -212,7 +202,6 @@ fun LoanApprovalContent(
                     } else if (uiState.pendingPrestamos.isEmpty()) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
                             border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
                         ) {
                             Text(
@@ -319,7 +308,6 @@ fun BentoStatCard(title: String, value: String, valueColor: Color, modifier: Mod
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
         border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -346,7 +334,6 @@ private fun LoanRequestCompactCard(
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onDetailClick),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -475,7 +462,7 @@ fun LoanDetailModal(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow)
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text("CONFIGURACIÓN DEL PRÉSTAMO", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
@@ -552,7 +539,7 @@ fun LoanDetailModal(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
                             border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {

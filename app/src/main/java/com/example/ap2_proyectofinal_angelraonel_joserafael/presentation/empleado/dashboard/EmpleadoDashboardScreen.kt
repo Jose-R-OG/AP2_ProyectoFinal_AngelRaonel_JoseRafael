@@ -26,18 +26,13 @@ import coil.compose.AsyncImage
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRole
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 
-private val SurfaceColor = Color(0xFFF8F9FF)
-private val PrimaryBlack = Color(0xFF000000)
-private val SecondaryGreen = Color(0xFF006C49)
-private val GreenBadgeBg = Color(0xFF6CF8BB).copy(alpha = 0.35f)
-private val GreenBadgeText = Color(0xFF006C49)
-private val LightBlueActionBg = Color(0xFFE3EEFF)
-private val OnSurfaceVariant = Color(0xFF30323A)
-private val OutlineVariant = Color(0xFFC6C6CD)
-private val SuccessBadgeBg = Color(0xFFE8F5E9)
-private val AdminBadgeBg = Color(0xFFFFF3E0)
-private val AdminBadgeText = Color(0xFFE65100)
+private val SurfaceColor @Composable get() = MaterialTheme.colorScheme.surface
+private val PrimaryBlack @Composable get() = MaterialTheme.colorScheme.onSurface
+private val SecondaryGreen @Composable get() = MaterialTheme.colorScheme.secondary
+private val OnSurfaceVariant @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val OutlineVariant @Composable get() = MaterialTheme.colorScheme.outlineVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -182,7 +177,7 @@ fun EmpleadoDashboardScreen(
                             text = "¡Hola, ${uiState.userName}!",
                             fontSize = 26.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0B1C30)
+                            color = PrimaryBlack
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
@@ -209,7 +204,6 @@ fun EmpleadoDashboardScreen(
                         Card(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
                             border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant.copy(alpha = 0.7f))
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
@@ -238,7 +232,6 @@ fun EmpleadoDashboardScreen(
                         Card(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
                             border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant.copy(alpha = 0.7f))
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
@@ -356,7 +349,6 @@ fun EmpleadoDashboardScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
                         border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant.copy(alpha = 0.5f))
                     ) {
                         Column(modifier = Modifier.padding(vertical = 4.dp)) {
@@ -435,7 +427,6 @@ private fun DailyAmountCard(label: String, value: String, icon: ImageVector, acc
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
     ) {
         Row(Modifier.fillMaxWidth().padding(18.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {

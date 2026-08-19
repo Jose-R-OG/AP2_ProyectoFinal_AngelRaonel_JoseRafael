@@ -11,20 +11,36 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClientListScreen(
     onAddClientClick: () -> Unit,
     onClientClick: (Long) -> Unit,
-    viewModel: ClientListViewModel = hiltViewModel()
+    viewModel: ClientListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    ClientListContent(
+        uiState = uiState,
+        onAddClientClick = onAddClientClick,
+        onClientClick = onClientClick
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ClientListContent(
+    uiState: ClientListUiState,
+    onAddClientClick: () -> Unit,
+    onClientClick: (Long) -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Mis Clientes") })
@@ -54,11 +70,44 @@ fun ClientListScreen(
                         headlineContent = { Text(cliente.fullName) },
                         supportingContent = { Text(cliente.dni) },
                         leadingContent = { Icon(Icons.Default.Person, contentDescription = null) },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onClientClick(cliente.id) }
                     )
                     HorizontalDivider()
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ClientListScreenPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        ClientListContent(
+            uiState = ClientListUiState(
+                clients = listOf(
+                    Cliente(
+                        id = 1,
+                        fullName = "Angel Raonel",
+                        dni = "402-0000000-1",
+                        phone = "809-000-0000",
+                        address = "Calle A, #1",
+                        zone = "ZONA 1"
+                    ),
+                    Cliente(
+                        id = 2,
+                        fullName = "Jose Rafael",
+                        dni = "402-0000000-2",
+                        phone = "809-000-0001",
+                        address = "Calle B, #2",
+                        zone = "ZONA 2"
+                    )
+                )
+            ),
+            onAddClientClick = {},
+            onClientClick = {}
+        )
     }
 }

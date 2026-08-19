@@ -35,25 +35,7 @@ import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.PersonOff
 import androidx.compose.material.icons.outlined.Phone
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -80,12 +62,13 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesError
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesGreen
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesOutline
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesPrimary
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesSurface
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ClientesTextSecondary
+
+private val ClientesSurface @Composable get() = MaterialTheme.colorScheme.surface
+private val ClientesPrimary @Composable get() = MaterialTheme.colorScheme.onSurface
+private val ClientesGreen @Composable get() = MaterialTheme.colorScheme.secondary
+private val ClientesTextSecondary @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val ClientesOutline @Composable get() = MaterialTheme.colorScheme.outlineVariant
+private val ClientesError @Composable get() = MaterialTheme.colorScheme.error
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,8 +156,8 @@ fun ClientesContent(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddCliente,
-                containerColor = ClientesPrimary,
-                contentColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = CircleShape
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Registrar cliente")
@@ -344,8 +327,7 @@ fun ClientesContent(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { onEvent(ClientesUiEvent.AssignToEmployee(employee.id)) },
-                            border = BorderStroke(1.dp, ClientesOutline),
-                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                            border = BorderStroke(1.dp, ClientesOutline)
                         ) {
                             Column(Modifier.padding(12.dp)) {
                                 Text(employee.name, fontWeight = FontWeight.Bold)
@@ -393,7 +375,6 @@ private fun ClienteCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, ClientesOutline.copy(alpha = 0.75f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -422,7 +403,7 @@ private fun ClienteCard(
                     color = if (cliente.isActive) ClientesGreen else ClientesTextSecondary,
                     modifier = Modifier
                         .background(
-                            if (cliente.isActive) Color(0xFFE8F5E9) else Color(0xFFECEFF1),
+                            if (cliente.isActive) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant,
                             RoundedCornerShape(20.dp)
                         )
                         .padding(horizontal = 10.dp, vertical = 5.dp)
@@ -507,13 +488,13 @@ private fun ClienteAvatar(cliente: Cliente) {
         )
     } else {
         Box(
-            modifier = modifier.background(Color(0xFFD3E4FE)),
+            modifier = modifier.background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = cliente.initials(),
                 fontWeight = FontWeight.Bold,
-                color = ClientesPrimary
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
     }

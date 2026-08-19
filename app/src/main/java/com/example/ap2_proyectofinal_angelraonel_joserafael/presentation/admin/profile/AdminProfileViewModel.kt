@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.settings.SettingsManager
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.storage.FileStorageUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -17,7 +18,8 @@ import javax.inject.Inject
 class AdminProfileViewModel @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val authRepository: AuthRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val settingsManager: SettingsManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AdminProfileUiState())
@@ -25,6 +27,7 @@ class AdminProfileViewModel @Inject constructor(
 
     init {
         loadData()
+        observeSettings()
     }
 
     fun onEvent(event: AdminProfileUiEvent) {
@@ -57,12 +60,27 @@ class AdminProfileViewModel @Inject constructor(
             AdminProfileUiEvent.ShowNotifications -> _uiState.update { it.copy(showNotificationDialog = true) }
             AdminProfileUiEvent.HideNotifications -> _uiState.update { it.copy(showNotificationDialog = false) }
             is AdminProfileUiEvent.NotificationsChanged -> _uiState.update { it.copy(notificationsEnabled = event.enabled) }
+            AdminProfileUiEvent.ShowThemeDialog -> _uiState.update { it.copy(showThemeDialog = true) }
+            AdminProfileUiEvent.HideThemeDialog -> _uiState.update { it.copy(showThemeDialog = false) }
+            is AdminProfileUiEvent.ThemeModeChanged -> {
+                viewModelScope.launch {
+                    settingsManager.setThemeMode(event.mode)
+                }
+            }
             AdminProfileUiEvent.ShowHelp -> _uiState.update { it.copy(showHelpDialog = true) }
             AdminProfileUiEvent.HideHelp -> _uiState.update { it.copy(showHelpDialog = false) }
             AdminProfileUiEvent.MessageShown -> _uiState.update { it.copy(message = null) }
             AdminProfileUiEvent.RequestLogout -> _uiState.update { it.copy(showLogoutConfirmation = true) }
             AdminProfileUiEvent.CancelLogout -> _uiState.update { it.copy(showLogoutConfirmation = false) }
             AdminProfileUiEvent.ConfirmLogout -> performLogout()
+        }
+    }
+
+    private fun observeSettings() {
+        viewModelScope.launch {
+            settingsManager.themeMode.collect { mode ->
+                _uiState.update { it.copy(themeMode = mode) }
+            }
         }
     }
 

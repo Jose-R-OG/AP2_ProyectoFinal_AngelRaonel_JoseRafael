@@ -10,7 +10,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.AuthRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.auth.GoogleAuthUiClient
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.settings.SettingsManager
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.settings.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,7 +26,8 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRol
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val settingsManager: SettingsManager
 ) : ViewModel() {
 
     var username by mutableStateOf("")
@@ -28,6 +35,15 @@ class LoginViewModel @Inject constructor(
     var isPinVisible by mutableStateOf(false)
     var canRegisterAdmin by mutableStateOf(false)
         private set
+
+    var showThemeDialog by mutableStateOf(false)
+        private set
+
+    val themeMode: StateFlow<ThemeMode> = settingsManager.themeMode.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ThemeMode.SYSTEM
+    )
 
     var uiState by mutableStateOf<LoginUiState>(LoginUiState.Idle)
         private set
@@ -43,6 +59,13 @@ class LoginViewModel @Inject constructor(
             is LoginUiEvent.TogglePinVisibility -> isPinVisible = !isPinVisible
             is LoginUiEvent.SubmitLogin -> onLoginSubmitted()
             is LoginUiEvent.ClearError -> clearError()
+            LoginUiEvent.ShowThemeDialog -> showThemeDialog = true
+            LoginUiEvent.HideThemeDialog -> showThemeDialog = false
+            is LoginUiEvent.ThemeModeChanged -> {
+                viewModelScope.launch {
+                    settingsManager.setThemeMode(event.mode)
+                }
+            }
         }
     }
 

@@ -28,7 +28,7 @@ import coil.compose.AsyncImage
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryGreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 
 @Composable
 fun AdminDashboardScreen(

@@ -36,7 +36,6 @@ fun ConfirmarCerrarSesionDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color.White,
         shape = RoundedCornerShape(20.dp),
         title = null,
         text = {
@@ -65,7 +64,7 @@ fun ConfirmarCerrarSesionDialog(
                     text = "¿Cerrar Sesión?",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 )
 
@@ -74,7 +73,7 @@ fun ConfirmarCerrarSesionDialog(
                 Text(
                     text = "Tu progreso y cobros guardados no se perderán, pero tendrás que ingresar tu PIN la próxima vez.",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color(0xFF30323A),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     ),
                     lineHeight = 20.sp
@@ -102,7 +101,7 @@ fun ConfirmarCerrarSesionDialog(
                     .height(50.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Cancelar", color = Color(0xFF30323A))
+                Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )

@@ -2,7 +2,6 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.emplea
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.usecases.cliente.ObserveClientesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -10,11 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
-
-data class ClientListUiState(
-    val clients: List<Cliente> = emptyList(),
-    val isLoading: Boolean = false
-)
 
 @HiltViewModel
 class ClientListViewModel @Inject constructor(
@@ -28,4 +22,12 @@ class ClientListViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ClientListUiState(isLoading = true)
         )
+
+    fun onEvent(event: ClientListUiEvent) {
+        when (event) {
+            ClientListUiEvent.Refresh -> {
+                // Logic to refresh if needed
+            }
+        }
+    }
 }

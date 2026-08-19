@@ -74,9 +74,11 @@ data class CobrosRutaUiState(
 ) {
     fun visibleItems(routeOnly: Boolean): List<CollectionClientItem> {
         val query = searchQuery.trim()
+        val effectiveZoneFilter = if (userRole == UserRole.ADMINISTRADOR) zoneFilter else activeRoute
+        
         return items.filter { item ->
             (!routeOnly || item.status == LoanStatus.ACTIVO) &&
-                (zoneFilter == "Todas" || item.zone.equals(zoneFilter, true)) &&
+                (effectiveZoneFilter == "Todas" || effectiveZoneFilter == "Sin asignar" || item.zone.equals(effectiveZoneFilter, true)) &&
                 (query.isBlank() || item.clientName.contains(query, true) ||
                     item.phone.contains(query, true) || item.address.contains(query, true))
         }.sortedWith(compareBy<CollectionClientItem> { if (userRole == UserRole.ADMINISTRADOR && routeOnly) it.zone else "" }

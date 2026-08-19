@@ -38,13 +38,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import java.io.File
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Border
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Green
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Ink
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Muted
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Page
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.Red
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,16 +49,20 @@ fun EmployeeManagementScreen(
 ) {
     val focusManager = LocalFocusManager.current
     Scaffold(
-        containerColor = Page,
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(
-                title = { Text("TaCobrao · Empleados", fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver") } },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Page)
+                title = { Text("TaCobrao · Empleados", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+                navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = MaterialTheme.colorScheme.onSurface) } },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { onEvent(EmployeeUiEvent.OpenAddModal) }, containerColor = Color.Black, contentColor = Color.White) {
+            FloatingActionButton(
+                onClick = { onEvent(EmployeeUiEvent.OpenAddModal) }, 
+                containerColor = MaterialTheme.colorScheme.primary, 
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
                 Icon(Icons.Default.PersonAdd, "Agregar empleado")
             }
         }
@@ -82,8 +80,8 @@ fun EmployeeManagementScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 96.dp)
         ) {
             item {
-                Text("Directorio de empleados", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Ink)
-                Text("Busca, revisa actividad, edita credenciales y distribuye clientes.", color = Muted)
+                Text("Directorio de empleados", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text("Busca, revisa actividad, edita credenciales y distribuye clientes.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             item {
                 OutlinedTextField(
@@ -93,7 +91,11 @@ fun EmployeeManagementScreen(
                     leadingIcon = { Icon(Icons.Default.Search, null) },
                     modifier = Modifier.fillMaxWidth(), singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
+                    keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    )
                 )
             }
             item {
@@ -105,7 +107,7 @@ fun EmployeeManagementScreen(
             }
             if (uiState.isLoading) item { Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() } }
             if (!uiState.isLoading && uiState.employees.isEmpty()) item {
-                Text("No se encontraron empleados.", modifier = Modifier.fillMaxWidth().padding(28.dp), color = Muted)
+                Text("No se encontraron empleados.", modifier = Modifier.fillMaxWidth().padding(28.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             items(uiState.employees, key = Employee::id) { employee ->
                 EmployeeCard(employee, onEvent)
@@ -121,7 +123,7 @@ fun EmployeeManagementScreen(
             onDismissRequest = { onEvent(EmployeeUiEvent.CancelDeactivation) },
             title = { Text("¿Desactivar empleado?") },
             text = { Text("${employee.name} conservará su historial y aparecerá como INACTIVO. Sus ${employee.clientsAssigned} cliente(s) pendientes pasarán al administrador para ser redistribuidos.") },
-            confirmButton = { Button(onClick = { onEvent(EmployeeUiEvent.ConfirmDeactivation) }, colors = ButtonDefaults.buttonColors(containerColor = Red)) { Text("Sí, desactivar") } },
+            confirmButton = { Button(onClick = { onEvent(EmployeeUiEvent.ConfirmDeactivation) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { Text("Sí, desactivar") } },
             dismissButton = { TextButton(onClick = { onEvent(EmployeeUiEvent.CancelDeactivation) }) { Text("Cancelar") } }
         )
     }
@@ -135,15 +137,15 @@ fun EmployeeManagementScreen(
 }
 
 @Composable private fun Stat(label: String, value: Int, modifier: Modifier) {
-    Card(modifier, colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(1.dp, Border)) {
-        Column(Modifier.padding(12.dp)) { Text(label, fontSize = 12.sp, color = Muted); Text(value.toString(), fontSize = 22.sp, fontWeight = FontWeight.Bold) }
+    Card(modifier, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+        Column(Modifier.padding(12.dp)) { Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant); Text(value.toString(), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) }
     }
 }
 
 @Composable private fun EmployeeCard(employee: Employee, onEvent: (EmployeeUiEvent) -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onEvent(EmployeeUiEvent.ShowDetails(employee.id)) },
-        colors = CardDefaults.cardColors(containerColor = Color.White), border = BorderStroke(1.dp, Border),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -151,22 +153,22 @@ fun EmployeeManagementScreen(
                 if (employee.photoUrl != null) AsyncImage(
                     model = if (employee.photoUrl.startsWith("/")) File(employee.photoUrl) else employee.photoUrl,
                     contentDescription = "Foto de ${employee.name}", modifier = Modifier.size(52.dp).clip(CircleShape)
-                ) else Box(Modifier.size(52.dp).clip(CircleShape).background(Color(0xFFDCE9FF)), contentAlignment = Alignment.Center) {
-                    Text(employee.name.take(1).uppercase(), fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                ) else Box(Modifier.size(52.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
+                    Text(employee.name.take(1).uppercase(), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(employee.name, fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                    Text("${employee.route} · ${employee.phone}", color = Muted, fontSize = 13.sp)
+                    Text(employee.name, fontWeight = FontWeight.Bold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text("${employee.route} · ${employee.phone}", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                 }
-                Text(if (employee.isActive) "ACTIVO" else "INACTIVO", color = if (employee.isActive) Green else Red, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(if (employee.isActive) "ACTIVO" else "INACTIVO", color = if (employee.isActive) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.error, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
-            Text("${employee.clientsAssigned} clientes · ${employee.collectionCount} cobros registrados", color = Muted, fontSize = 13.sp)
+            Text("${employee.clientsAssigned} clientes · ${employee.collectionCount} cobros registrados", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 OutlinedButton(onClick = { onEvent(EmployeeUiEvent.OpenEdit(employee.id)) }, modifier = Modifier.weight(1f)) { Text("Editar", fontSize = 12.sp) }
                 OutlinedButton(onClick = { onEvent(EmployeeUiEvent.OpenAssignment(employee.id)) }, modifier = Modifier.weight(1f), enabled = employee.isActive) { Text("Asignar", fontSize = 12.sp) }
                 TextButton(onClick = { onEvent(EmployeeUiEvent.ToggleStatus(employee.id)) }, modifier = Modifier.weight(1f)) {
-                    Text(if (employee.isActive) "Desactivar" else "Activar", color = if (employee.isActive) Red else Green, fontSize = 12.sp)
+                    Text(if (employee.isActive) "Desactivar" else "Activar", color = if (employee.isActive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary, fontSize = 12.sp)
                 }
             }
         }
@@ -213,7 +215,17 @@ fun EmployeeManagementScreen(
                     onEvent(EmployeeUiEvent.SaveEmployee)
                 })
                 ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-                    OutlinedTextField(ui.route, {}, readOnly = true, label = { Text("Zona / ruta") }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) }, modifier = Modifier.fillMaxWidth().menuAnchor())
+                    OutlinedTextField(
+                        ui.route, {}, 
+                        readOnly = true, 
+                        label = { Text("Zona / ruta") }, 
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) }, 
+                        modifier = Modifier.fillMaxWidth().menuAnchor(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
                     ExposedDropdownMenu(expanded, { expanded = false }) { ui.availableRoutes.forEach { route ->
                         DropdownMenuItem({ Text(route) }, { onEvent(EmployeeUiEvent.RouteSelected(route)); expanded = false })
                     } }
@@ -221,7 +233,7 @@ fun EmployeeManagementScreen(
                 PhotoButton("Foto del empleado", ui.profilePhotoPath) { profile.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 PhotoButton("Cédula · frente", ui.dniFrontPhotoPath) { front.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 PhotoButton("Cédula · reverso", ui.dniBackPhotoPath) { back.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
-                Text("Permisos operativos", fontWeight = FontWeight.Bold)
+                Text("Permisos operativos", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 PermissionSwitch("Registrar clientes", ui.canCreateClients) { onEvent(EmployeeUiEvent.PermissionChanged(EmployeePermission.CREATE_CLIENTS, it)) }
                 PermissionSwitch("Realizar cobros", ui.canCollectPayments) { onEvent(EmployeeUiEvent.PermissionChanged(EmployeePermission.COLLECT_PAYMENTS, it)) }
                 PermissionSwitch("Consultar su ruta", ui.canViewRoute) { onEvent(EmployeeUiEvent.PermissionChanged(EmployeePermission.VIEW_ROUTE, it)) }
@@ -236,7 +248,7 @@ fun EmployeeManagementScreen(
 
 @Composable private fun PermissionSwitch(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, modifier = Modifier.weight(1f), color = Muted)
+        Text(label, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant)
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
@@ -263,7 +275,11 @@ fun EmployeeManagementScreen(
             }
         ),
         visualTransformation = if (password) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
-        modifier = Modifier.fillMaxWidth(), singleLine = label != "Dirección donde vive"
+        modifier = Modifier.fillMaxWidth(), singleLine = label != "Dirección donde vive",
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+        )
     )
 }
 
@@ -277,47 +293,54 @@ fun EmployeeManagementScreen(
 @Composable private fun EmployeeDetail(employee: Employee, onEvent: (EmployeeUiEvent) -> Unit) {
     AlertDialog(
         onDismissRequest = { onEvent(EmployeeUiEvent.CloseDetails) },
-        title = { Text(employee.name) },
+        title = { Text(employee.name, color = MaterialTheme.colorScheme.onSurface) },
         text = { Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
-            Text(if (employee.isActive) "ACTIVO" else "DESACTIVADO", color = if (employee.isActive) Green else Red, fontWeight = FontWeight.Bold)
+            Text(if (employee.isActive) "ACTIVO" else "DESACTIVADO", color = if (employee.isActive) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
             DetailLine("Usuario", employee.username); DetailLine("Cédula", employee.identification)
             DetailLine("Teléfono", employee.phone); DetailLine("Dirección", employee.address)
             DetailLine("Ruta", employee.route); DetailLine("Clientes", employee.clientsAssigned.toString())
             DetailLine("Actividad de cobros", employee.collectionCount.toString())
-            Text("Credenciales: ${if (employee.dniFrontPhotoPath != null && employee.dniBackPhotoPath != null) "completas" else "incompletas"}", color = Muted)
-            Text("Permisos", fontWeight = FontWeight.Bold)
+            Text("Credenciales: ${if (employee.dniFrontPhotoPath != null && employee.dniBackPhotoPath != null) "completas" else "incompletas"}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Permisos", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Text(listOfNotNull(
                 "Clientes".takeIf { employee.canCreateClients },
                 "Cobros".takeIf { employee.canCollectPayments },
                 "Ruta".takeIf { employee.canViewRoute },
                 "Cierre".takeIf { employee.canCloseCash },
                 "Documentos".takeIf { employee.canShareDocuments }
-            ).joinToString(" · ").ifBlank { "Sin permisos operativos" }, color = Muted, fontSize = 12.sp)
-            Text("Actividad reciente", fontWeight = FontWeight.Bold)
-            if (employee.recentActivity.isEmpty()) Text("Sin cobros registrados.", color = Muted)
-            employee.recentActivity.forEach { Text("• $it", fontSize = 12.sp, color = Muted) }
+            ).joinToString(" · ").ifBlank { "Sin permisos operativos" }, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+            Text("Actividad reciente", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            if (employee.recentActivity.isEmpty()) Text("Sin cobros registrados.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            employee.recentActivity.forEach { Text("• $it", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         } },
         confirmButton = { Button(onClick = { onEvent(EmployeeUiEvent.CloseDetails); onEvent(EmployeeUiEvent.OpenEdit(employee.id)) }) { Text("Editar información") } },
         dismissButton = { TextButton(onClick = { onEvent(EmployeeUiEvent.CloseDetails) }) { Text("Cerrar") } }
     )
 }
 
-@Composable private fun DetailLine(label: String, value: String) { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text(label, color = Muted); Text(value.ifBlank { "No registrado" }, fontWeight = FontWeight.SemiBold) } }
+@Composable private fun DetailLine(label: String, value: String) { 
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { 
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value.ifBlank { "No registrado" }, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface) 
+    } 
+}
 
 @Composable private fun AssignmentDialog(employee: Employee, clients: List<AssignableClient>, onEvent: (EmployeeUiEvent) -> Unit) {
     AlertDialog(
         onDismissRequest = { onEvent(EmployeeUiEvent.CloseAssignment) },
-        title = { Text("Asignar cliente a ${employee.name}") },
+        title = { Text("Asignar cliente a ${employee.name}", color = MaterialTheme.colorScheme.onSurface) },
         text = { LazyColumn(Modifier.heightIn(max = 440.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (clients.isEmpty()) item { Text("No hay clientes activos disponibles.") }
+            if (clients.isEmpty()) item { Text("No hay clientes activos disponibles.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
             items(clients, key = AssignableClient::id) { client ->
+                val isAssigned = client.currentEmployeeId == employee.id.toLong()
                 Card(
-                    Modifier.fillMaxWidth().clickable(enabled = client.currentEmployeeId != employee.id.toLong()) { onEvent(EmployeeUiEvent.AssignClient(client.id)) },
-                    colors = CardDefaults.cardColors(containerColor = if (client.currentEmployeeId == employee.id.toLong()) Color(0xFFE5F7EF) else Color.White),
-                    border = BorderStroke(1.dp, Border)
+                    Modifier.fillMaxWidth().clickable(enabled = !isAssigned) { onEvent(EmployeeUiEvent.AssignClient(client.id)) },
+                    colors = CardDefaults.cardColors(containerColor = if (isAssigned) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) { Column(Modifier.padding(12.dp)) {
-                    Text(client.name, fontWeight = FontWeight.Bold); Text(client.zone, color = Muted, fontSize = 12.sp)
-                    Text(if (client.currentEmployeeId == employee.id.toLong()) "Ya asignado" else "Tocar para asignar", color = if (client.currentEmployeeId == employee.id.toLong()) Green else Muted, fontSize = 12.sp)
+                    Text(client.name, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(client.zone, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                    Text(if (isAssigned) "Ya asignado" else "Tocar para asignar", color = if (isAssigned) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                 } }
             }
         } },

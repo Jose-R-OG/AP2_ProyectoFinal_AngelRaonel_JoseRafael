@@ -25,25 +25,15 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Payment
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.PaymentReceiptManager
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.DigitalSignaturePad
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 import java.util.Locale
 import java.util.Date
 
-private val SurfaceColor = Color(0xFFF8F9FF)
-private val PrimaryBlack = Color(0xFF000000)
-private val SecondaryGreen = Color(0xFF006C49)
-private val TealActionButtonBg = Color(0xFF67B59F)
-private val LightBlueBadgeBg = Color(0xFFDCE9FF)
-private val LightBlueBadgeText = Color(0xFF1565C0)
-private val OnSurfaceVariant = Color(0xFF30323A)
-private val OutlineVariant = Color(0xFFC6C6CD)
-private val PagadoBadgeBg = Color(0xFF6CF8BB).copy(alpha = 0.4f)
-private val PagadoBadgeText = Color(0xFF00714D)
-private val VencidoBadgeBg = Color(0xFFFFDAD6)
-private val VencidoBadgeText = Color(0xFFBA1A1A)
-private val PendienteBadgeBg = Color(0xFFE3EEFF)
-private val PendienteBadgeText = Color(0xFF1976D2)
-private val FuturoBadgeBg = Color(0xFFEEEEEE)
-private val FuturoBadgeText = Color(0xFF616161)
+private val SurfaceColor @Composable get() = MaterialTheme.colorScheme.surface
+private val PrimaryBlack @Composable get() = MaterialTheme.colorScheme.onSurface
+private val SecondaryGreen @Composable get() = MaterialTheme.colorScheme.secondary
+private val OnSurfaceVariant @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val OutlineVariant @Composable get() = MaterialTheme.colorScheme.outlineVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -180,7 +170,6 @@ fun DetallePrestamoCobroScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
                     border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -236,7 +225,6 @@ fun DetallePrestamoCobroScreen(
                     Card(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
                         border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
@@ -253,7 +241,6 @@ fun DetallePrestamoCobroScreen(
                     Card(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
                         border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
@@ -434,7 +421,6 @@ private fun CuotaCardRow(
             .fillMaxWidth()
             .clickable(enabled = cuota.status != CuotaStatus.PAGADO) { onToggleSelect() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(
             width = 1.dp,
             color = if (isVencido) VencidoBadgeText else OutlineVariant.copy(alpha = 0.6f)

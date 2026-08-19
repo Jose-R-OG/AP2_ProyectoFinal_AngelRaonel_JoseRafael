@@ -7,52 +7,16 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalance
-import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.HelpCenter
-import androidx.compose.material.icons.filled.LockReset
-import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -79,9 +43,11 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_Proyect
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.profile.ConfirmarCerrarSesionDialog
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ProfileGreen
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ProfileOutline
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ProfileSurface
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.settings.ThemeMode
+import androidx.compose.ui.semantics.Role
 
 @Composable
 fun AdminProfileSettingsScreen(
@@ -147,19 +113,21 @@ fun AdminProfileSettingsContent(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.AccountBalance, contentDescription = null)
+                        Icon(Icons.Default.AccountBalance, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
                         Spacer(Modifier.width(8.dp))
-                        Text(uiState.businessName, fontWeight = FontWeight.Bold)
+                        Text(uiState.businessName, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_back),
-                            contentDescription = stringResource(id = R.string.back)
+                            contentDescription = stringResource(id = R.string.back),
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         bottomBar = {
@@ -174,7 +142,7 @@ fun AdminProfileSettingsContent(
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
-        containerColor = ProfileSurface,
+        containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier.pointerInput(Unit) {
             detectTapGestures(onTap = {
                 focusManager.clearFocus()
@@ -183,7 +151,7 @@ fun AdminProfileSettingsContent(
     ) { padding ->
         if (uiState.isLoading) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = ProfileGreen)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else {
             Column(
@@ -193,8 +161,8 @@ fun AdminProfileSettingsContent(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    border = BorderStroke(1.dp, ProfileOutline)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Column(Modifier.padding(18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Row(
@@ -216,13 +184,13 @@ fun AdminProfileSettingsContent(
                             )
                         }
                         Spacer(Modifier.height(12.dp))
-                        Text(uiState.adminName, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                        Text(uiState.adminEmail, fontSize = 13.sp, color = Color(0xFF30323A))
-                        Text(uiState.adminPhone, fontSize = 13.sp, color = Color(0xFF30323A))
+                        Text(uiState.adminName, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        Text(uiState.adminEmail, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(uiState.adminPhone, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.height(12.dp))
                         Button(
                             onClick = { onEvent(AdminProfileUiEvent.StartEdit) },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Icon(Icons.Default.Edit, null, Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
@@ -234,6 +202,9 @@ fun AdminProfileSettingsContent(
                 FunctionalOption(Icons.Default.LockReset, "Cambiar PIN", "Actualiza tus credenciales locales") {
                     onEvent(AdminProfileUiEvent.ShowPinDialog)
                 }
+                FunctionalOption(Icons.Default.DarkMode, "Tema de la aplicación", "Cambia entre modo claro, oscuro o sistema") {
+                    onEvent(AdminProfileUiEvent.ShowThemeDialog)
+                }
                 FunctionalOption(Icons.Default.Notifications, "Preferencias de notificación", "Activa o desactiva los avisos dentro de la aplicación") {
                     onEvent(AdminProfileUiEvent.ShowNotifications)
                 }
@@ -244,13 +215,16 @@ fun AdminProfileSettingsContent(
                 Button(
                     onClick = { onEvent(AdminProfileUiEvent.RequestLogout) },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFDAD6), contentColor = Color(0xFFBA1A1A))
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
                 ) {
                     Icon(Icons.Default.Logout, null)
                     Spacer(Modifier.width(8.dp))
                     Text("Cerrar sesión", fontWeight = FontWeight.Bold)
                 }
-                Spacer(Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
     }
@@ -289,7 +263,11 @@ fun AdminProfileSettingsContent(
                         supportingText = { Text("${uiState.editName.length}/80") },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        )
                     )
                     OutlinedTextField(
                         uiState.editEmail,
@@ -298,7 +276,11 @@ fun AdminProfileSettingsContent(
                         supportingText = { Text("${uiState.editEmail.length}/120") },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        )
                     )
                     OutlinedTextField(
                         uiState.editPhone,
@@ -307,7 +289,11 @@ fun AdminProfileSettingsContent(
                         supportingText = { Text("${uiState.editPhone.length}/10 dígitos") },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        )
                     )
                     OutlinedTextField(
                         uiState.editBusinessName,
@@ -319,9 +305,13 @@ fun AdminProfileSettingsContent(
                         keyboardActions = KeyboardActions(onDone = {
                             focusManager.clearFocus()
                             onEvent(AdminProfileUiEvent.SaveProfile)
-                        })
+                        }),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                        )
                     )
-                    uiState.message?.let { Text(it, color = Color(0xFFBA1A1A), fontSize = 12.sp) }
+                    uiState.message?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
                 }
             },
             confirmButton = {
@@ -344,13 +334,33 @@ fun AdminProfileSettingsContent(
     }
 
     if (uiState.showPinDialog) PinDialog(uiState, onEvent)
+    if (uiState.showThemeDialog) {
+        AlertDialog(
+            onDismissRequest = { onEvent(AdminProfileUiEvent.HideThemeDialog) },
+            title = { Text("Tema de la aplicación") },
+            text = {
+                Column(Modifier.selectableGroup()) {
+                    ThemeOption("Claro", uiState.themeMode == ThemeMode.LIGHT) {
+                        onEvent(AdminProfileUiEvent.ThemeModeChanged(ThemeMode.LIGHT))
+                    }
+                    ThemeOption("Oscuro", uiState.themeMode == ThemeMode.DARK) {
+                        onEvent(AdminProfileUiEvent.ThemeModeChanged(ThemeMode.DARK))
+                    }
+                    ThemeOption("Usar ajuste del sistema", uiState.themeMode == ThemeMode.SYSTEM) {
+                        onEvent(AdminProfileUiEvent.ThemeModeChanged(ThemeMode.SYSTEM))
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { onEvent(AdminProfileUiEvent.HideThemeDialog) }) { Text("Cerrar") } }
+        )
+    }
     if (uiState.showNotificationDialog) {
         AlertDialog(
             onDismissRequest = { onEvent(AdminProfileUiEvent.HideNotifications) },
             title = { Text("Notificaciones") },
             text = {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Avisos de solicitudes y cobros")
+                    Text("Avisos de solicitudes y cobros", color = MaterialTheme.colorScheme.onSurface)
                     Switch(uiState.notificationsEnabled, { onEvent(AdminProfileUiEvent.NotificationsChanged(it)) })
                 }
             },
@@ -361,7 +371,7 @@ fun AdminProfileSettingsContent(
         AlertDialog(
             onDismissRequest = { onEvent(AdminProfileUiEvent.HideHelp) },
             title = { Text("Ayuda rápida") },
-            text = { Text("Clientes administra expedientes. Préstamos aprueba o rechaza solicitudes. Rutas muestra cobros pendientes. Ajustar tarifas define el interés usado en solicitudes nuevas.") },
+            text = { Text("Clientes administra expedientes. Préstamos aprueba o rechaza solicitudes. Rutas muestra cobros pendientes. Ajustar tarifas define el interés usado en solicitudes nuevas.", color = MaterialTheme.colorScheme.onSurface) },
             confirmButton = { TextButton(onClick = { onEvent(AdminProfileUiEvent.HideHelp) }) { Text("Entendido") } }
         )
     }
@@ -372,16 +382,16 @@ private fun FunctionalOption(icon: ImageVector, title: String, subtitle: String,
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, ProfileOutline),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         shape = RoundedCornerShape(14.dp)
     ) {
         Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, null, Modifier.size(26.dp))
+            Icon(icon, null, Modifier.size(26.dp), tint = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.width(14.dp))
             Column {
-                Text(title, fontWeight = FontWeight.Bold)
-                Text(subtitle, fontSize = 12.sp, color = Color(0xFF30323A))
+                Text(title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -391,24 +401,24 @@ private fun FunctionalOption(icon: ImageVector, title: String, subtitle: String,
 private fun ImageEditor(path: String?, fallbackIcon: ImageVector, label: String, onClick: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
-            Modifier.size(84.dp).clip(RoundedCornerShape(18.dp)).background(Color(0xFFDCE9FF)).clickable(onClick = onClick),
+            Modifier.size(84.dp).clip(RoundedCornerShape(18.dp)).background(MaterialTheme.colorScheme.primaryContainer).clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
             if (!path.isNullOrBlank()) AsyncImage(path, label, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-            else Icon(fallbackIcon, null, Modifier.size(44.dp))
+            else Icon(fallbackIcon, null, Modifier.size(44.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
         }
-        Text(label, fontSize = 11.sp)
+        Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
 private fun EditableImage(path: String?, label: String, modifier: Modifier, onClick: () -> Unit) {
     Box(
-        modifier.height(92.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFFDCE9FF)).clickable(onClick = onClick),
+        modifier.height(92.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant).clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         if (!path.isNullOrBlank()) AsyncImage(path, label, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-        else Text("Seleccionar $label", fontSize = 11.sp)
+        else Text("Seleccionar $label", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -434,7 +444,11 @@ private fun PinDialog(uiState: AdminProfileUiState, onEvent: (AdminProfileUiEven
                     supportingText = { Text("${uiState.oldPin.length}/8 dígitos") },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    )
                 )
                 OutlinedTextField(
                     uiState.newPin,
@@ -443,7 +457,11 @@ private fun PinDialog(uiState: AdminProfileUiState, onEvent: (AdminProfileUiEven
                     supportingText = { Text("${uiState.newPin.length}/8 (mínimo 4)") },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    )
                 )
                 OutlinedTextField(
                     uiState.confirmPin,
@@ -455,14 +473,34 @@ private fun PinDialog(uiState: AdminProfileUiState, onEvent: (AdminProfileUiEven
                     keyboardActions = KeyboardActions(onDone = {
                         focusManager.clearFocus()
                         onEvent(AdminProfileUiEvent.SavePin)
-                    })
+                    }),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    )
                 )
-                uiState.message?.let { Text(it, color = Color(0xFFBA1A1A), fontSize = 12.sp) }
+                uiState.message?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
             }
         },
         confirmButton = { Button(onClick = { onEvent(AdminProfileUiEvent.SavePin) }) { Text("Actualizar") } },
         dismissButton = { TextButton(onClick = { onEvent(AdminProfileUiEvent.HidePinDialog) }) { Text("Cancelar") } }
     )
+}
+
+@Composable
+private fun ThemeOption(text: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .selectable(selected = selected, onClick = onClick, role = Role.RadioButton)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(selected = selected, onClick = null)
+        Spacer(Modifier.width(16.dp))
+        Text(text, color = MaterialTheme.colorScheme.onSurface)
+    }
 }
 
 @Preview(showBackground = true)
@@ -476,53 +514,6 @@ fun AdminProfileSettingsScreenPreview() {
                 adminPhone = "809-555-5555",
                 businessName = "TaCobrao Admin",
                 isLoading = false
-            ),
-            onEvent = {},
-            onHome = {},
-            onClients = {},
-            onLoans = {},
-            onRoutes = {},
-            onProfilePicker = {},
-            onLogoPicker = {},
-            snackbar = remember { SnackbarHostState() }
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AdminProfileSettingsLoadingPreview() {
-    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
-        AdminProfileSettingsContent(
-            uiState = AdminProfileUiState(isLoading = true),
-            onEvent = {},
-            onHome = {},
-            onClients = {},
-            onLoans = {},
-            onRoutes = {},
-            onProfilePicker = {},
-            onLogoPicker = {},
-            snackbar = remember { SnackbarHostState() }
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AdminProfileSettingsEditingPreview() {
-    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
-        AdminProfileSettingsContent(
-            uiState = AdminProfileUiState(
-                adminName = "Angel Raonel",
-                adminEmail = "angel@example.com",
-                adminPhone = "809-555-5555",
-                businessName = "TaCobrao Admin",
-                isLoading = false,
-                isEditing = true,
-                editName = "Angel Raonel",
-                editEmail = "angel@example.com",
-                editPhone = "809-555-5555",
-                editBusinessName = "TaCobrao Admin"
             ),
             onEvent = {},
             onHome = {},

@@ -1,5 +1,7 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.profile
 
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.settings.ThemeMode
+
 sealed interface AdminProfileUiEvent {
     data object StartEdit : AdminProfileUiEvent
     data object CancelEdit : AdminProfileUiEvent
@@ -19,6 +21,9 @@ sealed interface AdminProfileUiEvent {
     data object ShowNotifications : AdminProfileUiEvent
     data object HideNotifications : AdminProfileUiEvent
     data class NotificationsChanged(val enabled: Boolean) : AdminProfileUiEvent
+    data object ShowThemeDialog : AdminProfileUiEvent
+    data object HideThemeDialog : AdminProfileUiEvent
+    data class ThemeModeChanged(val mode: ThemeMode) : AdminProfileUiEvent
     data object ShowHelp : AdminProfileUiEvent
     data object HideHelp : AdminProfileUiEvent
     data object MessageShown : AdminProfileUiEvent

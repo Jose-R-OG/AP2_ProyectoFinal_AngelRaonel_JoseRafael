@@ -1,5 +1,7 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -10,46 +12,94 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-// Admin Dashboard Colors
-val SurfaceColor = Color(0xFFF8F9FF)
-val PrimaryBlack = Color(0xFF000000)
-val SecondaryGreen = Color(0xFF006C49)
-val SecondaryContainer = Color(0xFF6CF8BB)
-val OnSecondaryContainer = Color(0xFF00714D)
-val OnSurfaceVariant = Color(0xFF30323A)
-val OutlineVariant = Color(0xFFC6C6CD)
-val ErrorColor = Color(0xFFBA1A1A)
-val ErrorContainer = Color(0xFFFFDAD6)
-val OnErrorContainer = Color(0xFF93000A)
-val Page = Color(0xFFF8F9FF)
+// --- Base Raw Colors (Used to define the Theme) ---
+val PrimaryBlackRaw = Color(0xFF000000)
+val SecondaryGreenRaw = Color(0xFF006C49)
+val SurfaceColorRaw = Color(0xFFF8F9FF)
+val OnSurfaceVariantRaw = Color(0xFF30323A)
+val OutlineVariantRaw = Color(0xFFC6C6CD)
+val ErrorColorRaw = Color(0xFFBA1A1A)
+val SecondaryContainerRaw = Color(0xFF6CF8BB)
+val OnSecondaryContainerRaw = Color(0xFF00714D)
+val ErrorContainerRaw = Color(0xFFFFDAD6)
+val OnErrorContainerRaw = Color(0xFF93000A)
+
+// --- Shared Base Colors (Semantic - react to current theme) ---
+val SurfaceColor @Composable get() = MaterialTheme.colorScheme.surface
+val PrimaryBlack @Composable get() = MaterialTheme.colorScheme.onSurface
+val SecondaryGreen @Composable get() = MaterialTheme.colorScheme.secondary
+val SecondaryContainer @Composable get() = MaterialTheme.colorScheme.secondaryContainer
+val OnSecondaryContainer @Composable get() = MaterialTheme.colorScheme.onSecondaryContainer
+val OnSurfaceVariant @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
+val OutlineVariant @Composable get() = MaterialTheme.colorScheme.outlineVariant
+val ErrorColor @Composable get() = MaterialTheme.colorScheme.error
+val ErrorContainer @Composable get() = MaterialTheme.colorScheme.errorContainer
+val OnErrorContainer @Composable get() = MaterialTheme.colorScheme.onErrorContainer
+
+// Compatibility aliases for legacy names
+val PrimaryColor @Composable get() = PrimaryBlack
+val Page @Composable get() = SurfaceColor
 val Ink = Color(0xFF111318)
-val Muted = Color(0xFF30323A)
-val Green = Color(0xFF006C49)
-val Red = Color(0xFFBA1A1A)
-val Border = Color(0xFFC6C6CD)
+val Muted @Composable get() = OnSurfaceVariant
+val Green @Composable get() = SecondaryGreen
+val Red @Composable get() = ErrorColor
+val Border @Composable get() = OutlineVariant
 
-//Loan Approval Screen Colors
-val PrimaryColor = Color(0xFF000000)
-val SurfaceContainerLowest = Color(0xFFFFFFFF)
-val SurfaceContainerLow = Color(0xFFEFF4FF)
-val SurfaceContainerHigh = Color(0xFFDCE9FF)
-val OnTertiaryContainer = Color(0xFF3980F4)
+// --- Dark Mode Palette ---
+val DarkBackground = Color(0xFF111318)
+val DarkSurface = Color(0xFF1C1B1F)
+val DarkOnSurface = Color(0xFFE2E2E6)
+val DarkSurfaceVariant = Color(0xFF44474E)
+val DarkOnSurfaceVariant = Color(0xFFC4C6D0)
+val DarkOutline = Color(0xFF8E9099)
+val DarkOutlineVariant = Color(0xFF44474E)
 
-//Admin Profile Settings Screen Colors
-val ProfileSurface = Color(0xFFF8F9FF)
-val ProfileGreen = Color(0xFF006C49)
-val ProfileOutline = Color(0xFFC6C6CD)
+// --- Status and Badge Colors ---
+val GreenBadgeBg @Composable get() = SecondaryContainer.copy(alpha = 0.35f)
+val GreenBadgeText @Composable get() = SecondaryGreen
+val SuccessBadgeBg @Composable get() = Color(0xFFE8F5E9)
+val AdminBadgeBg = Color(0xFFFFF3E0)
+val AdminBadgeText = Color(0xFFE65100)
+val RedDanger = Color(0xFFBA1A1A)
+val RedDangerBg = Color(0xFFFFDAD6)
 
-//Adjust TarrifsScreen Colors
-val PrimaryContainer = Color(0xFF131B2E)
-val OnPrimaryContainer = Color(0xFF7C839B)
+// --- Action and Icon Colors ---
+val LightBlueActionBg @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+val LightBlueBadgeBg @Composable get() = SecondaryContainer
+val LightBlueBadgeText @Composable get() = OnSecondaryContainer
+val LightBlueIconBg @Composable get() = MaterialTheme.colorScheme.surfaceVariant
+val TealActionButtonBg = Color(0xFF67B59F)
+val LightBlueButtonBg @Composable get() = MaterialTheme.colorScheme.surfaceVariant
 
+// --- Specific Screen Colors ---
+// Admin Profile Settings Screen Colors
+val ProfileSurface @Composable get() = SurfaceColor
+val ProfileGreen @Composable get() = SecondaryGreen
+val ProfileOutline @Composable get() = OutlineVariant
 
-//ClientesScreen Colors
+// Adjust TarrifsScreen Colors
+val PrimaryContainer @Composable get() = MaterialTheme.colorScheme.primaryContainer
+val OnPrimaryContainer @Composable get() = MaterialTheme.colorScheme.onPrimaryContainer
 
-val ClientesSurface = Color(0xFFF8F9FF)
-val ClientesPrimary = Color(0xFF000000)
-val ClientesGreen = Color(0xFF006C49)
-val ClientesTextSecondary = Color(0xFF30323A)
-val ClientesOutline = Color(0xFFC6C6CD)
-val ClientesError = Color(0xFFBA1A1A)
+// ClientesScreen Colors
+val ClientesSurface @Composable get() = SurfaceColor
+val ClientesPrimary @Composable get() = PrimaryBlack
+val ClientesGreen @Composable get() = SecondaryGreen
+val ClientesTextSecondary @Composable get() = OnSurfaceVariant
+val ClientesOutline @Composable get() = OutlineVariant
+val ClientesError @Composable get() = ErrorColor
+
+// Detalle Prestamo Colors
+val PagadoBadgeBg = Color(0xFF6CF8BB).copy(alpha = 0.4f)
+val PagadoBadgeText = Color(0xFF00714D)
+val VencidoBadgeBg = Color(0xFFFFDAD6)
+val VencidoBadgeText = Color(0xFFBA1A1A)
+val PendienteBadgeBg = Color(0xFFE3EEFF)
+val PendienteBadgeText = Color(0xFF1976D2)
+val FuturoBadgeBg = Color(0xFFEEEEEE)
+val FuturoBadgeText = Color(0xFF616161)
+
+// Cobros Ruta Screen
+val CollectionsSurface @Composable get() = SurfaceColor
+val CollectionsGreen @Composable get() = SecondaryGreen
+val CollectionsOutline @Composable get() = OutlineVariant

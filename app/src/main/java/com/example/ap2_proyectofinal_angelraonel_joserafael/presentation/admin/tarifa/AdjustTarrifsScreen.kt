@@ -7,17 +7,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,23 +20,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -54,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontStyle
@@ -67,17 +42,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.ErrorContainer
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnErrorContainer
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnSecondaryContainer
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnSurfaceVariant
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OutlineVariant
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.PrimaryColor
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryContainer
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryGreen
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SurfaceColor
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnPrimaryContainer
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.PrimaryContainer
 
 @Composable
 fun AdjustTariffsScreen(
@@ -102,6 +66,14 @@ fun AdjustTariffsContent(
 ) {
     val focusManager = LocalFocusManager.current
     val onSaveClick: () -> Unit = { onEvent(TariffsUiEvent.SaveTariffs) }
+    
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryGreen = MaterialTheme.colorScheme.secondary
+    val outlineVariant = MaterialTheme.colorScheme.outlineVariant
+
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
@@ -111,26 +83,26 @@ fun AdjustTariffsContent(
                             Icon(
                                 imageVector = Icons.Default.AccountBalance,
                                 contentDescription = null,
-                                tint = PrimaryColor
+                                tint = onSurface
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "TaCobrao",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp,
-                                color = PrimaryColor
+                                color = onSurface
                             )
                         }
                     },
                     navigationIcon = {
                         IconButton(onClick = onBackClick) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = onSurface)
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor)
                 )
             },
-            containerColor = SurfaceColor,
+            containerColor = surfaceColor,
             modifier = Modifier.pointerInput(Unit) {
                 detectTapGestures(onTap = {
                     focusManager.clearFocus()
@@ -150,13 +122,13 @@ fun AdjustTariffsContent(
                             text = "Tarifario del Negocio",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = PrimaryColor
+                            color = onSurface
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Define y gestiona las tasas de interés aplicadas según la frecuencia de pago del préstamo. Estos valores son los estándares actuales del sistema para el crecimiento controlado del capital.",
                             fontSize = 14.sp,
-                            color = OnSurfaceVariant,
+                            color = onSurfaceVariant,
                             lineHeight = 20.sp
                         )
                     }
@@ -166,21 +138,21 @@ fun AdjustTariffsContent(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+                        colors = CardDefaults.cardColors(containerColor = surfaceColor),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, outlineVariant)
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
                             Box(
                                 modifier = Modifier
                                     .size(48.dp)
                                     .clip(CircleShape)
-                                    .background(SecondaryContainer),
+                                    .background(MaterialTheme.colorScheme.secondaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.TrendingUp,
                                     contentDescription = null,
-                                    tint = OnSecondaryContainer
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
                             Spacer(modifier = Modifier.height(12.dp))
@@ -188,22 +160,22 @@ fun AdjustTariffsContent(
                                 text = "Políticas de Interés",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = PrimaryColor
+                                color = onSurface
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Las tasas configuradas aquí se aplicarán automáticamente a todas las nuevas solicitudes de préstamo de TaCobrao.",
                                 fontSize = 13.sp,
-                                color = OnSurfaceVariant
+                                color = onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            HorizontalDivider(color = OutlineVariant.copy(alpha = 0.5f))
+                            HorizontalDivider(color = outlineVariant.copy(alpha = 0.5f))
                             Spacer(modifier = Modifier.height(12.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.Verified,
                                     contentDescription = null,
-                                    tint = SecondaryGreen,
+                                    tint = secondaryGreen,
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -211,7 +183,7 @@ fun AdjustTariffsContent(
                                     text = "Tasas de Negocio Estándar",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = SecondaryGreen
+                                    color = secondaryGreen
                                 )
                             }
                         }
@@ -222,8 +194,8 @@ fun AdjustTariffsContent(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+                        colors = CardDefaults.cardColors(containerColor = surfaceColor),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, outlineVariant)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
@@ -259,7 +231,7 @@ fun AdjustTariffsContent(
                                 imeAction = ImeAction.Next
                             )
 
-                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = OutlineVariant.copy(alpha = 0.5f))
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = outlineVariant.copy(alpha = 0.5f))
 
                             TariffInputRow(
                                 code = "S4",
@@ -301,11 +273,11 @@ fun AdjustTariffsContent(
                                 text = "* Los cambios requieren permisos de Admin para ser efectivos globalmente.",
                                 fontSize = 11.sp,
                                 fontStyle = FontStyle.Italic,
-                                color = OnSurfaceVariant
+                                color = onSurfaceVariant
                             )
 
                             uiState.errorMessage?.let { message ->
-                                Text(message, color = Color(0xFFBA1A1A), fontSize = 12.sp)
+                                Text(message, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                             }
 
                             Button(
@@ -314,23 +286,23 @@ fun AdjustTariffsContent(
                                     .fillMaxWidth()
                                     .height(50.dp),
                                 shape = RoundedCornerShape(25.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
-                                enabled = !uiState.isSaving
+                                colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
                             ) {
                                 if (uiState.isSaving) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(20.dp),
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         strokeWidth = 2.dp
                                     )
                                 } else {
                                     Icon(
                                         imageVector = Icons.Default.Save,
                                         contentDescription = null,
-                                        modifier = Modifier.size(18.dp)
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.onPrimary
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Guardar Cambios", fontWeight = FontWeight.SemiBold)
+                                    Text("Guardar Cambios", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
                                 }
                             }
                         }
@@ -341,39 +313,39 @@ fun AdjustTariffsContent(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE5EEFF)),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, outlineVariant)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
                                 text = "Resumen de Rentabilidad",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = PrimaryColor
+                                color = onSurface
                             )
                             Spacer(modifier = Modifier.height(12.dp))
 
                             MetricRow("Margen Neto Proyectado", uiState.projectedNetMargin, isSecondary = true)
-                            HorizontalDivider(color = OutlineVariant.copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 8.dp))
+                            HorizontalDivider(color = outlineVariant.copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 8.dp))
 
                             MetricRow("Tasa Promedio Configurada", uiState.averageMarketRate)
-                            HorizontalDivider(color = OutlineVariant.copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 8.dp))
+                            HorizontalDivider(color = outlineVariant.copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 8.dp))
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Factor de Riesgo (Risk Score)", fontSize = 13.sp, color = OnSurfaceVariant)
+                                Text("Factor de Riesgo (Risk Score)", fontSize = 13.sp, color = onSurfaceVariant)
                                 Surface(
-                                    color = ErrorContainer,
+                                    color = MaterialTheme.colorScheme.errorContainer,
                                     shape = RoundedCornerShape(4.dp)
                                 ) {
                                     Text(
                                         text = uiState.riskScore,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = OnErrorContainer,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                                     )
                                 }
@@ -395,7 +367,7 @@ fun AdjustTariffsContent(
                 .padding(bottom = 24.dp, start = 16.dp, end = 16.dp)
         ) {
             Surface(
-                color = SecondaryGreen,
+                color = secondaryGreen,
                 shape = RoundedCornerShape(12.dp),
                 shadowElevation = 6.dp
             ) {
@@ -406,12 +378,12 @@ fun AdjustTariffsContent(
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onSecondary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Tarifario actualizado correctamente",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSecondary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -435,8 +407,8 @@ private fun TariffInputRow(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
-        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -450,20 +422,20 @@ private fun TariffInputRow(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(PrimaryContainer),
+                        .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = code,
-                        color = OnPrimaryContainer,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = PrimaryColor)
-                    Text(subtitle, fontSize = 11.sp, color = OnSurfaceVariant)
+                    Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text(subtitle, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -475,10 +447,11 @@ private fun TariffInputRow(
                 textStyle = LocalTextStyle.current.copy(
                     textAlign = TextAlign.End,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
                 trailingIcon = {
-                    Text("%", fontWeight = FontWeight.Bold, color = OnSurfaceVariant, fontSize = 14.sp)
+                    Text("%", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = imeAction),
                 keyboardActions = KeyboardActions(
@@ -490,10 +463,10 @@ private fun TariffInputRow(
                 ),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = Color.White,
-                    focusedContainerColor = Color.White,
-                    unfocusedBorderColor = OutlineVariant,
-                    focusedBorderColor = PrimaryColor
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -507,12 +480,12 @@ private fun MetricRow(label: String, value: String, isSecondary: Boolean = false
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, fontSize = 13.sp, color = OnSurfaceVariant)
+        Text(label, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(
             text = value,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = if (isSecondary) SecondaryGreen else PrimaryColor
+            color = if (isSecondary) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
         )
     }
 }

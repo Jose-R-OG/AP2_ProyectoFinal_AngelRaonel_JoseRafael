@@ -35,28 +35,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Percent
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -80,6 +60,7 @@ import coil.compose.AsyncImage
 import androidx.compose.material.icons.filled.QrCodeScanner
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.components.DniScannerDialog
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,12 +72,6 @@ fun RegistroClienteConCuotas(
     val focusManager = LocalFocusManager.current
     var showDniScanner by remember { mutableStateOf(false) }
 
-    val surfaceColor = Color(0xFFF8F9FF)
-    val onSurfaceVariant = Color(0xFF30323A)
-    val outlineVariant = Color(0xFFC6C6CD)
-    val primaryBlack = Color(0xFF000000)
-    val secondaryGreen = Color(0xFF006C49)
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -104,16 +79,17 @@ fun RegistroClienteConCuotas(
                     Text(
                         "Nuevo Cliente", 
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     ) 
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = surfaceColor
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
@@ -126,22 +102,27 @@ fun RegistroClienteConCuotas(
                     .padding(16.dp)
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = primaryBlack)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 if (viewModel.isLoading) {
                     androidx.compose.material3.CircularProgressIndicator(
                         modifier = Modifier.size(22.dp),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Icon(Icons.Default.Check, contentDescription = null)
+                    Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
                     Spacer(Modifier.width(8.dp))
-                    Text(if (viewModel.isExistingClient) "Solicitar nuevo préstamo" else "Guardar Cliente", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        if (viewModel.isExistingClient) "Solicitar nuevo préstamo" else "Guardar Cliente", 
+                        fontSize = 16.sp, 
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             }
         },
-        containerColor = surfaceColor,
+        containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier.pointerInput(Unit) {
             detectTapGestures(onTap = {
                 focusManager.clearFocus()
@@ -166,8 +147,8 @@ fun RegistroClienteConCuotas(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = borderStroke(outlineVariant)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     FormSectionTitle(Icons.Default.Person, "Información Personal")
@@ -193,7 +174,7 @@ fun RegistroClienteConCuotas(
                                 Icon(
                                     Icons.Default.QrCodeScanner,
                                     contentDescription = "Escanear Cédula",
-                                    tint = Color(0xFF006C49)
+                                    tint = MaterialTheme.colorScheme.secondary
                                 )
                             }
                         }
@@ -203,7 +184,7 @@ fun RegistroClienteConCuotas(
                     Text(
                         "Imagen del ID (DNI)",
                         style = MaterialTheme.typography.labelMedium,
-                        color = onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -225,7 +206,7 @@ fun RegistroClienteConCuotas(
                     Text(
                         "JPG, PNG o PDF (Máx. 5MB)",
                         style = MaterialTheme.typography.bodySmall,
-                        color = outlineVariant,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         modifier = Modifier.padding(top = 4.dp)
                     )
 
@@ -248,14 +229,15 @@ fun RegistroClienteConCuotas(
                         supportingText = "${viewModel.address.length}/160 caracteres"
                     )
 
-                    Text("Zona de cobro", style = MaterialTheme.typography.labelMedium, color = Color(0xFF30323A))
+                    Text("Zona de cobro", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         listOf("Zona Norte", "Zona Sur", "Zona Este").forEach { zone ->
                             OutlinedButton(
                                 onClick = { viewModel.onEvent(RegistroClienteUiEvent.ZoneChanged(zone)) },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = if (viewModel.zone == zone) Color(0xFFE5F7EF) else Color.Transparent
+                                    containerColor = if (viewModel.zone == zone) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                                    contentColor = if (viewModel.zone == zone) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             ) { Text(zone.removePrefix("Zona "), fontSize = 11.sp) }
                         }
@@ -359,7 +341,7 @@ fun PaymentDaySelector(
     onSelected: (Int, String) -> Unit
 ) {
     if (frequency == FrecuenciaPago.DIARIO) {
-        Text("El pago diario iniciará el día siguiente a la activación.", fontSize = 12.sp, color = Color(0xFF30323A))
+        Text("El pago diario iniciará el día siguiente a la activación.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         return
     }
     var expanded by remember { mutableStateOf(false) }
@@ -371,7 +353,7 @@ fun PaymentDaySelector(
         }
     }
     Column(Modifier.padding(vertical = 8.dp)) {
-        Text("Día preferido de pago", style = MaterialTheme.typography.labelMedium, color = Color(0xFF30323A))
+        Text("Día preferido de pago", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
             OutlinedTextField(
                 value = selectedDescription.orEmpty(),
@@ -380,7 +362,11 @@ fun PaymentDaySelector(
                 placeholder = { Text("El cliente elige cuándo pagar") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                )
             )
             ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 options.forEach { (value, label) ->
@@ -388,7 +374,7 @@ fun PaymentDaySelector(
                 }
             }
         }
-        Text(if (selectedValue == null) "Obligatorio para esta frecuencia" else "Seleccionado: $selectedDescription", fontSize = 11.sp, color = Color(0xFF30323A))
+        Text(if (selectedValue == null) "Obligatorio para esta frecuencia" else "Seleccionado: $selectedDescription", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -405,8 +391,9 @@ fun ProfilePhotoPicker(
     Box(
         modifier = Modifier
             .size(120.dp)
-            .border(2.dp, Color.LightGray, RoundedCornerShape(16.dp))
+            .border(2.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .clickable { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
         contentAlignment = Alignment.Center
     ) {
@@ -419,8 +406,8 @@ fun ProfilePhotoPicker(
             )
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.AddCircle, contentDescription = null, tint = Color.Gray)
-                Text("Añadir Foto", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Icon(Icons.Default.AddCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Añadir Foto", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -443,9 +430,9 @@ fun IdPhotoBox(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)
-                .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFFBFBFE))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
             contentAlignment = Alignment.Center
         ) {
@@ -457,13 +444,13 @@ fun IdPhotoBox(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Icon(Icons.Default.Add, contentDescription = null, tint = Color.Gray)
+                Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Text(
             label,
             style = MaterialTheme.typography.labelSmall,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
     }
@@ -472,9 +459,9 @@ fun IdPhotoBox(
 @Composable
 fun FormSectionTitle(icon: ImageVector, title: String) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 16.dp)) {
-        Icon(icon, contentDescription = null, tint = Color(0xFF006C49), modifier = Modifier.size(20.dp))
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(8.dp))
-        Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
@@ -493,7 +480,7 @@ fun FormTextField(
 ) {
     val focusManager = LocalFocusManager.current
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(label, style = MaterialTheme.typography.labelMedium, color = Color(0xFF30323A))
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -511,11 +498,13 @@ fun FormTextField(
                 }
             ),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color(0xFFC6C6CD),
-                focusedBorderColor = Color(0xFF006C49)
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                focusedBorderColor = MaterialTheme.colorScheme.primary
             )
         )
-        supportingText?.let { Text(it, fontSize = 11.sp, color = Color(0xFF30323A), modifier = Modifier.padding(start = 12.dp, top = 2.dp)) }
+        supportingText?.let { Text(it, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 12.dp, top = 2.dp)) }
     }
 }
 
@@ -528,7 +517,7 @@ fun FrecuenciaDropdown(
     var expanded by remember { mutableStateOf(false) }
     
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text("Frecuencia de Pago", style = MaterialTheme.typography.labelMedium, color = Color(0xFF30323A))
+        Text("Frecuencia de Pago", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
@@ -542,8 +531,10 @@ fun FrecuenciaDropdown(
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color(0xFFC6C6CD),
-                    focusedBorderColor = Color(0xFF006C49)
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary
                 )
             )
             ExposedDropdownMenu(
@@ -564,13 +555,10 @@ fun FrecuenciaDropdown(
     }
 }
 
-fun borderStroke(color: Color) = androidx.compose.foundation.BorderStroke(1.dp, color)
-
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun RegistroClienteConCuotasPreview() {
-    MaterialTheme {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
         RegistroClienteContentPreview()
     }
 }
@@ -578,11 +566,6 @@ fun RegistroClienteConCuotasPreview() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RegistroClienteContentPreview() {
-    val surfaceColor = Color(0xFFF8F9FF)
-    val onSurfaceVariant = Color(0xFF30323A)
-    val outlineVariant = Color(0xFFC6C6CD)
-    val primaryBlack = Color(0xFF000000)
-
     var fullName by remember { mutableStateOf("Juan Pérez") }
     var dni by remember { mutableStateOf("001-0000000-0") }
     var phone by remember { mutableStateOf("809-555-0199") }
@@ -598,15 +581,16 @@ private fun RegistroClienteContentPreview() {
                     Text(
                         "Nuevo Cliente",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         bottomBar = {
@@ -617,14 +601,14 @@ private fun RegistroClienteContentPreview() {
                     .padding(16.dp)
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = primaryBlack)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Icon(Icons.Default.Check, contentDescription = null)
+                Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
                 Spacer(Modifier.width(8.dp))
-                Text("Guardar Cliente", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text("Guardar Cliente", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
             }
         },
-        containerColor = surfaceColor
+        containerColor = MaterialTheme.colorScheme.surface
     ) { padding ->
         Column(
             modifier = Modifier
@@ -644,8 +628,8 @@ private fun RegistroClienteContentPreview() {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = borderStroke(outlineVariant)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     FormSectionTitle(Icons.Default.Person, "Información Personal")
@@ -670,7 +654,7 @@ private fun RegistroClienteContentPreview() {
                     Text(
                         "Imagen de la cedula (DNI/ID)",
                         style = MaterialTheme.typography.labelMedium,
-                        color = onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -692,7 +676,7 @@ private fun RegistroClienteContentPreview() {
                     Text(
                         "JPG, PNG o PDF (Máx. 5MB)",
                         style = MaterialTheme.typography.bodySmall,
-                        color = outlineVariant,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         modifier = Modifier.padding(top = 4.dp)
                     )
 

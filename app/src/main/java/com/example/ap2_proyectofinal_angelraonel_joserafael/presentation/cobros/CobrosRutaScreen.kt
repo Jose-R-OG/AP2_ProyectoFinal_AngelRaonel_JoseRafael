@@ -5,18 +5,11 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -30,29 +23,8 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,10 +43,12 @@ import coil.compose.AsyncImage
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 
-private val CollectionsSurface = Color(0xFFF8F9FF)
-private val CollectionsGreen = Color(0xFF006C49)
-private val CollectionsOutline = Color(0xFFC6C6CD)
+private val CollectionsSurface @Composable get() = MaterialTheme.colorScheme.surface
+private val CollectionsGreen @Composable get() = MaterialTheme.colorScheme.secondary
+private val CollectionsOutline @Composable get() = MaterialTheme.colorScheme.outlineVariant
+private val CollectionsTextSecondary @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,16 +82,21 @@ fun CobrosRutaScreen(
                     Column {
                         Text(
                             if (routeOnly) "Ruta de cobro" else "Realizar cobro",
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         if (routeOnly && !isAdmin) {
-                            Text(uiState.activeRoute, fontSize = 11.sp, color = Color(0xFF30323A))
+                            Text(uiState.activeRoute, fontSize = 11.sp, color = CollectionsTextSecondary)
                         }
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = CollectionsSurface)
@@ -151,17 +130,19 @@ fun CobrosRutaScreen(
                 if (routeOnly) "Ruta organizada por zona y por la fecha de cobro más próxima" else
                     if (isAdmin) "Selecciona cualquier cliente con préstamo activo" else
                         "Clientes y préstamos asignados a tu usuario",
-                color = Color(0xFF30323A),
+                color = CollectionsTextSecondary,
                 fontSize = 13.sp
             )
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                listOf("Todas", "Zona Norte", "Zona Sur", "Zona Este").forEach { zone ->
-                    FilterChip(
-                        selected = uiState.zoneFilter == zone,
-                        onClick = { viewModel.onZoneFilterChanged(zone) },
-                        label = { Text(if (zone == "Todas") zone else zone.removePrefix("Zona "), fontSize = 10.sp) },
-                        modifier = Modifier.weight(1f)
-                    )
+            if (isAdmin) {
+                Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    listOf("Todas", "Zona Norte", "Zona Sur", "Zona Este").forEach { zone ->
+                        FilterChip(
+                            selected = uiState.zoneFilter == zone,
+                            onClick = { viewModel.onZoneFilterChanged(zone) },
+                            label = { Text(if (zone == "Todas") zone else zone.removePrefix("Zona "), fontSize = 10.sp) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
             Spacer(Modifier.height(12.dp))
@@ -183,10 +164,10 @@ fun CobrosRutaScreen(
                     CircularProgressIndicator(color = CollectionsGreen)
                 }
                 permissionDenied -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("El administrador no te ha concedido permiso para esta función.", color = Color(0xFFBA1A1A))
+                    Text("El administrador no te ha concedido permiso para esta función.", color = MaterialTheme.colorScheme.error)
                 }
                 uiState.errorMessage != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(uiState.errorMessage.orEmpty(), color = Color(0xFFBA1A1A))
+                    Text(uiState.errorMessage.orEmpty(), color = MaterialTheme.colorScheme.error)
                 }
                 visibleItems.isEmpty() -> EmptyCollections(routeOnly)
                 else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -241,9 +222,8 @@ private fun CollectionClientCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, if (item.isDue) Color(0xFFFFB4AB) else CollectionsOutline)
+        border = BorderStroke(1.dp, if (item.isDue) MaterialTheme.colorScheme.error.copy(alpha = 0.5f) else CollectionsOutline)
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -256,20 +236,20 @@ private fun CollectionClientCard(
                     )
                 } else {
                     Box(
-                        Modifier.size(52.dp).clip(CircleShape).background(Color(0xFFDCE9FF)),
+                        Modifier.size(52.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(item.clientName.take(2).uppercase(), fontWeight = FontWeight.Bold)
+                        Text(item.clientName.take(2).uppercase(), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(item.clientName, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(item.clientName, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
                     Text("Préstamo #${item.loanId}", fontSize = 12.sp, color = CollectionsGreen)
-                    if (isAdmin) Text("Asignado al empleado #${item.employeeId}", fontSize = 11.sp, color = Color(0xFF30323A))
+                    if (isAdmin) Text("Asignado al empleado #${item.employeeId}", fontSize = 11.sp, color = CollectionsTextSecondary)
                 }
                 Surface(
-                    color = if (item.isDue) Color(0xFFFFDAD6) else Color(0xFFE8F5E9),
+                    color = if (item.isDue) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
                     shape = RoundedCornerShape(20.dp)
                 ) {
                     Text(
@@ -283,31 +263,31 @@ private fun CollectionClientCard(
                         modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (item.isDue) Color(0xFFBA1A1A) else CollectionsGreen
+                        color = if (item.isDue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     )
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Phone, null, Modifier.size(16.dp), tint = Color(0xFF30323A))
+                Icon(Icons.Default.Phone, null, Modifier.size(16.dp), tint = CollectionsTextSecondary)
                 Spacer(Modifier.width(6.dp))
-                Text(item.phone, fontSize = 12.sp, color = Color(0xFF30323A))
+                Text(item.phone, fontSize = 12.sp, color = CollectionsTextSecondary)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.LocationOn, null, Modifier.size(16.dp), tint = Color(0xFF30323A))
+                Icon(Icons.Default.LocationOn, null, Modifier.size(16.dp), tint = CollectionsTextSecondary)
                 Spacer(Modifier.width(6.dp))
-                Text(item.address.ifBlank { "Dirección no registrada" }, fontSize = 12.sp, maxLines = 2)
+                Text(item.address.ifBlank { "Dirección no registrada" }, fontSize = 12.sp, maxLines = 2, color = MaterialTheme.colorScheme.onSurface)
             }
-            Text(item.zone, fontSize = 12.sp, color = Color(0xFF30323A), fontWeight = FontWeight.SemiBold)
-            item.rejectionReason?.let { Text("Motivo: $it", color = Color(0xFFBA1A1A), fontSize = 12.sp) }
+            Text(item.zone, fontSize = 12.sp, color = CollectionsTextSecondary, fontWeight = FontWeight.SemiBold)
+            item.rejectionReason?.let { Text("Motivo: $it", color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("Saldo pendiente", fontSize = 10.sp, color = Color(0xFF30323A))
-                    Text(item.pendingBalanceFormatted, fontWeight = FontWeight.Bold)
-                    Text("Próxima: ${item.nextDueText}", fontSize = 10.sp, color = Color(0xFF30323A))
+                    Text("Saldo pendiente", fontSize = 10.sp, color = CollectionsTextSecondary)
+                    Text(item.pendingBalanceFormatted, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Próxima: ${item.nextDueText}", fontSize = 10.sp, color = CollectionsTextSecondary)
                 }
                 when (item.status) {
                     LoanStatus.ACTIVO -> Button(
@@ -321,7 +301,7 @@ private fun CollectionClientCard(
                         OutlinedButton(onClick = onPrintContract) { Text("Imprimir contrato", fontSize = 11.sp) }
                         Button(onClick = onUploadSigned, colors = ButtonDefaults.buttonColors(containerColor = CollectionsGreen)) { Text("Subir firmado", fontSize = 11.sp) }
                     }
-                    else -> Text("Sin cobro disponible", color = Color(0xFF30323A), fontSize = 11.sp)
+                    else -> Text("Sin cobro disponible", color = CollectionsTextSecondary, fontSize = 11.sp)
                 }
             }
         }

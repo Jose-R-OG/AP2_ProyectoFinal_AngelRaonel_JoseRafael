@@ -19,18 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Payments
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,25 +50,26 @@ fun CobrosHistorialScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Cobros recientes", fontWeight = FontWeight.Bold) },
+                title = { Text("Cobros recientes", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.onSurface)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
-        containerColor = Color(0xFFF8F9FF)
+        containerColor = MaterialTheme.colorScheme.surface
     ) { padding ->
         when {
             uiState.isLoading -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Color(0xFF006C49))
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
             }
             uiState.errorMessage != null -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text(uiState.errorMessage.orEmpty(), color = Color(0xFFBA1A1A))
+                Text(uiState.errorMessage.orEmpty(), color = MaterialTheme.colorScheme.error)
             }
             uiState.items.isEmpty() -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("Todavía no se han registrado cobros.")
+                Text("Todavía no se han registrado cobros.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             else -> LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
@@ -88,8 +78,8 @@ fun CobrosHistorialScreen(
                 items(uiState.items, key = { it.id }) { item ->
                     Card(
                         modifier = Modifier.fillMaxWidth().clickable { selected = item },
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        border = BorderStroke(1.dp, Color(0xFFC6C6CD)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         Row(
@@ -99,17 +89,17 @@ fun CobrosHistorialScreen(
                             Icon(
                                 if (item.method == PaymentMethod.EFECTIVO) Icons.Default.Payments else Icons.Default.AccountBalance,
                                 contentDescription = null,
-                                tint = Color(0xFF006C49),
+                                tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(26.dp)
                             )
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
-                                Text(item.clientName, fontWeight = FontWeight.Bold)
-                                Text("Préstamo #${item.loanId} · ${item.method.name.lowercase()}", fontSize = 11.sp)
-                                if (uiState.isAdmin) Text("Cobrado por ${item.employeeName}", fontSize = 11.sp)
-                                Text(item.dateTime, fontSize = 11.sp, color = Color(0xFF30323A))
+                                Text(item.clientName, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                Text("Préstamo #${item.loanId} · ${item.method.name.lowercase()}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                if (uiState.isAdmin) Text("Cobrado por ${item.employeeName}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(item.dateTime, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                            Text(item.amount, fontWeight = FontWeight.Bold, color = Color(0xFF006C49))
+                            Text(item.amount, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
                         }
                     }
                 }
@@ -136,17 +126,17 @@ fun CobrosHistorialScreen(
         )
         AlertDialog(
             onDismissRequest = { selected = null },
-            title = { Text("Detalle del cobro #${item.id}") },
+            title = { Text("Detalle del cobro #${item.id}", color = MaterialTheme.colorScheme.onSurface) },
             text = { Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(item.clientName, fontWeight = FontWeight.Bold)
-                Text("Préstamo #${item.loanId}")
-                Text("Monto: ${item.amount}")
-                Text("Método: ${item.method.name.lowercase()}")
-                Text("Cobrado por: ${item.employeeName}")
-                Text(item.dateTime)
-                Text(item.note)
-                Text("Cuota: ${item.installmentLabel}")
-                Text("Pagos restantes: ${item.remainingInstallments}")
+                Text(item.clientName, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text("Préstamo #${item.loanId}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Monto: ${item.amount}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Método: ${item.method.name.lowercase()}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Cobrado por: ${item.employeeName}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(item.dateTime, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(item.note, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Cuota: ${item.installmentLabel}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Pagos restantes: ${item.remainingInstallments}", color = MaterialTheme.colorScheme.onSurfaceVariant)
             } },
             confirmButton = { Button(onClick = { viewModel.imprimir(receipt) }) { Text("Reimprimir") } },
             dismissButton = { Column(horizontalAlignment = Alignment.End) {
