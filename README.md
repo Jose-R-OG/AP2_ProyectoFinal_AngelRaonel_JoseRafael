@@ -1,5 +1,5 @@
 [README.md](https://github.com/user-attachments/files/31238856/README.1.md)
-# 🌮 TaCobrao - Sistema de Gestión de Préstamos y Cobranzas
+# 🌮 TaCobrao - Sistema de Gestión de Préstamos y Cobranzas.
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-7F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Android-Jetpack%20Compose-3DDC84.svg?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/)
