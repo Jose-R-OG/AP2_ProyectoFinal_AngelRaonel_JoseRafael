@@ -7,40 +7,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Percent
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,8 +34,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import androidx.compose.material.icons.filled.QrCodeScanner
-import android.net.Uri
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.components.DniScannerDialog
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.components.CameraScannerDialog
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
@@ -113,7 +87,7 @@ fun RegistroClienteContent(
         },
         bottomBar = {
             Button(
-                onClick = { onEvent(RegistroClienteUiEvent.SaveCliente) },
+                onClick = { viewModel.onEvent(RegistroClienteUiEvent.SaveCliente) },
                 enabled = !uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -157,7 +131,8 @@ fun RegistroClienteContent(
         ) {
             ProfilePhotoPicker(
                 photoPath = uiState.profilePhotoPath,
-                onPhotoPicked = { onEvent(RegistroClienteUiEvent.ProfilePhotoChanged(it)) }
+                error = uiState.profilePhotoError,
+                onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.ProfilePhotoChanged(it)) }
             )
 
             Spacer(Modifier.height(24.dp))
@@ -173,7 +148,8 @@ fun RegistroClienteContent(
                     
                     FormTextField(
                         value = uiState.fullName,
-                        onValueChange = { onEvent(RegistroClienteUiEvent.FullNameChanged(it)) },
+                        error = uiState.fullNameError,
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.FullNameChanged(it)) },
                         label = "Nombre Completo",
                         placeholder = "Ej. Juan Pérez",
                         icon = Icons.Default.Person,
@@ -182,7 +158,8 @@ fun RegistroClienteContent(
 
                     FormTextField(
                         value = uiState.dni,
-                        onValueChange = { onEvent(RegistroClienteUiEvent.DniChanged(it)) },
+                        error = uiState.dniError,
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.DniChanged(it)) },
                         label = "Número de Identificación (DNI/ID)",
                         placeholder = "000-0000000-0",
                         icon = Icons.Default.AccountBox,
@@ -212,25 +189,22 @@ fun RegistroClienteContent(
                             modifier = Modifier.weight(1f),
                             label = "Parte Frontal",
                             photoPath = uiState.dniFrontPhotoPath,
-                            onPhotoPicked = { onEvent(RegistroClienteUiEvent.DniFrontPhotoChanged(it)) }
+                            error = uiState.dniFrontPhotoError,
+                            onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.DniFrontPhotoChanged(it)) }
                         )
                         IdPhotoBox(
                             modifier = Modifier.weight(1f),
                             label = "Parte Trasera",
                             photoPath = uiState.dniBackPhotoPath,
-                            onPhotoPicked = { onEvent(RegistroClienteUiEvent.DniBackPhotoChanged(it)) }
+                            error = uiState.dniBackPhotoError,
+                            onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.DniBackPhotoChanged(it)) }
                         )
                     }
-                    Text(
-                        "JPG, PNG o PDF (Máx. 5MB)",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
 
                     FormTextField(
                         value = uiState.phone,
-                        onValueChange = { onEvent(RegistroClienteUiEvent.PhoneChanged(it)) },
+                        error = uiState.phoneError,
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.PhoneChanged(it)) },
                         label = "Teléfono de Contacto",
                         placeholder = "+1 (555) 000-0000",
                         icon = Icons.Default.Phone,
@@ -240,7 +214,8 @@ fun RegistroClienteContent(
 
                     FormTextField(
                         value = uiState.address,
-                        onValueChange = { onEvent(RegistroClienteUiEvent.AddressChanged(it)) },
+                        error = uiState.addressError,
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.AddressChanged(it)) },
                         label = "Dirección",
                         placeholder = "Calle, Número, Ciudad...",
                         icon = Icons.Default.LocationOn,
@@ -266,7 +241,8 @@ fun RegistroClienteContent(
 
                     FormTextField(
                         value = uiState.montoPrestamo,
-                        onValueChange = { onEvent(RegistroClienteUiEvent.MontoChanged(it)) },
+                        error = uiState.montoPrestamoError,
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.MontoChanged(it)) },
                         label = "Monto del Préstamo Inicial",
                         placeholder = "$ 0.00",
                         icon = Icons.Default.Add,
@@ -276,7 +252,8 @@ fun RegistroClienteContent(
 
                     FormTextField(
                         value = uiState.numCuotas,
-                        onValueChange = { onEvent(RegistroClienteUiEvent.CuotasChanged(it)) },
+                        error = uiState.numCuotasError,
+                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.CuotasChanged(it)) },
                         label = "Número de Cuotas",
                         placeholder = "Ej. 12",
                         icon = Icons.Default.List,
@@ -286,13 +263,14 @@ fun RegistroClienteContent(
 
                     FrecuenciaDropdown(
                         selected = uiState.frecuenciaPago,
-                        onSelected = { onEvent(RegistroClienteUiEvent.FrecuenciaChanged(it)) }
+                        onSelected = { viewModel.onEvent(RegistroClienteUiEvent.FrecuenciaChanged(it)) }
                     )
 
                     PaymentDaySelector(
                         frequency = uiState.frecuenciaPago,
                         selectedValue = uiState.diaPagoPreferido,
                         selectedDescription = uiState.diaPagoDescripcion,
+                        error = uiState.diaPagoError,
                         onSelected = { value, description ->
                             onEvent(RegistroClienteUiEvent.DiaPagoChanged(value, description))
                         }
@@ -301,7 +279,8 @@ fun RegistroClienteContent(
                     if (uiState.canUseCustomRate) {
                         FormTextField(
                             value = uiState.tasaPersonalizada,
-                            onValueChange = { onEvent(RegistroClienteUiEvent.TasaPersonalizadaChanged(it)) },
+                            error = uiState.tasaPersonalizadaError,
+                            onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.TasaPersonalizadaChanged(it)) },
                             label = "Tasa personalizada (opcional)",
                             placeholder = "Usar tarifa configurada",
                             icon = Icons.Default.Percent,
@@ -356,6 +335,7 @@ fun PaymentDaySelector(
     frequency: FrecuenciaPago,
     selectedValue: Int?,
     selectedDescription: String?,
+    error: String?,
     onSelected: (Int, String) -> Unit
 ) {
     if (frequency == FrecuenciaPago.DIARIO) {
@@ -378,9 +358,11 @@ fun PaymentDaySelector(
                 onValueChange = {},
                 readOnly = true,
                 placeholder = { Text("El cliente elige cuándo pagar") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
+                isError = error != null,
+                supportingText = error?.let { { Text(it) } },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface
@@ -392,13 +374,13 @@ fun PaymentDaySelector(
                 }
             }
         }
-        Text(if (selectedValue == null) "Obligatorio para esta frecuencia" else "Seleccionado: $selectedDescription", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
 fun ProfilePhotoPicker(
     photoPath: String?,
+    error: String?,
     onPhotoPicked: (String) -> Unit
 ) {
     val launcher = rememberLauncherForActivityResult(
@@ -406,28 +388,31 @@ fun ProfilePhotoPicker(
         onResult = { uri -> uri?.let { onPhotoPicked(it.toString()) } }
     )
 
-    Box(
-        modifier = Modifier
-            .size(120.dp)
-            .border(2.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .clickable { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-        contentAlignment = Alignment.Center
-    ) {
-        if (photoPath != null) {
-            AsyncImage(
-                model = photoPath,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.AddCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("Añadir Foto", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .border(2.dp, if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+            contentAlignment = Alignment.Center
+        ) {
+            if (photoPath != null) {
+                AsyncImage(
+                    model = photoPath,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.AddCircle, contentDescription = null, tint = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Añadir Foto", style = MaterialTheme.typography.bodySmall, color = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
+        error?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp)) }
     }
 }
 
@@ -436,6 +421,7 @@ fun IdPhotoBox(
     modifier: Modifier = Modifier,
     label: String,
     photoPath: String?,
+    error: String?,
     onPhotoPicked: (String) -> Unit
 ) {
     var showCamera by remember { mutableStateOf(false) }
@@ -445,7 +431,7 @@ fun IdPhotoBox(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
+                .border(1.dp, if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
                 .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable { showCamera = true },
@@ -459,15 +445,16 @@ fun IdPhotoBox(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(Icons.Default.Add, contentDescription = null, tint = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Text(
             label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+        error?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 10.sp, modifier = Modifier.align(Alignment.CenterHorizontally)) }
     }
 
     if (showCamera) {
@@ -493,6 +480,7 @@ fun FormSectionTitle(icon: ImageVector, title: String) {
 @Composable
 fun FormTextField(
     value: String,
+    error: String?,
     onValueChange: (String) -> Unit,
     label: String,
     placeholder: String,
@@ -513,6 +501,8 @@ fun FormTextField(
             placeholder = { Text(placeholder) },
             leadingIcon = { Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp)) },
             trailingIcon = trailingIcon,
+            isError = error != null,
+            supportingText = error?.let { { Text(it) } } ?: supportingText?.let { { Text(it) } },
             shape = RoundedCornerShape(12.dp),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
             keyboardActions = KeyboardActions(
@@ -529,7 +519,6 @@ fun FormTextField(
                 focusedBorderColor = MaterialTheme.colorScheme.primary
             )
         )
-        supportingText?.let { Text(it, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 12.dp, top = 2.dp)) }
     }
 }
 

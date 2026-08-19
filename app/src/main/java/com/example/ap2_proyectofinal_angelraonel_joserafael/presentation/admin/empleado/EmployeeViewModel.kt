@@ -90,13 +90,13 @@ class EmployeeViewModel @Inject constructor(
             EmployeeUiEvent.OpenAddModal -> openEditor(null)
             is EmployeeUiEvent.OpenEdit -> openEditor(event.employeeId.toLongOrNull())
             EmployeeUiEvent.CloseModal -> closeEditor()
-            is EmployeeUiEvent.NameChanged -> _uiState.update { it.copy(name = event.value.take(80)) }
-            is EmployeeUiEvent.UsernameChanged -> _uiState.update { it.copy(username = event.value.filterNot(Char::isWhitespace).take(24)) }
-            is EmployeeUiEvent.PinChanged -> _uiState.update { it.copy(pin = event.value.filter(Char::isDigit).take(4)) }
-            is EmployeeUiEvent.PhoneChanged -> _uiState.update { it.copy(phone = event.value.filter(Char::isDigit).take(10)) }
-            is EmployeeUiEvent.IdentificationChanged -> _uiState.update { it.copy(identification = event.value.filter(Char::isDigit).take(11)) }
-            is EmployeeUiEvent.AddressChanged -> _uiState.update { it.copy(address = event.value.take(160)) }
-            is EmployeeUiEvent.RouteSelected -> _uiState.update { it.copy(route = event.value) }
+            is EmployeeUiEvent.NameChanged -> _uiState.update { it.copy(name = event.value.take(80), nameError = null) }
+            is EmployeeUiEvent.UsernameChanged -> _uiState.update { it.copy(username = event.value.filterNot(Char::isWhitespace).take(24), usernameError = null) }
+            is EmployeeUiEvent.PinChanged -> _uiState.update { it.copy(pin = event.value.filter(Char::isDigit).take(4), pinError = null) }
+            is EmployeeUiEvent.PhoneChanged -> _uiState.update { it.copy(phone = event.value.filter(Char::isDigit).take(10), phoneError = null) }
+            is EmployeeUiEvent.IdentificationChanged -> _uiState.update { it.copy(identification = event.value.filter(Char::isDigit).take(11), identificationError = null) }
+            is EmployeeUiEvent.AddressChanged -> _uiState.update { it.copy(address = event.value.take(160), addressError = null) }
+            is EmployeeUiEvent.RouteSelected -> _uiState.update { it.copy(route = event.value, routeError = null) }
             is EmployeeUiEvent.PhotoChanged -> setPhoto(event.type, event.path)
             is EmployeeUiEvent.PermissionChanged -> setPermission(event.permission, event.enabled)
             EmployeeUiEvent.SaveEmployee -> saveEmployee()
@@ -141,6 +141,8 @@ class EmployeeViewModel @Inject constructor(
             canViewRoute = user?.canViewRoute ?: true,
             canCloseCash = user?.canCloseCash ?: true,
             canShareDocuments = user?.canShareDocuments ?: true,
+            nameError = null, usernameError = null, pinError = null, phoneError = null,
+            identificationError = null, addressError = null, routeError = null,
             errorMessage = null
         ) }
     }
@@ -166,41 +168,56 @@ class EmployeeViewModel @Inject constructor(
     }
 
     private fun saveEmployee() {
-        val state = _uiState.value
-        val error = when {
-            state.name.isBlank() -> "El nombre es obligatorio (máximo 80 caracteres)."
-            state.username.length !in 4..24 -> "El usuario debe tener entre 4 y 24 caracteres (${state.username.length}/24)."
-            state.pin.length != 4 -> "El PIN debe tener exactamente 4 dígitos (${state.pin.length}/4)."
-            state.phone.length != 10 -> "El teléfono debe tener exactamente 10 dígitos (${state.phone.length}/10)."
-            state.identification.length != 11 -> "La cédula debe tener exactamente 11 dígitos (${state.identification.length}/11)."
-            !CedulaValidator.validate(state.identification) -> "Número de cédula inválido. Por favor verifique."
-            state.address.isBlank() -> "La dirección es obligatoria (máximo 160 caracteres)."
-            state.route.isBlank() -> "Selecciona una zona o ruta."
-            state.profilePhotoPath == null -> "Debes subir una foto del empleado."
-            state.dniFrontPhotoPath == null || state.dniBackPhotoPath == null -> "Debes subir ambos lados de la cédula."
-            users.any { it.username.equals(state.username, true) && it.id != state.editingEmployeeId } -> "Ese usuario de acceso ya existe."
-            else -> null
+        val s = _uiState.value
+        
+        val nameError = if (s.name.isBlank()) "El nombre es obligatorio." else null
+        val usernameError = if (s.username.length !in 4..24) "El usuario debe tener entre 4 y 24 caracteres." 
+                          else if (users.any { it.username.equals(s.username, true) && it.id != s.editingEmployeeId }) "Ese usuario ya existe."
+                          else null
+        val pinError = if (s.pin.length != 4) "El PIN debe tener 4 dígitos." else null
+        val phoneError = if (s.phone.length != 10) "El teléfono debe tener 10 dígitos." else null
+        val idError = if (s.identification.length != 11) "La cédula debe tener 11 dígitos." 
+                      else if (!CedulaValidator.validate(s.identification)) "Cédula inválida."
+                      else null
+        val addressError = if (s.address.isBlank()) "La dirección es obligatoria." else null
+        val routeError = if (s.route.isBlank()) "Selecciona una zona o ruta." else null
+
+        if (nameError != null || usernameError != null || pinError != null || phoneError != null || idError != null || addressError != null || routeError != null) {
+            _uiState.update { it.copy(
+                nameError = nameError,
+                usernameError = usernameError,
+                pinError = pinError,
+                phoneError = phoneError,
+                identificationError = idError,
+                addressError = addressError,
+                routeError = routeError
+            ) }
+            return
         }
-        if (error != null) { _uiState.update { it.copy(errorMessage = error) }; return }
+
+        if (s.profilePhotoPath == null || s.dniFrontPhotoPath == null || s.dniBackPhotoPath == null) {
+            _uiState.update { it.copy(errorMessage = "Debes subir la foto de perfil y ambos lados de la cédula.") }
+            return
+        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, errorMessage = null) }
-            val old = users.find { it.id == state.editingEmployeeId }
+            val old = users.find { it.id == s.editingEmployeeId }
             fun persist(path: String?, folder: String): String? = path?.let {
                 if (it.startsWith("content://")) FileStorageUtil.saveFileToInternalStorage(context, it.toUri(), folder) else it
             }
             val user = User(
-                id = old?.id ?: 0, nombreCompleto = state.name.trim(), username = state.username.trim(),
-                identificacion = state.identification, telefono = state.phone, email = old?.email, pin = state.pin,
-                role = UserRole.EMPLEADO, isActive = old?.isActive ?: true, route = state.route,
-                address = state.address.trim(), profilePhotoPath = persist(state.profilePhotoPath, "employees/profiles"),
-                dniFrontPhotoPath = persist(state.dniFrontPhotoPath, "employees/dni"),
-                dniBackPhotoPath = persist(state.dniBackPhotoPath, "employees/dni"),
-                canCreateClients = state.canCreateClients,
-                canCollectPayments = state.canCollectPayments,
-                canViewRoute = state.canViewRoute,
-                canCloseCash = state.canCloseCash,
-                canShareDocuments = state.canShareDocuments
+                id = old?.id ?: 0, nombreCompleto = s.name.trim(), username = s.username.trim(),
+                identificacion = s.identification, telefono = s.phone, email = old?.email, pin = s.pin,
+                role = UserRole.EMPLEADO, isActive = old?.isActive ?: true, route = s.route,
+                address = s.address.trim(), profilePhotoPath = persist(s.profilePhotoPath, "employees/profiles"),
+                dniFrontPhotoPath = persist(s.dniFrontPhotoPath, "employees/dni"),
+                dniBackPhotoPath = persist(s.dniBackPhotoPath, "employees/dni"),
+                canCreateClients = s.canCreateClients,
+                canCollectPayments = s.canCollectPayments,
+                canViewRoute = s.canViewRoute,
+                canCloseCash = s.canCloseCash,
+                canShareDocuments = s.canShareDocuments
             )
             if (old == null) authRepository.registerUser(user) else authRepository.updateUser(user)
             _uiState.update { it.copy(isSaving = false, isEditorOpen = false, successMessage = if (old == null) "Empleado agregado." else "Empleado actualizado.") }

@@ -272,15 +272,15 @@ fun CierreCajaScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = androidx.compose.foundation.BorderStroke(1.dp, GreenBadgeText.copy(alpha = 0.5f))
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = androidx.compose.foundation.BorderStroke(1.dp, if (uiState.cashInHandError != null) MaterialTheme.colorScheme.error else GreenBadgeText.copy(alpha = 0.5f))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Balance,
                             contentDescription = null,
-                            tint = PrimaryBlack,
+                            tint = if (uiState.cashInHandError != null) MaterialTheme.colorScheme.error else PrimaryBlack,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -288,7 +288,7 @@ fun CierreCajaScreen(
                             text = "Cuadre de Efectivo",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = PrimaryBlack
+                            color = if (uiState.cashInHandError != null) MaterialTheme.colorScheme.error else PrimaryBlack
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -312,6 +312,8 @@ fun CierreCajaScreen(
                                 prefix = { Text("RD$ ") },
                                 singleLine = true,
                                 enabled = uiState.isTurnActive,
+                                isError = uiState.cashInHandError != null,
+                                supportingText = uiState.cashInHandError?.let { { Text(it) } },
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Decimal,
                                     imeAction = ImeAction.Done

@@ -2,6 +2,6 @@ package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.
 
 sealed class ActivationCodeUiEvent {
     data class OnCodeChanged(val code: String) : ActivationCodeUiEvent()
-    data class VerifyCode(val expectedEmail: String, val expectedCode: String) : ActivationCodeUiEvent()
+    data class VerifyCode(val expectedEmail: String) : ActivationCodeUiEvent()
     data object ClearError : ActivationCodeUiEvent()
 }

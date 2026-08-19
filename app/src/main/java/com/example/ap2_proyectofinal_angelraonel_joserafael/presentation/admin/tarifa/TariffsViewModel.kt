@@ -62,12 +62,12 @@ class TariffsViewModel @Inject constructor(
 
     fun onEvent(event: TariffsUiEvent) {
         when (event) {
-            is TariffsUiEvent.DailyRateChanged -> updateMetrics { copy(dailyRate = event.value) }
-            is TariffsUiEvent.BiweeklyRateChanged -> updateMetrics { copy(biweeklyRate = event.value) }
-            is TariffsUiEvent.MonthlyRateChanged -> updateMetrics { copy(monthlyRate = event.value) }
-            is TariffsUiEvent.FourWeeksChanged -> updateMetrics { copy(fourWeeksRate = event.value) }
-            is TariffsUiEvent.SixWeeksChanged -> updateMetrics { copy(sixWeeksRate = event.value) }
-            is TariffsUiEvent.TwelveWeeksChanged -> updateMetrics { copy(twelveWeeksRate = event.value) }
+            is TariffsUiEvent.DailyRateChanged -> updateMetrics { copy(dailyRate = event.value, dailyRateError = null) }
+            is TariffsUiEvent.BiweeklyRateChanged -> updateMetrics { copy(biweeklyRate = event.value, biweeklyRateError = null) }
+            is TariffsUiEvent.MonthlyRateChanged -> updateMetrics { copy(monthlyRate = event.value, monthlyRateError = null) }
+            is TariffsUiEvent.FourWeeksChanged -> updateMetrics { copy(fourWeeksRate = event.value, fourWeeksRateError = null) }
+            is TariffsUiEvent.SixWeeksChanged -> updateMetrics { copy(sixWeeksRate = event.value, sixWeeksRateError = null) }
+            is TariffsUiEvent.TwelveWeeksChanged -> updateMetrics { copy(twelveWeeksRate = event.value, twelveWeeksRateError = null) }
             is TariffsUiEvent.SaveTariffs -> saveTariffs()
         }
     }
@@ -108,17 +108,33 @@ class TariffsViewModel @Inject constructor(
         }
     }
 
+    private fun validateRate(rate: String): String? {
+        val number = rate.toBigDecimalOrNull()
+        return if (number == null || number < BigDecimal.ZERO || number > BigDecimal("100")) "Debe ser entre 0 y 100" else null
+    }
+
     private fun saveTariffs() {
-        val values = with(_uiState.value) {
-            listOf(dailyRate, biweeklyRate, monthlyRate, fourWeeksRate, sixWeeksRate, twelveWeeksRate)
-        }
-        if (values.any { value ->
-                val number = value.toBigDecimalOrNull()
-                number == null || number < BigDecimal.ZERO || number > BigDecimal("100")
-            }) {
-            _uiState.update { it.copy(errorMessage = "Todas las tasas deben ser números entre 0 y 100.") }
+        val s = _uiState.value
+        
+        val dailyError = validateRate(s.dailyRate)
+        val biweeklyError = validateRate(s.biweeklyRate)
+        val monthlyError = validateRate(s.monthlyRate)
+        val fourWeeksError = validateRate(s.fourWeeksRate)
+        val sixWeeksError = validateRate(s.sixWeeksRate)
+        val twelveWeeksError = validateRate(s.twelveWeeksRate)
+
+        if (dailyError != null || biweeklyError != null || monthlyError != null || fourWeeksError != null || sixWeeksError != null || twelveWeeksError != null) {
+            _uiState.update { it.copy(
+                dailyRateError = dailyError,
+                biweeklyRateError = biweeklyError,
+                monthlyRateError = monthlyError,
+                fourWeeksRateError = fourWeeksError,
+                sixWeeksRateError = sixWeeksError,
+                twelveWeeksRateError = twelveWeeksError
+            ) }
             return
         }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, errorMessage = null) }
             val currentState = _uiState.value

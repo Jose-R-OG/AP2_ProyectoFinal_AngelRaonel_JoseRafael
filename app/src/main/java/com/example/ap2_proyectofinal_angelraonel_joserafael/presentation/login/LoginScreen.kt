@@ -56,11 +56,12 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val currentThemeMode by viewModel.themeMode.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(viewModel.uiState) {
-        when (val state = viewModel.uiState) {
-            is LoginUiState.Success -> {
-                if (state.user.role == UserRole.ADMINISTRADOR) {
+    LaunchedEffect(uiState.loginStatus) {
+        when (val status = uiState.loginStatus) {
+            is LoginStatus.Success -> {
+                if (status.user.role == UserRole.ADMINISTRADOR) {
                     onNavigateToAdminHome()
                 } else {
                     onNavigateToEmpleadoHome()
@@ -71,12 +72,7 @@ fun LoginScreen(
     }
 
     LoginContent(
-        uiState = viewModel.uiState,
-        username = viewModel.username,
-        pin = viewModel.pin,
-        isPinVisible = viewModel.isPinVisible,
-        canRegisterAdmin = viewModel.canRegisterAdmin,
-        showThemeDialog = viewModel.showThemeDialog,
+        uiState = uiState,
         currentThemeMode = currentThemeMode,
         onEvent = viewModel::onEvent,
         onSignInWithGoogle = { viewModel.signInWithGoogle(context) },
@@ -87,12 +83,7 @@ fun LoginScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginContent(
-    uiState: LoginUiState,
-    username: String,
-    pin: String,
-    isPinVisible: Boolean,
-    canRegisterAdmin: Boolean,
-    showThemeDialog: Boolean,
+    uiState: LoginState,
     currentThemeMode: ThemeMode,
     onEvent: (LoginUiEvent) -> Unit,
     onSignInWithGoogle: () -> Unit,
@@ -100,7 +91,7 @@ fun LoginContent(
 ) {
     val focusManager = LocalFocusManager.current
 
-    if (uiState is LoginUiState.Loading) {
+    if (uiState.loginStatus is LoginStatus.Loading) {
         Dialog(
             onDismissRequest = { },
             properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
@@ -205,7 +196,7 @@ fun LoginContent(
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             OutlinedTextField(
-                                value = username,
+                                value = uiState.username,
                                 onValueChange = { onEvent(LoginUiEvent.OnUsernameChanged(it)) },
                                 placeholder = { Text("Ej. jperez") },
                                 leadingIcon = {
@@ -214,6 +205,8 @@ fun LoginContent(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
                                 singleLine = true,
+                                isError = uiState.usernameError != null,
+                                supportingText = uiState.usernameError?.let { { Text(it) } },
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Text,
                                     imeAction = ImeAction.Next
@@ -240,7 +233,7 @@ fun LoginContent(
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             OutlinedTextField(
-                                value = pin,
+                                value = uiState.pin,
                                 onValueChange = { onEvent(LoginUiEvent.OnPinChanged(it)) },
                                 placeholder = { Text("••••") },
                                 leadingIcon = {
@@ -249,15 +242,17 @@ fun LoginContent(
                                 trailingIcon = {
                                     IconButton(onClick = { onEvent(LoginUiEvent.TogglePinVisibility) }) {
                                         Icon(
-                                            imageVector = if (isPinVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                            imageVector = if (uiState.isPinVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                             contentDescription = "Mostrar/Ocultar PIN"
                                         )
                                     }
                                 },
-                                visualTransformation = if (isPinVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                visualTransformation = if (uiState.isPinVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
                                 singleLine = true,
+                                isError = uiState.pinError != null,
+                                supportingText = uiState.pinError?.let { { Text(it) } },
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.NumberPassword,
                                     imeAction = ImeAction.Done
@@ -281,14 +276,14 @@ fun LoginContent(
 
                         Button(
                             onClick = { onEvent(LoginUiEvent.SubmitLogin) },
-                            enabled = uiState !is LoginUiState.Loading,
+                            enabled = uiState.loginStatus !is LoginStatus.Loading,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(52.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
-                            if (uiState is LoginUiState.Loading) {
+                            if (uiState.loginStatus is LoginStatus.Loading) {
                                 CircularProgressIndicator(
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     modifier = Modifier.size(24.dp)
@@ -305,7 +300,7 @@ fun LoginContent(
 
                         OutlinedButton(
                             onClick = { onSignInWithGoogle() },
-                            enabled = uiState !is LoginUiState.Loading,
+                            enabled = uiState.loginStatus !is LoginStatus.Loading,
                             modifier = Modifier.fillMaxWidth().height(50.dp),
                             shape = RoundedCornerShape(12.dp)
                         ) {
@@ -313,7 +308,7 @@ fun LoginContent(
                         }
 
 
-                        if (canRegisterAdmin) {
+                        if (uiState.canRegisterAdmin) {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalAlignment = Alignment.CenterHorizontally
@@ -340,7 +335,7 @@ fun LoginContent(
         }
     }
 
-    if (showThemeDialog) {
+    if (uiState.showThemeDialog) {
         AlertDialog(
             onDismissRequest = { onEvent(LoginUiEvent.HideThemeDialog) },
             title = { Text("Tema de la aplicación") },
@@ -361,8 +356,8 @@ fun LoginContent(
         )
     }
 
-    if (uiState is LoginUiState.Error) {
-        val errorMessage = uiState.message
+    if (uiState.loginStatus is LoginStatus.Error) {
+        val errorMessage = (uiState.loginStatus as LoginStatus.Error).message
         AlertDialog(
             onDismissRequest = { onEvent(LoginUiEvent.ClearError) },
             confirmButton = {
@@ -392,17 +387,12 @@ private fun ThemeOption(text: String, selected: Boolean, onClick: () -> Unit) {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true, apiLevel = 34)
+@Preview(showBackground = true, showSystemUi = true, apiLevel = 37)
 @Composable
 fun LoginScreenPreview() {
     AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
         LoginContent(
-            uiState = LoginUiState.Idle,
-            username = "admin",
-            pin = "1234",
-            isPinVisible = false,
-            canRegisterAdmin = true,
-            showThemeDialog = false,
+            uiState = LoginState(),
             currentThemeMode = ThemeMode.SYSTEM,
             onEvent = {},
             onSignInWithGoogle = {},
