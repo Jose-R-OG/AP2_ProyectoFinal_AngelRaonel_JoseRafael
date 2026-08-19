@@ -10,6 +10,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.util.settings.Settin
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.storage.FileStorageUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,7 +27,7 @@ class AdminProfileViewModel @Inject constructor(
     val uiState: StateFlow<AdminProfileUiState> = _uiState.asStateFlow()
 
     init {
-        loadData()
+        observeData()
         observeSettings()
     }
 
@@ -88,15 +89,21 @@ class AdminProfileViewModel @Inject constructor(
         }
     }
 
-    private fun loadData() {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeData() {
         viewModelScope.launch {
-            sessionManager.currentUserId.collect { id ->
-                if (id != null) {
-                    val user = authRepository.getUserById(id)
+            sessionManager.currentUserId
+                .flatMapLatest { id ->
+                    if (id != null) authRepository.observeUserById(id)
+                    else flowOf(null)
+                }
+                .collect { user ->
                     if (user != null) {
                         _uiState.update { it.copy(
-                            currentUser = user, adminName = user.nombreCompleto,
-                            adminEmail = user.email ?: "", adminPhone = user.telefono,
+                            currentUser = user,
+                            adminName = user.nombreCompleto,
+                            adminEmail = user.email ?: "",
+                            adminPhone = user.telefono,
                             businessName = user.businessName ?: "TaCobrao",
                             profilePhotoPath = user.profilePhotoPath,
                             businessLogoPath = user.businessLogoPath,
@@ -104,7 +111,6 @@ class AdminProfileViewModel @Inject constructor(
                         ) }
                     }
                 }
-            }
         }
     }
 
