@@ -6,6 +6,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.Au
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.settings.SettingsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,7 +22,7 @@ class EmpleadoPerfilViewModel @Inject constructor(
     val uiState: StateFlow<EmpleadoPerfilUiState> = _uiState.asStateFlow()
 
     init {
-        cargarDatosEmpleado()
+        observeEmpleadoData()
         observeSettings()
     }
 
@@ -33,25 +34,30 @@ class EmpleadoPerfilViewModel @Inject constructor(
         }
     }
 
-    private fun cargarDatosEmpleado() {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeEmpleadoData() {
         viewModelScope.launch {
-            sessionManager.currentUserId.collect { userId ->
-                val user = userId?.let { authRepository.getUserById(it) }
-                if (user != null) {
-                    _uiState.update {
-                        it.copy(
-                            name = user.nombreCompleto,
-                            roleTitle = user.role.name,
-                            activeRouteText = "Ruta: ${user.route?.takeIf(String::isNotBlank) ?: "Sin asignar"}",
-                            agentId = "#${user.id}",
-                            email = user.email ?: user.username,
-                            phone = user.telefono,
-                            avatarUrl = user.profilePhotoPath,
-                            isLoading = false
-                        )
+            sessionManager.currentUserId
+                .flatMapLatest { userId ->
+                    if (userId != null) authRepository.observeUserById(userId)
+                    else flowOf(null)
+                }
+                .collect { user ->
+                    if (user != null) {
+                        _uiState.update {
+                            it.copy(
+                                name = user.nombreCompleto,
+                                roleTitle = user.role.name,
+                                activeRouteText = "Ruta: ${user.route?.takeIf(String::isNotBlank) ?: "Sin asignar"}",
+                                agentId = "#${user.id}",
+                                email = user.email ?: user.username,
+                                phone = user.telefono,
+                                avatarUrl = user.profilePhotoPath,
+                                isLoading = false
+                            )
+                        }
                     }
                 }
-            }
         }
     }
 

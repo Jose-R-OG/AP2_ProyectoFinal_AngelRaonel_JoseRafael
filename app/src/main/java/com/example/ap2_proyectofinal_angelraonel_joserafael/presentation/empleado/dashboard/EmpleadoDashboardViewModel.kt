@@ -11,12 +11,8 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.Tr
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.repository.NotificationRepository
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
@@ -41,6 +37,7 @@ class EmpleadoDashboardViewModel @Inject constructor(
 
     init {
         loadData()
+        observeProfileInfo()
     }
 
     fun onEvent(event: EmpleadoDashboardUiEvent) {
@@ -48,6 +45,33 @@ class EmpleadoDashboardViewModel @Inject constructor(
             is EmpleadoDashboardUiEvent.RefreshData -> loadData()
             is EmpleadoDashboardUiEvent.ClearError -> _uiState.update { it.copy(errorMessage = null) }
             else -> {}
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeProfileInfo() {
+        viewModelScope.launch {
+            sessionManager.currentUserId
+                .flatMapLatest { id ->
+                    if (id != null) authRepository.observeUserById(id)
+                    else flowOf(null)
+                }
+                .collect { user ->
+                    if (user != null) {
+                        _uiState.update { state ->
+                            state.copy(
+                                userName = user.nombreCompleto,
+                                userRole = user.role,
+                                activeRoute = user.route?.ifBlank { "Sin asignar" } ?: "Sin asignar",
+                                userAvatarUrl = user.profilePhotoPath,
+                                canCreateClients = user.canCreateClients,
+                                canCollectPayments = user.canCollectPayments,
+                                canViewRoute = user.canViewRoute,
+                                canCloseCash = user.canCloseCash
+                            )
+                        }
+                    }
+                }
         }
     }
 
@@ -77,6 +101,7 @@ class EmpleadoDashboardViewModel @Inject constructor(
                     return@launch
                 }
 
+                // Info estática inicial para que no se vea vacío mientras cargan los flujos
                 _uiState.update { state ->
                     state.copy(
                         userName = currentUser.nombreCompleto,
