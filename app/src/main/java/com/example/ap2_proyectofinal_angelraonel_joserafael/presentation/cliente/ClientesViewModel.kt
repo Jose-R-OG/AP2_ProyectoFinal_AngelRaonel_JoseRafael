@@ -11,6 +11,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.UserRol
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatusHistory
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Prestamo
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.CedulaValidator
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -91,11 +92,11 @@ class ClientesViewModel @Inject constructor(
                 }
             }
 
-            is ClientesUiEvent.EditorNameChanged -> updateEditor { copy(fullName = event.value.take(80)) }
-            is ClientesUiEvent.EditorDniChanged -> updateEditor { copy(dni = event.value.filter(Char::isDigit).take(11)) }
-            is ClientesUiEvent.EditorPhoneChanged -> updateEditor { copy(phone = event.value.filter(Char::isDigit).take(10)) }
-            is ClientesUiEvent.EditorAddressChanged -> updateEditor { copy(address = event.value.take(160)) }
-            is ClientesUiEvent.EditorZoneChanged -> updateEditor { copy(zone = event.value) }
+            is ClientesUiEvent.EditorNameChanged -> updateEditor { copy(fullName = event.value.take(80), fullNameError = null) }
+            is ClientesUiEvent.EditorDniChanged -> updateEditor { copy(dni = event.value.filter(Char::isDigit).take(11), dniError = null) }
+            is ClientesUiEvent.EditorPhoneChanged -> updateEditor { copy(phone = event.value.filter(Char::isDigit).take(10), phoneError = null) }
+            is ClientesUiEvent.EditorAddressChanged -> updateEditor { copy(address = event.value.take(160), addressError = null) }
+            is ClientesUiEvent.EditorZoneChanged -> updateEditor { copy(zone = event.value, zoneError = null) }
             is ClientesUiEvent.SaveEdit -> saveEdit()
             is ClientesUiEvent.DismissEditor -> {
                 if (!_uiState.value.isMutating) {
@@ -145,11 +146,28 @@ class ClientesViewModel @Inject constructor(
     }
 
     private fun saveEdit() {
-        val editor = _uiState.value.editor ?: return
+        val s = _uiState.value.editor ?: return
+        
+        val nameError = if (s.fullName.isBlank()) "El nombre es obligatorio" else null
+        val dniError = if (s.dni.length != 11) "La cédula debe tener 11 dígitos" else if (!CedulaValidator.validate(s.dni)) "Cédula inválida" else null
+        val phoneError = if (s.phone.length != 10) "El teléfono debe tener 10 dígitos" else null
+        val addressError = if (s.address.isBlank()) "La dirección es obligatoria" else null
+
+        if (nameError != null || dniError != null || phoneError != null || addressError != null) {
+            _uiState.update { state ->
+                state.copy(editor = state.editor?.copy(
+                    fullNameError = nameError,
+                    dniError = dniError,
+                    phoneError = phoneError,
+                    addressError = addressError
+                ))
+            }
+            return
+        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isMutating = true) }
-            val result = upsertClienteUseCase(editor.toCliente())
+            val result = upsertClienteUseCase(s.toCliente())
             _uiState.update { state ->
                 result.fold(
                     onSuccess = {

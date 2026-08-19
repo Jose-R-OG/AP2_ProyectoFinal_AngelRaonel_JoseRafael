@@ -5,10 +5,15 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
 data class ClienteEditorState(
     val original: Cliente,
     val fullName: String,
+    val fullNameError: String? = null,
     val dni: String,
+    val dniError: String? = null,
     val phone: String,
+    val phoneError: String? = null,
     val address: String,
-    val zone: String
+    val addressError: String? = null,
+    val zone: String,
+    val zoneError: String? = null
 ) {
     fun toCliente(): Cliente = original.copy(
         fullName = fullName,

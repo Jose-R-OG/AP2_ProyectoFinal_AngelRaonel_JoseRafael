@@ -25,10 +25,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CierreCajaScreen(
     isAdmin: Boolean = false,
@@ -39,9 +39,37 @@ fun CierreCajaScreen(
     onNavigateToProfile: () -> Unit = {},
     viewModel: CierreCajaViewModel = hiltViewModel()
 ) {
-    val focusManager = LocalFocusManager.current
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    
+    CierreCajaContent(
+        uiState = uiState,
+        isAdmin = isAdmin,
+        onEvent = viewModel::onEvent,
+        onImprimirResumen = { viewModel.imprimirResumen(context) },
+        onNavigateBack = onNavigateBack,
+        onNavigateToClients = onNavigateToClients,
+        onNavigateToCobros = onNavigateToCobros,
+        onNavigateToRoutes = onNavigateToRoutes,
+        onNavigateToProfile = onNavigateToProfile
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CierreCajaContent(
+    uiState: CierreCajaUiState,
+    isAdmin: Boolean,
+    onEvent: (CierreCajaUiEvent) -> Unit,
+    onImprimirResumen: () -> Unit,
+    onNavigateBack: () -> Unit,
+    onNavigateToClients: () -> Unit,
+    onNavigateToCobros: () -> Unit,
+    onNavigateToRoutes: () -> Unit,
+    onNavigateToProfile: () -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -61,7 +89,7 @@ fun CierreCajaScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.imprimirResumen(context) }) {
+                    IconButton(onClick = onImprimirResumen) {
                         Icon(Icons.Default.Print, contentDescription = "Imprimir", tint = PrimaryBlack)
                     }
                 },
@@ -97,7 +125,7 @@ fun CierreCajaScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
                 border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
             ) {
                 Column(
@@ -151,7 +179,7 @@ fun CierreCajaScreen(
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
                     border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -173,7 +201,7 @@ fun CierreCajaScreen(
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
                     border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -205,7 +233,7 @@ fun CierreCajaScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
                 border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -307,7 +335,7 @@ fun CierreCajaScreen(
                             Spacer(modifier = Modifier.height(4.dp))
                             OutlinedTextField(
                                 value = uiState.cashInHandInput,
-                                onValueChange = { viewModel.onEvent(CierreCajaUiEvent.OnCashInHandChanged(it)) },
+                                onValueChange = { onEvent(CierreCajaUiEvent.OnCashInHandChanged(it)) },
                                 modifier = Modifier.width(130.dp),
                                 prefix = { Text("RD$ ") },
                                 singleLine = true,
@@ -348,7 +376,7 @@ fun CierreCajaScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(
-                onClick = { viewModel.onEvent(CierreCajaUiEvent.FinalizarTurno) },
+                onClick = { onEvent(CierreCajaUiEvent.FinalizarTurno) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -373,7 +401,7 @@ fun CierreCajaScreen(
             }
 
             Button(
-                onClick = { viewModel.imprimirResumen(context) },
+                onClick = onImprimirResumen,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
@@ -397,13 +425,13 @@ fun CierreCajaScreen(
     if (uiState.turnFinalizedSuccess) {
         AlertDialog(
             onDismissRequest = {
-                viewModel.onEvent(CierreCajaUiEvent.DismissSuccess)
+                onEvent(CierreCajaUiEvent.DismissSuccess)
             },
             title = { Text("Turno finalizado") },
             text = { Text("El cierre de caja fue completado correctamente.") },
             confirmButton = {
                 TextButton(
-                    onClick = { viewModel.onEvent(CierreCajaUiEvent.DismissSuccess) }
+                    onClick = { onEvent(CierreCajaUiEvent.DismissSuccess) }
                 ) {
                     Text("Aceptar")
                 }
@@ -413,14 +441,43 @@ fun CierreCajaScreen(
 
     uiState.errorMessage?.let { message ->
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(CierreCajaUiEvent.ClearError) },
+            onDismissRequest = { onEvent(CierreCajaUiEvent.ClearError) },
             title = { Text("No fue posible completar la acción") },
             text = { Text(message) },
             confirmButton = {
-                TextButton(onClick = { viewModel.onEvent(CierreCajaUiEvent.ClearError) }) {
+                TextButton(onClick = { onEvent(CierreCajaUiEvent.ClearError) }) {
                     Text("Aceptar")
                 }
             }
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CierreCajaScreenPreview() {
+    val sampleState = CierreCajaUiState(
+        totalCollectedTurn = "RD$ 25,450.00",
+        totalCobrosCount = 12,
+        visitedCount = 10,
+        totalTargetVisited = 15,
+        cashAmount = "RD$ 15,450.00",
+        transferAmount = "RD$ 10,000.00",
+        registeredCash = "RD$ 15,450.00",
+        cashInHandInput = "15450.00",
+        differenceAmount = "RD$ 0.00"
+    )
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        CierreCajaContent(
+            uiState = sampleState,
+            isAdmin = false,
+            onEvent = {},
+            onImprimirResumen = {},
+            onNavigateBack = {},
+            onNavigateToClients = {},
+            onNavigateToCobros = {},
+            onNavigateToRoutes = {},
+            onNavigateToProfile = {}
         )
     }
 }

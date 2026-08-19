@@ -87,7 +87,7 @@ fun RegistroClienteContent(
         },
         bottomBar = {
             Button(
-                onClick = { viewModel.onEvent(RegistroClienteUiEvent.SaveCliente) },
+                onClick = { onEvent(RegistroClienteUiEvent.SaveCliente) },
                 enabled = !uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -132,7 +132,7 @@ fun RegistroClienteContent(
             ProfilePhotoPicker(
                 photoPath = uiState.profilePhotoPath,
                 error = uiState.profilePhotoError,
-                onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.ProfilePhotoChanged(it)) }
+                onPhotoPicked = { onEvent(RegistroClienteUiEvent.ProfilePhotoChanged(it)) }
             )
 
             Spacer(Modifier.height(24.dp))
@@ -149,7 +149,7 @@ fun RegistroClienteContent(
                     FormTextField(
                         value = uiState.fullName,
                         error = uiState.fullNameError,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.FullNameChanged(it)) },
+                        onValueChange = { onEvent(RegistroClienteUiEvent.FullNameChanged(it)) },
                         label = "Nombre Completo",
                         placeholder = "Ej. Juan Pérez",
                         icon = Icons.Default.Person,
@@ -159,7 +159,7 @@ fun RegistroClienteContent(
                     FormTextField(
                         value = uiState.dni,
                         error = uiState.dniError,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.DniChanged(it)) },
+                        onValueChange = { onEvent(RegistroClienteUiEvent.DniChanged(it)) },
                         label = "Número de Identificación (DNI/ID)",
                         placeholder = "000-0000000-0",
                         icon = Icons.Default.AccountBox,
@@ -190,21 +190,21 @@ fun RegistroClienteContent(
                             label = "Parte Frontal",
                             photoPath = uiState.dniFrontPhotoPath,
                             error = uiState.dniFrontPhotoError,
-                            onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.DniFrontPhotoChanged(it)) }
+                            onPhotoPicked = { onEvent(RegistroClienteUiEvent.DniFrontPhotoChanged(it)) }
                         )
                         IdPhotoBox(
                             modifier = Modifier.weight(1f),
                             label = "Parte Trasera",
                             photoPath = uiState.dniBackPhotoPath,
                             error = uiState.dniBackPhotoError,
-                            onPhotoPicked = { viewModel.onEvent(RegistroClienteUiEvent.DniBackPhotoChanged(it)) }
+                            onPhotoPicked = { onEvent(RegistroClienteUiEvent.DniBackPhotoChanged(it)) }
                         )
                     }
 
                     FormTextField(
                         value = uiState.phone,
                         error = uiState.phoneError,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.PhoneChanged(it)) },
+                        onValueChange = { onEvent(RegistroClienteUiEvent.PhoneChanged(it)) },
                         label = "Teléfono de Contacto",
                         placeholder = "+1 (555) 000-0000",
                         icon = Icons.Default.Phone,
@@ -215,7 +215,7 @@ fun RegistroClienteContent(
                     FormTextField(
                         value = uiState.address,
                         error = uiState.addressError,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.AddressChanged(it)) },
+                        onValueChange = { onEvent(RegistroClienteUiEvent.AddressChanged(it)) },
                         label = "Dirección",
                         placeholder = "Calle, Número, Ciudad...",
                         icon = Icons.Default.LocationOn,
@@ -242,7 +242,7 @@ fun RegistroClienteContent(
                     FormTextField(
                         value = uiState.montoPrestamo,
                         error = uiState.montoPrestamoError,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.MontoChanged(it)) },
+                        onValueChange = { onEvent(RegistroClienteUiEvent.MontoChanged(it)) },
                         label = "Monto del Préstamo Inicial",
                         placeholder = "$ 0.00",
                         icon = Icons.Default.Add,
@@ -253,7 +253,7 @@ fun RegistroClienteContent(
                     FormTextField(
                         value = uiState.numCuotas,
                         error = uiState.numCuotasError,
-                        onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.CuotasChanged(it)) },
+                        onValueChange = { onEvent(RegistroClienteUiEvent.CuotasChanged(it)) },
                         label = "Número de Cuotas",
                         placeholder = "Ej. 12",
                         icon = Icons.Default.List,
@@ -263,7 +263,7 @@ fun RegistroClienteContent(
 
                     FrecuenciaDropdown(
                         selected = uiState.frecuenciaPago,
-                        onSelected = { viewModel.onEvent(RegistroClienteUiEvent.FrecuenciaChanged(it)) }
+                        onSelected = { onEvent(RegistroClienteUiEvent.FrecuenciaChanged(it)) }
                     )
 
                     PaymentDaySelector(
@@ -280,7 +280,7 @@ fun RegistroClienteContent(
                         FormTextField(
                             value = uiState.tasaPersonalizada,
                             error = uiState.tasaPersonalizadaError,
-                            onValueChange = { viewModel.onEvent(RegistroClienteUiEvent.TasaPersonalizadaChanged(it)) },
+                            onValueChange = { onEvent(RegistroClienteUiEvent.TasaPersonalizadaChanged(it)) },
                             label = "Tasa personalizada (opcional)",
                             placeholder = "Usar tarifa configurada",
                             icon = Icons.Default.Percent,
@@ -555,7 +555,7 @@ fun FrecuenciaDropdown(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                FrecuenciaPago.values().forEach { frecuencia ->
+                FrecuenciaPago.entries.forEach { frecuencia ->
                     DropdownMenuItem(
                         text = { Text(frecuencia.name.lowercase().replaceFirstChar { it.uppercase() }) },
                         onClick = {

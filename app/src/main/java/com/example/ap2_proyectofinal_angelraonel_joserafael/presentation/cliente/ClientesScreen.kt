@@ -62,13 +62,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.Cliente
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
-
-private val ClientesSurface @Composable get() = MaterialTheme.colorScheme.surface
-private val ClientesPrimary @Composable get() = MaterialTheme.colorScheme.onSurface
-private val ClientesGreen @Composable get() = MaterialTheme.colorScheme.secondary
-private val ClientesTextSecondary @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
-private val ClientesOutline @Composable get() = MaterialTheme.colorScheme.outlineVariant
-private val ClientesError @Composable get() = MaterialTheme.colorScheme.error
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,6 +127,7 @@ fun ClientesContent(
                             tint = ClientesPrimary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
+                        @Suppress("SpellCheckingInspection")
                         Text(
                             text = "TaCobrao",
                             fontWeight = FontWeight.Bold,
@@ -183,6 +178,7 @@ fun ClientesContent(
                 fontWeight = FontWeight.Bold,
                 color = ClientesPrimary
             )
+            @Suppress("SpellCheckingInspection")
             Text(
                 text = "Consulta, modifica o desactiva clientes sin perder su historial.",
                 fontSize = 14.sp,
@@ -264,7 +260,6 @@ fun ClientesContent(
         EditClienteDialog(
             editor = editor,
             isSaving = uiState.isMutating,
-            errorMessage = uiState.message,
             onEvent = onEvent
         )
     }
@@ -564,7 +559,6 @@ private fun EmptyClientesState(hasSearch: Boolean) {
 private fun EditClienteDialog(
     editor: ClienteEditorState,
     isSaving: Boolean,
-    errorMessage: String?,
     onEvent: (ClientesUiEvent) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -588,7 +582,8 @@ private fun EditClienteDialog(
                     onValueChange = { onEvent(ClientesUiEvent.EditorNameChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Nombre completo") },
-                    supportingText = { Text("${editor.fullName.length}/80 caracteres") },
+                    isError = editor.fullNameError != null,
+                    supportingText = editor.fullNameError?.let { { Text(it) } } ?: { Text("${editor.fullName.length}/80 caracteres") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
@@ -598,7 +593,8 @@ private fun EditClienteDialog(
                     onValueChange = { onEvent(ClientesUiEvent.EditorDniChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Cédula") },
-                    supportingText = { Text("${editor.dni.length}/11 dígitos") },
+                    isError = editor.dniError != null,
+                    supportingText = editor.dniError?.let { { Text(it) } } ?: { Text("${editor.dni.length}/11 dígitos") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
@@ -608,7 +604,8 @@ private fun EditClienteDialog(
                     onValueChange = { onEvent(ClientesUiEvent.EditorPhoneChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Teléfono") },
-                    supportingText = { Text("${editor.phone.length}/10 dígitos") },
+                    isError = editor.phoneError != null,
+                    supportingText = editor.phoneError?.let { { Text(it) } } ?: { Text("${editor.phone.length}/10 dígitos") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                     singleLine = true
@@ -618,7 +615,8 @@ private fun EditClienteDialog(
                     onValueChange = { onEvent(ClientesUiEvent.EditorAddressChanged(it)) },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Dirección") },
-                    supportingText = { Text("${editor.address.length}/160 caracteres") },
+                    isError = editor.addressError != null,
+                    supportingText = editor.addressError?.let { { Text(it) } } ?: { Text("${editor.address.length}/160 caracteres") },
                     minLines = 2,
                     maxLines = 3,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -644,14 +642,6 @@ private fun EditClienteDialog(
                     fontSize = 12.sp,
                     color = ClientesTextSecondary
                 )
-                errorMessage?.let { message ->
-                    Text(
-                        text = message,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = ClientesError
-                    )
-                }
             }
         },
         confirmButton = {

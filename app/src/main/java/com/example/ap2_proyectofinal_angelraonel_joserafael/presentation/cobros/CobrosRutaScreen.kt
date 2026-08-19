@@ -8,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
@@ -44,13 +44,9 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTa
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
+import androidx.compose.ui.tooling.preview.Preview
+import java.math.BigDecimal
 
-private val CollectionsSurface @Composable get() = MaterialTheme.colorScheme.surface
-private val CollectionsGreen @Composable get() = MaterialTheme.colorScheme.secondary
-private val CollectionsOutline @Composable get() = MaterialTheme.colorScheme.outlineVariant
-private val CollectionsTextSecondary @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CobrosRutaScreen(
     isAdmin: Boolean,
@@ -64,16 +60,61 @@ fun CobrosRutaScreen(
     onProfile: () -> Unit,
     viewModel: CobrosRutaViewModel = hiltViewModel()
 ) {
-    val focusManager = LocalFocusManager.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val visibleItems = uiState.visibleItems(routeOnly)
-    val permissionDenied = (!isAdmin && routeOnly && !uiState.canViewRoute) || (!isAdmin && !routeOnly && !uiState.canCollectPayments)
+    
     var loanForSignedContract by remember { mutableStateOf<Long?>(null) }
     val signedContractPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         val loanId = loanForSignedContract
         if (uri != null && loanId != null) viewModel.activateWithSignedContract(loanId, uri.toString())
         loanForSignedContract = null
     }
+
+    CobrosRutaContent(
+        uiState = uiState,
+        isAdmin = isAdmin,
+        routeOnly = routeOnly,
+        onBack = onBack,
+        onOpenLoan = onOpenLoan,
+        onHome = onHome,
+        onClients = onClients,
+        onLoans = onLoans,
+        onRoutes = onRoutes,
+        onProfile = onProfile,
+        onSearchChanged = viewModel::onSearchChanged,
+        onZoneFilterChanged = viewModel::onZoneFilterChanged,
+        onActivateWithSignedContract = { loanId ->
+            loanForSignedContract = loanId
+            signedContractPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        },
+        onPrintContract = viewModel::printContract,
+        onShareContractWhatsApp = viewModel::shareContractWhatsApp,
+        onDismissMessage = viewModel::dismissMessage
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CobrosRutaContent(
+    uiState: CobrosRutaUiState,
+    isAdmin: Boolean,
+    routeOnly: Boolean,
+    onBack: () -> Unit,
+    onOpenLoan: (Long) -> Unit,
+    onHome: () -> Unit,
+    onClients: () -> Unit,
+    onLoans: () -> Unit,
+    onRoutes: () -> Unit,
+    onProfile: () -> Unit,
+    onSearchChanged: (String) -> Unit,
+    onZoneFilterChanged: (String) -> Unit,
+    onActivateWithSignedContract: (Long) -> Unit,
+    onPrintContract: (Long) -> Unit,
+    onShareContractWhatsApp: (Long) -> Unit,
+    onDismissMessage: () -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+    val visibleItems = uiState.visibleItems(routeOnly)
+    val permissionDenied = (!isAdmin && routeOnly && !uiState.canViewRoute) || (!isAdmin && !routeOnly && !uiState.canCollectPayments)
 
     Scaffold(
         topBar = {
@@ -86,7 +127,7 @@ fun CobrosRutaScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         if (routeOnly && !isAdmin) {
-                            Text(uiState.activeRoute, fontSize = 11.sp, color = CollectionsTextSecondary)
+                            Text(uiState.activeRoute, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 },
@@ -130,7 +171,7 @@ fun CobrosRutaScreen(
                 if (routeOnly) "Ruta organizada por zona y por la fecha de cobro más próxima" else
                     if (isAdmin) "Selecciona cualquier cliente con préstamo activo" else
                         "Clientes y préstamos asignados a tu usuario",
-                color = CollectionsTextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp
             )
             if (isAdmin) {
@@ -138,7 +179,7 @@ fun CobrosRutaScreen(
                     listOf("Todas", "Zona Norte", "Zona Sur", "Zona Este").forEach { zone ->
                         FilterChip(
                             selected = uiState.zoneFilter == zone,
-                            onClick = { viewModel.onZoneFilterChanged(zone) },
+                            onClick = { onZoneFilterChanged(zone) },
                             label = { Text(if (zone == "Todas") zone else zone.removePrefix("Zona "), fontSize = 10.sp) },
                             modifier = Modifier.weight(1f)
                         )
@@ -148,7 +189,7 @@ fun CobrosRutaScreen(
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
                 value = uiState.searchQuery,
-                onValueChange = viewModel::onSearchChanged,
+                onValueChange = onSearchChanged,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Buscar cliente, teléfono o dirección") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
@@ -167,7 +208,7 @@ fun CobrosRutaScreen(
                     Text("El administrador no te ha concedido permiso para esta función.", color = MaterialTheme.colorScheme.error)
                 }
                 uiState.errorMessage != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(uiState.errorMessage.orEmpty(), color = MaterialTheme.colorScheme.error)
+                    Text(uiState.errorMessage, color = MaterialTheme.colorScheme.error)
                 }
                 visibleItems.isEmpty() -> EmptyCollections(routeOnly)
                 else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -177,17 +218,15 @@ fun CobrosRutaScreen(
                                 Text(zone, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = CollectionsGreen, modifier = Modifier.padding(top = 6.dp))
                             }
                             items(zoneItems, key = { it.loanId }) { item ->
-                                CollectionClientCard(item, isAdmin, { onOpenLoan(item.loanId) }, { viewModel.printContract(item.loanId) }) {
-                                    loanForSignedContract = item.loanId
-                                    signedContractPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                                CollectionClientCard(item, isAdmin, { onOpenLoan(item.loanId) }, { onPrintContract(item.loanId) }) {
+                                    onActivateWithSignedContract(item.loanId)
                                 }
                             }
                         }
                     } else {
                         items(visibleItems, key = { it.loanId }) { item ->
-                            CollectionClientCard(item, isAdmin, { onOpenLoan(item.loanId) }, { viewModel.printContract(item.loanId) }) {
-                                loanForSignedContract = item.loanId
-                                signedContractPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                            CollectionClientCard(item, isAdmin, { onOpenLoan(item.loanId) }, { onPrintContract(item.loanId) }) {
+                                onActivateWithSignedContract(item.loanId)
                             }
                         }
                     }
@@ -199,15 +238,15 @@ fun CobrosRutaScreen(
 
     uiState.contractShareFallbackLoanId?.let { loanId ->
         AlertDialog(
-            onDismissRequest = viewModel::dismissMessage,
+            onDismissRequest = onDismissMessage,
             title = { Text("Impresora no disponible") },
             text = { Text(uiState.message.orEmpty()) },
             confirmButton = {
-                Button(onClick = { viewModel.shareContractWhatsApp(loanId) }, enabled = uiState.canShareDocuments) {
+                Button(onClick = { onShareContractWhatsApp(loanId) }, enabled = uiState.canShareDocuments) {
                     Text("Enviar por WhatsApp")
                 }
             },
-            dismissButton = { TextButton(onClick = viewModel::dismissMessage) { Text("Conservar en pantalla") } }
+            dismissButton = { TextButton(onClick = onDismissMessage) { Text("Conservar en pantalla") } }
         )
     }
 }
@@ -246,7 +285,7 @@ private fun CollectionClientCard(
                 Column(Modifier.weight(1f)) {
                     Text(item.clientName, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
                     Text("Préstamo #${item.loanId}", fontSize = 12.sp, color = CollectionsGreen)
-                    if (isAdmin) Text("Asignado al empleado #${item.employeeId}", fontSize = 11.sp, color = CollectionsTextSecondary)
+                    if (isAdmin) Text("Asignado al empleado #${item.employeeId}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Surface(
                     color = if (item.isDue) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
@@ -268,16 +307,16 @@ private fun CollectionClientCard(
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Phone, null, Modifier.size(16.dp), tint = CollectionsTextSecondary)
+                Icon(Icons.Default.Phone, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.width(6.dp))
-                Text(item.phone, fontSize = 12.sp, color = CollectionsTextSecondary)
+                Text(item.phone, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.LocationOn, null, Modifier.size(16.dp), tint = CollectionsTextSecondary)
+                Icon(Icons.Default.LocationOn, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.width(6.dp))
                 Text(item.address.ifBlank { "Dirección no registrada" }, fontSize = 12.sp, maxLines = 2, color = MaterialTheme.colorScheme.onSurface)
             }
-            Text(item.zone, fontSize = 12.sp, color = CollectionsTextSecondary, fontWeight = FontWeight.SemiBold)
+            Text(item.zone, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)
             item.rejectionReason?.let { Text("Motivo: $it", color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -285,9 +324,9 @@ private fun CollectionClientCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("Saldo pendiente", fontSize = 10.sp, color = CollectionsTextSecondary)
+                    Text("Saldo pendiente", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(item.pendingBalanceFormatted, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                    Text("Próxima: ${item.nextDueText}", fontSize = 10.sp, color = CollectionsTextSecondary)
+                    Text("Próxima: ${item.nextDueText}", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 when (item.status) {
                     LoanStatus.ACTIVO -> Button(
@@ -301,7 +340,7 @@ private fun CollectionClientCard(
                         OutlinedButton(onClick = onPrintContract) { Text("Imprimir contrato", fontSize = 11.sp) }
                         Button(onClick = onUploadSigned, colors = ButtonDefaults.buttonColors(containerColor = CollectionsGreen)) { Text("Subir firmado", fontSize = 11.sp) }
                     }
-                    else -> Text("Sin cobro disponible", color = CollectionsTextSecondary, fontSize = 11.sp)
+                    else -> Text("Sin cobro disponible", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                 }
             }
         }
@@ -319,5 +358,56 @@ private fun EmptyCollections(routeOnly: Boolean) {
                 fontWeight = FontWeight.Bold
             )
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CobrosRutaScreenPreview() {
+    val sampleItems = listOf(
+        CollectionClientItem(
+            loanId = 1L, clientId = 101L, clientName = "Juan Pérez", clientDni = "001-0000000-0",
+            phone = "809-555-0101", address = "Calle A #123", zone = "Zona Norte",
+            photoPath = null, employeeId = 5L, status = LoanStatus.ACTIVO,
+            amount = BigDecimal("10000"), rate = BigDecimal("10"), installmentCount = 10,
+            installmentAmount = BigDecimal("1100"), dueCount = 0, pendingBalance = BigDecimal("5000"),
+            pendingBalanceFormatted = "RD$ 5,000.00", nextDueText = "Hoy", nextDueAt = null,
+            paymentDay = "Lunes", isDue = false
+        ),
+        CollectionClientItem(
+            loanId = 2L, clientId = 102L, clientName = "María López", clientDni = "002-0000000-0",
+            phone = "829-555-0202", address = "Calle B #456", zone = "Zona Sur",
+            photoPath = null, employeeId = 5L, status = LoanStatus.ACTIVO,
+            amount = BigDecimal("20000"), rate = BigDecimal("15"), installmentCount = 12,
+            installmentAmount = BigDecimal("2000"), dueCount = 2, pendingBalance = BigDecimal("15000"),
+            pendingBalanceFormatted = "RD$ 15,000.00", nextDueText = "Ayer", nextDueAt = null,
+            paymentDay = "Martes", isDue = true
+        )
+    )
+    val sampleUiState = CobrosRutaUiState(
+        items = sampleItems,
+        isLoading = false,
+        activeRoute = "Zona Norte"
+    )
+    
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        CobrosRutaContent(
+            uiState = sampleUiState,
+            isAdmin = true,
+            routeOnly = true,
+            onBack = {},
+            onOpenLoan = {},
+            onHome = {},
+            onClients = {},
+            onLoans = {},
+            onRoutes = {},
+            onProfile = {},
+            onSearchChanged = {},
+            onZoneFilterChanged = {},
+            onActivateWithSignedContract = {},
+            onPrintContract = {},
+            onShareContractWhatsApp = {},
+            onDismissMessage = {}
+        )
     }
 }
