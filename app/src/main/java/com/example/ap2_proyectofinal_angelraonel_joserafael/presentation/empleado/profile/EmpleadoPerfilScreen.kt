@@ -29,11 +29,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.PrimaryTab
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmpleadoPerfilScreen(
     onNavigateBack: () -> Unit = {},
@@ -44,14 +44,36 @@ fun EmpleadoPerfilScreen(
     viewModel: EmpleadoPerfilViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
-    var showHelpDialog by remember { mutableStateOf(false) }
-    var showReportDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(uiState.isLoggedOut) {
         if (uiState.isLoggedOut) {
             onLogoutSuccess()
         }
     }
+
+    EmpleadoPerfilContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onNavigateBack = onNavigateBack,
+        onNavigateToClients = onNavigateToClients,
+        onNavigateToCobros = onNavigateToCobros,
+        onNavigateToRoutes = onNavigateToRoutes
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EmpleadoPerfilContent(
+    uiState: EmpleadoPerfilUiState,
+    onEvent: (EmpleadoPerfilUiEvent) -> Unit,
+    onNavigateBack: () -> Unit = {},
+    onNavigateToClients: () -> Unit = {},
+    onNavigateToCobros: () -> Unit = {},
+    onNavigateToRoutes: () -> Unit = {},
+) {
+    val context = LocalContext.current
+    var showHelpDialog by remember { mutableStateOf(false) }
+    var showReportDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -109,7 +131,9 @@ fun EmpleadoPerfilScreen(
                 border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Box(modifier = Modifier.size(100.dp)) {
@@ -222,7 +246,7 @@ fun EmpleadoPerfilScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { viewModel.onEvent(EmpleadoPerfilUiEvent.ShowThemeDialog) }
+                            .clickable { onEvent(EmpleadoPerfilUiEvent.ShowThemeDialog) }
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -293,7 +317,7 @@ fun EmpleadoPerfilScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             Button(
-                onClick = { viewModel.onEvent(EmpleadoPerfilUiEvent.ShowLogoutDialog) },
+                onClick = { onEvent(EmpleadoPerfilUiEvent.ShowLogoutDialog) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -314,29 +338,29 @@ fun EmpleadoPerfilScreen(
 
     if (uiState.showLogoutDialog) {
         ConfirmarCerrarSesionDialog(
-            onConfirm = { viewModel.onEvent(EmpleadoPerfilUiEvent.ConfirmLogout) },
-            onDismiss = { viewModel.onEvent(EmpleadoPerfilUiEvent.DismissLogoutDialog) }
+            onConfirm = { onEvent(EmpleadoPerfilUiEvent.ConfirmLogout) },
+            onDismiss = { onEvent(EmpleadoPerfilUiEvent.DismissLogoutDialog) }
         )
     }
 
     if (uiState.showThemeDialog) {
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(EmpleadoPerfilUiEvent.HideThemeDialog) },
+            onDismissRequest = { onEvent(EmpleadoPerfilUiEvent.HideThemeDialog) },
             title = { Text("Tema de la aplicación") },
             text = {
                 Column(Modifier.selectableGroup()) {
                     ThemeOption("Claro", uiState.themeMode == ThemeMode.LIGHT) {
-                        viewModel.onEvent(EmpleadoPerfilUiEvent.ThemeModeChanged(ThemeMode.LIGHT))
+                        onEvent(EmpleadoPerfilUiEvent.ThemeModeChanged(ThemeMode.LIGHT))
                     }
                     ThemeOption("Oscuro", uiState.themeMode == ThemeMode.DARK) {
-                        viewModel.onEvent(EmpleadoPerfilUiEvent.ThemeModeChanged(ThemeMode.DARK))
+                        onEvent(EmpleadoPerfilUiEvent.ThemeModeChanged(ThemeMode.DARK))
                     }
                     ThemeOption("Usar ajuste del sistema", uiState.themeMode == ThemeMode.SYSTEM) {
-                        viewModel.onEvent(EmpleadoPerfilUiEvent.ThemeModeChanged(ThemeMode.SYSTEM))
+                        onEvent(EmpleadoPerfilUiEvent.ThemeModeChanged(ThemeMode.SYSTEM))
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { viewModel.onEvent(EmpleadoPerfilUiEvent.HideThemeDialog) }) { Text("Cerrar") } }
+            confirmButton = { TextButton(onClick = { onEvent(EmpleadoPerfilUiEvent.HideThemeDialog) }) { Text("Cerrar") } }
         )
     }
 
@@ -431,5 +455,30 @@ private fun ProfileDetailTile(
                 Text(value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun EmpleadoPerfilScreenPreview() {
+    val sampleUiState = EmpleadoPerfilUiState(
+        name = "Angel Raonel",
+        roleTitle = "EMPLEADO",
+        activeRouteText = "Ruta: Zona Metropolitana",
+        agentId = "#123",
+        email = "angel@example.com",
+        phone = "809-555-5555",
+        themeMode = ThemeMode.LIGHT
+    )
+
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        EmpleadoPerfilContent(
+            uiState = sampleUiState,
+            onEvent = {},
+            onNavigateBack = {},
+            onNavigateToClients = {},
+            onNavigateToCobros = {},
+            onNavigateToRoutes = {}
+        )
     }
 }
