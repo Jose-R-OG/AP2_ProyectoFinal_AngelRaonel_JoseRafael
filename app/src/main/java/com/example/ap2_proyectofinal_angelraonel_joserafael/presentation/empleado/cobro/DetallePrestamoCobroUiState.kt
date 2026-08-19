@@ -38,5 +38,6 @@ data class DetallePrestamoCobroUiState(
     val isProcessingPayment: Boolean = false,
     val paymentSuccess: Boolean = false,
     val generatedReceipt: PaymentReceipt? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isPayable: Boolean = false
 )

@@ -30,6 +30,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -337,50 +338,75 @@ fun DetallePrestamoCobroContent(
             }
 
             item {
-                Column {
-                    Text("Método de pago", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(6.dp))
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PaymentMethodButton(
-                            text = "Efectivo",
-                            selected = uiState.paymentMethod == PaymentMethod.EFECTIVO,
-                            modifier = Modifier.weight(1f)
-                        ) { onEvent(DetallePrestamoCobroUiEvent.PaymentMethodChanged(PaymentMethod.EFECTIVO)) }
-                        PaymentMethodButton(
-                            text = "Transferencia",
-                            selected = uiState.paymentMethod == PaymentMethod.TRANSFERENCIA,
-                            modifier = Modifier.weight(1f)
-                        ) { onEvent(DetallePrestamoCobroUiEvent.PaymentMethodChanged(PaymentMethod.TRANSFERENCIA)) }
+                if (uiState.isPayable) {
+                    Column {
+                        Text("Método de pago", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(6.dp))
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            PaymentMethodButton(
+                                text = "Efectivo",
+                                selected = uiState.paymentMethod == PaymentMethod.EFECTIVO,
+                                modifier = Modifier.weight(1f)
+                            ) { onEvent(DetallePrestamoCobroUiEvent.PaymentMethodChanged(PaymentMethod.EFECTIVO)) }
+                            PaymentMethodButton(
+                                text = "Transferencia",
+                                selected = uiState.paymentMethod == PaymentMethod.TRANSFERENCIA,
+                                modifier = Modifier.weight(1f)
+                            ) { onEvent(DetallePrestamoCobroUiEvent.PaymentMethodChanged(PaymentMethod.TRANSFERENCIA)) }
+                        }
+                    }
+                } else {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)),
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.RemoveCircleOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                            Spacer(Modifier.width(12.dp))
+                            Text(
+                                text = "Este préstamo está en estado ${uiState.statusText}. Debe ser aprobado por un administrador antes de poder realizar cobros.",
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                 }
             }
 
-            item {
-                Column {
-                    Button(
-                        onClick = { onEvent(DetallePrestamoCobroUiEvent.RealizarCobroSeleccionado) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = if (uiState.selectedCountError != null) MaterialTheme.colorScheme.error else TealActionButtonBg),
-                        enabled = !uiState.isProcessingPayment
-                    ) {
-                        if (uiState.isProcessingPayment) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
-                        } else {
-                            Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                if (uiState.selectedCount == 0) "Seleccione cuotas a pagar" else "Cobrar ${uiState.selectedCount} cuota(s)",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+            if (uiState.isPayable) {
+                item {
+                    Column {
+                        Button(
+                            onClick = { onEvent(DetallePrestamoCobroUiEvent.RealizarCobroSeleccionado) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = if (uiState.selectedCountError != null) MaterialTheme.colorScheme.error else TealActionButtonBg),
+                            enabled = !uiState.isProcessingPayment
+                        ) {
+                            if (uiState.isProcessingPayment) {
+                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                            } else {
+                                Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    if (uiState.selectedCount == 0) "Seleccione cuotas a pagar" else "Cobrar ${uiState.selectedCount} cuota(s)",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
                         }
-                    }
-                    uiState.selectedCountError?.let {
-                        Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                        uiState.selectedCountError?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                        }
                     }
                 }
             }
@@ -415,7 +441,7 @@ fun DetallePrestamoCobroContent(
             items(uiState.cuotasList, key = { it.id }) { cuota ->
                 CuotaCardRow(
                     cuota = cuota,
-                    onToggleSelect = { onEvent(DetallePrestamoCobroUiEvent.ToggleSelectCuota(cuota.id)) }
+                    onToggleSelect = { if (uiState.isPayable) onEvent(DetallePrestamoCobroUiEvent.ToggleSelectCuota(cuota.id)) }
                 )
             }
 
@@ -500,11 +526,12 @@ private fun CuotaCardRow(
     onToggleSelect: () -> Unit
 ) {
     val isVencido = cuota.status == CuotaStatus.VENCIDO
+    val isPagado = cuota.status == CuotaStatus.PAGADO
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = cuota.status != CuotaStatus.PAGADO) { onToggleSelect() },
+            .clickable(enabled = !isPagado) { onToggleSelect() },
         shape = RoundedCornerShape(12.dp),
         border = androidx.compose.foundation.BorderStroke(
             width = 1.dp,

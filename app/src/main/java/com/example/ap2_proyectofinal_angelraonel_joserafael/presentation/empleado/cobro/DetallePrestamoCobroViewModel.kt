@@ -255,7 +255,8 @@ class DetallePrestamoCobroViewModel @Inject constructor(
                 progress = (porcentajePagado / 100f).coerceIn(0f, 1f),
                 selectedCount = selectedCuotaIds.size,
                 cuotasList = cuotasUi,
-                errorMessage = null
+                errorMessage = null,
+                isPayable = prestamo.estado == com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.LoanStatus.ACTIVO
             )
         }
     }
