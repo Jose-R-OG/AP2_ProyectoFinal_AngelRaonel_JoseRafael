@@ -28,23 +28,38 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.PaymentMethod
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.PaymentReceipt
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.PaymentReceiptManager
+import java.math.BigDecimal
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CobrosHistorialScreen(
     onBack: () -> Unit,
     viewModel: CobrosHistorialViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    CobrosHistorialContent(
+        uiState = uiState,
+        onBack = onBack,
+        onReimprimir = { viewModel.imprimir(it) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CobrosHistorialContent(
+    uiState: CobrosHistorialUiState,
+    onBack: () -> Unit,
+    onReimprimir: (PaymentReceipt) -> Unit
+) {
     val context = LocalContext.current
     var selected by remember { mutableStateOf<CobroHistoryItem?>(null) }
     Scaffold(
@@ -66,7 +81,7 @@ fun CobrosHistorialScreen(
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
             }
             uiState.errorMessage != null -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text(uiState.errorMessage.orEmpty(), color = MaterialTheme.colorScheme.error)
+                Text(uiState.errorMessage, color = MaterialTheme.colorScheme.error)
             }
             uiState.items.isEmpty() -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text("Todavía no se han registrado cobros.", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -138,11 +153,67 @@ fun CobrosHistorialScreen(
                 Text("Cuota: ${item.installmentLabel}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("Pagos restantes: ${item.remainingInstallments}", color = MaterialTheme.colorScheme.onSurfaceVariant)
             } },
-            confirmButton = { Button(onClick = { viewModel.imprimir(receipt) }) { Text("Reimprimir") } },
+            confirmButton = { Button(onClick = { onReimprimir(receipt) }) { Text("Reimprimir") } },
             dismissButton = { Column(horizontalAlignment = Alignment.End) {
                 TextButton(onClick = { PaymentReceiptManager.shareWhatsApp(context, receipt) }) { Text("Enviar WhatsApp") }
                 TextButton(onClick = { selected = null }) { Text("Cerrar") }
             } }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CobrosHistorialPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        val sampleItems = listOf(
+            CobroHistoryItem(
+                id = 1L,
+                clientName = "Juan Pérez",
+                clientDni = "402-0000000-1",
+                loanId = 101L,
+                amount = "$1,500.00",
+                amountValue = BigDecimal("1500.00"),
+                timestamp = System.currentTimeMillis(),
+                dateTime = "15 Mayo 2024, 10:30 AM",
+                method = PaymentMethod.EFECTIVO,
+                employeeId = 1L,
+                employeeName = "Admin",
+                note = "Pago mensual",
+                installmentLabel = "2/12",
+                totalInstallments = 12,
+                remainingInstallments = 10,
+                remainingBalance = BigDecimal("15000.00"),
+                debtPaidOff = false
+            ),
+            CobroHistoryItem(
+                id = 2L,
+                clientName = "María López",
+                clientDni = "402-0000000-2",
+                loanId = 102L,
+                amount = "$2,000.00",
+                amountValue = BigDecimal("2000.00"),
+                timestamp = System.currentTimeMillis() - 86400000,
+                dateTime = "14 Mayo 2024, 03:45 PM",
+                method = PaymentMethod.TRANSFERENCIA,
+                employeeId = 1L,
+                employeeName = "Admin",
+                note = "Abono a capital",
+                installmentLabel = "5/10",
+                totalInstallments = 10,
+                remainingInstallments = 5,
+                remainingBalance = BigDecimal("10000.00"),
+                debtPaidOff = false
+            )
+        )
+        CobrosHistorialContent(
+            uiState = CobrosHistorialUiState(
+                items = sampleItems,
+                isLoading = false,
+                isAdmin = true
+            ),
+            onBack = {},
+            onReimprimir = {}
         )
     }
 }

@@ -1,39 +1,89 @@
 package com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.cobro
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Percent
+import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.RemoveCircleOutline
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.PaymentMethod
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
-import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.PaymentReceiptManager
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.FuturoBadgeBg
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.FuturoBadgeText
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.LightBlueBadgeBg
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.LightBlueBadgeText
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OnSurfaceVariant
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.OutlineVariant
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.PagadoBadgeBg
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.PagadoBadgeText
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.PendienteBadgeBg
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.PendienteBadgeText
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.PrimaryBlack
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SecondaryGreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.SurfaceColor
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.VencidoBadgeBg
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.VencidoBadgeText
 import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.DigitalSignaturePad
-import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
+import com.example.ap2_proyectofinal_angelraonel_joserafael.util.receipt.PaymentReceiptManager
 import java.util.Locale
-import java.util.Date
 
-private val SurfaceColor @Composable get() = MaterialTheme.colorScheme.surface
-private val PrimaryBlack @Composable get() = MaterialTheme.colorScheme.onSurface
-private val SecondaryGreen @Composable get() = MaterialTheme.colorScheme.secondary
-private val OnSurfaceVariant @Composable get() = MaterialTheme.colorScheme.onSurfaceVariant
-private val OutlineVariant @Composable get() = MaterialTheme.colorScheme.outlineVariant
+private val TealActionButtonBg = Color(0xFF67B59F)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,11 +99,40 @@ fun DetallePrestamoCobroScreen(
     viewModel: DetallePrestamoCobroViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    DetallePrestamoCobroContent(
+        isAdmin = isAdmin,
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        onNavigateBack = onNavigateBack,
+        onNavigateHome = onNavigateHome,
+        onNavigateToClients = onNavigateToClients,
+        onNavigateToLoans = onNavigateToLoans,
+        onNavigateToRoutes = onNavigateToRoutes,
+        onNavigateToProfile = onNavigateToProfile,
+        onNavigateToRegisterClient = onNavigateToRegisterClient
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DetallePrestamoCobroContent(
+    isAdmin: Boolean,
+    uiState: DetallePrestamoCobroUiState,
+    onEvent: (DetallePrestamoCobroUiEvent) -> Unit,
+    onNavigateBack: () -> Unit,
+    onNavigateHome: () -> Unit,
+    onNavigateToClients: () -> Unit,
+    onNavigateToLoans: () -> Unit,
+    onNavigateToRoutes: () -> Unit,
+    onNavigateToProfile: () -> Unit,
+    onNavigateToRegisterClient: (Long) -> Unit
+) {
     val context = LocalContext.current
     var showSignaturePad by remember { mutableStateOf(false) }
     LaunchedEffect(uiState.generatedReceipt?.receiptNumber) {
         if (uiState.generatedReceipt != null) {
-            viewModel.onEvent(DetallePrestamoCobroUiEvent.PrintReceipt)
+            onEvent(DetallePrestamoCobroUiEvent.PrintReceipt)
         }
     }
 
@@ -116,7 +195,7 @@ fun DetallePrestamoCobroScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
                         tint = OnSurfaceVariant,
                         modifier = Modifier.size(16.dp)
@@ -265,19 +344,19 @@ fun DetallePrestamoCobroScreen(
                             text = "Efectivo",
                             selected = uiState.paymentMethod == PaymentMethod.EFECTIVO,
                             modifier = Modifier.weight(1f)
-                        ) { viewModel.onEvent(DetallePrestamoCobroUiEvent.PaymentMethodChanged(PaymentMethod.EFECTIVO)) }
+                        ) { onEvent(DetallePrestamoCobroUiEvent.PaymentMethodChanged(PaymentMethod.EFECTIVO)) }
                         PaymentMethodButton(
                             text = "Transferencia",
                             selected = uiState.paymentMethod == PaymentMethod.TRANSFERENCIA,
                             modifier = Modifier.weight(1f)
-                        ) { viewModel.onEvent(DetallePrestamoCobroUiEvent.PaymentMethodChanged(PaymentMethod.TRANSFERENCIA)) }
+                        ) { onEvent(DetallePrestamoCobroUiEvent.PaymentMethodChanged(PaymentMethod.TRANSFERENCIA)) }
                     }
                 }
             }
 
             item {
                 Button(
-                    onClick = { viewModel.onEvent(DetallePrestamoCobroUiEvent.RealizarCobroSeleccionado) },
+                    onClick = { onEvent(DetallePrestamoCobroUiEvent.RealizarCobroSeleccionado) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
@@ -288,7 +367,7 @@ fun DetallePrestamoCobroScreen(
                     if (uiState.isProcessingPayment) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                     } else {
-                        Icon(Icons.Default.ReceiptLong, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                        Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             if (uiState.selectedCount == 0) "Seleccione cuotas a pagar" else "Cobrar ${uiState.selectedCount} cuota(s)",
@@ -330,7 +409,7 @@ fun DetallePrestamoCobroScreen(
             items(uiState.cuotasList, key = { it.id }) { cuota ->
                 CuotaCardRow(
                     cuota = cuota,
-                    onToggleSelect = { viewModel.onEvent(DetallePrestamoCobroUiEvent.ToggleSelectCuota(cuota.id)) }
+                    onToggleSelect = { onEvent(DetallePrestamoCobroUiEvent.ToggleSelectCuota(cuota.id)) }
                 )
             }
 
@@ -340,7 +419,7 @@ fun DetallePrestamoCobroScreen(
 
     uiState.generatedReceipt?.let { receipt ->
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(DetallePrestamoCobroUiEvent.DismissReceipt) },
+            onDismissRequest = { onEvent(DetallePrestamoCobroUiEvent.DismissReceipt) },
             title = { Text(if (receipt.debtPaidOff) "¡Deuda saldada!" else "Comprobante generado") },
             text = { Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(if (receipt.debtPaidOff) "Todas las cuotas fueron pagadas. Se generó la constancia de deuda saldada." else "El pago se guardó correctamente.")
@@ -350,13 +429,13 @@ fun DetallePrestamoCobroScreen(
                 Text(if (receipt.signaturePath == null) "Puedes agregar la firma digital antes de reimprimir o compartir." else "Firma digital guardada.")
             } },
             confirmButton = {
-                Button(onClick = { viewModel.onEvent(DetallePrestamoCobroUiEvent.PrintReceipt) }) { Text("Imprimir") }
+                Button(onClick = { onEvent(DetallePrestamoCobroUiEvent.PrintReceipt) }) { Text("Imprimir") }
             },
             dismissButton = {
                 Column(horizontalAlignment = Alignment.End) {
                     TextButton(onClick = { showSignaturePad = true }) { Text(if (receipt.signaturePath == null) "Firmar recibo" else "Reemplazar firma") }
                     TextButton(onClick = { PaymentReceiptManager.shareWhatsApp(context, receipt) }) { Text("Enviar por WhatsApp") }
-                    TextButton(onClick = { viewModel.onEvent(DetallePrestamoCobroUiEvent.DismissReceipt) }) { Text("Cerrar") }
+                    TextButton(onClick = { onEvent(DetallePrestamoCobroUiEvent.DismissReceipt) }) { Text("Cerrar") }
                 }
             }
         )
@@ -369,7 +448,7 @@ fun DetallePrestamoCobroScreen(
             text = {
                 DigitalSignaturePad { bitmap ->
                     val path = PaymentReceiptManager.saveSignature(context, receipt.receiptNumber, bitmap)
-                    viewModel.onEvent(DetallePrestamoCobroUiEvent.ReceiptSigned(path))
+                    onEvent(DetallePrestamoCobroUiEvent.ReceiptSigned(path))
                     showSignaturePad = false
                 }
             },
@@ -379,11 +458,11 @@ fun DetallePrestamoCobroScreen(
     }
     uiState.errorMessage?.let { message ->
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(DetallePrestamoCobroUiEvent.ClearError) },
+            onDismissRequest = { onEvent(DetallePrestamoCobroUiEvent.ClearError) },
             title = { Text("No fue posible completar el cobro") },
             text = { Text(message) },
             confirmButton = {
-                TextButton(onClick = { viewModel.onEvent(DetallePrestamoCobroUiEvent.ClearError) }) {
+                TextButton(onClick = { onEvent(DetallePrestamoCobroUiEvent.ClearError) }) {
                     Text("Aceptar")
                 }
             }
@@ -529,5 +608,53 @@ private fun CuotaCardRow(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun DetallePrestamoCobroPreview() {
+    AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme {
+        DetallePrestamoCobroContent(
+            isAdmin = true,
+            uiState = DetallePrestamoCobroUiState(
+                prestamoCode = "#PT-1001",
+                statusText = "ACTIVO",
+                clientName = "Juan Pérez",
+                pendingBalanceFormatted = "$5,000.00",
+                percentagePaidText = "50% Pagado",
+                cuotasProgressText = "5 de 10 cuotas",
+                originalAmountFormatted = "$10,000.00",
+                interestRateText = "10% (tasa total)",
+                totalPlanFormatted = "Total: $11,000.00",
+                progress = 0.5f,
+                selectedCount = 1,
+                cuotasList = listOf(
+                    CuotaItemState(
+                        id = 1,
+                        numeroCuota = "Cuota 6/10",
+                        fechaDue = "15 Oct 2023",
+                        montoFormatted = "$1,100.00",
+                        status = CuotaStatus.PENDIENTE,
+                        isSelected = true
+                    ),
+                    CuotaItemState(
+                        id = 2,
+                        numeroCuota = "Cuota 7/10",
+                        fechaDue = "15 Nov 2023",
+                        montoFormatted = "$1,100.00",
+                        status = CuotaStatus.FUTURO
+                    )
+                )
+            ),
+            onEvent = {},
+            onNavigateBack = {},
+            onNavigateHome = {},
+            onNavigateToClients = {},
+            onNavigateToLoans = {},
+            onNavigateToRoutes = {},
+            onNavigateToProfile = {},
+            onNavigateToRegisterClient = {}
+        )
     }
 }
