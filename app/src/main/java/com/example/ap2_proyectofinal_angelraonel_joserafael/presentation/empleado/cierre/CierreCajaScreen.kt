@@ -26,15 +26,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.platform.LocalContext
 import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBottomBar
-
-private val SurfaceColor = Color(0xFFF8F9FF)
-private val PrimaryBlack = Color(0xFF000000)
-private val SecondaryGreen = Color(0xFF006C49)
-private val GreenBadgeBg = Color(0xFF6CF8BB).copy(alpha = 0.4f)
-private val GreenBadgeText = Color(0xFF00714D)
-private val LightBlueButtonBg = Color(0xFFE3EEFF)
-private val OnSurfaceVariant = Color(0xFF30323A)
-private val OutlineVariant = Color(0xFFC6C6CD)
+import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,7 +97,7 @@ fun CierreCajaScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
             ) {
                 Column(
@@ -159,7 +151,7 @@ fun CierreCajaScreen(
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -181,7 +173,7 @@ fun CierreCajaScreen(
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -213,7 +205,7 @@ fun CierreCajaScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -234,7 +226,7 @@ fun CierreCajaScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Surface(
-                                color = Color(0xFFE8F0FE),
+                                color = MaterialTheme.colorScheme.surfaceVariant,
                                 shape = RoundedCornerShape(10.dp)
                             ) {
                                 Icon(
@@ -259,7 +251,7 @@ fun CierreCajaScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Surface(
-                                color = Color(0xFFE8F0FE),
+                                color = MaterialTheme.colorScheme.surfaceVariant,
                                 shape = RoundedCornerShape(10.dp)
                             ) {
                                 Icon(
@@ -280,7 +272,7 @@ fun CierreCajaScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = androidx.compose.foundation.BorderStroke(1.dp, GreenBadgeText.copy(alpha = 0.5f))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -345,7 +337,7 @@ fun CierreCajaScreen(
                             text = uiState.differenceAmount,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (uiState.differenceAmount == "RD$ 0.00") SecondaryGreen else Color(0xFFBA1A1A)
+                            color = if (uiState.differenceAmount == "RD$ 0.00") SecondaryGreen else ErrorColor
                         )
                     }
                 }
@@ -359,11 +351,14 @@ fun CierreCajaScreen(
                     .fillMaxWidth()
                     .height(54.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = SecondaryGreen),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = SecondaryGreen,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
+                ),
                 enabled = !uiState.isFinalizingTurn && uiState.isTurnActive
             ) {
                 if (uiState.isFinalizingTurn) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(20.dp))
                 } else {
                     Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
