@@ -90,14 +90,14 @@ val ClientesOutline @Composable get() = OutlineVariant
 val ClientesError @Composable get() = ErrorColor
 
 // Detalle Prestamo Colors
-val PagadoBadgeBg = Color(0xFF6CF8BB).copy(alpha = 0.4f)
-val PagadoBadgeText = Color(0xFF00714D)
-val VencidoBadgeBg = Color(0xFFFFDAD6)
-val VencidoBadgeText = Color(0xFFBA1A1A)
-val PendienteBadgeBg = Color(0xFFE3EEFF)
-val PendienteBadgeText = Color(0xFF1976D2)
-val FuturoBadgeBg = Color(0xFFEEEEEE)
-val FuturoBadgeText = Color(0xFF616161)
+val PagadoBadgeBg @Composable get() = if (MaterialTheme.colorScheme.surface == DarkSurface) Color(0xFF003924) else Color(0xFF6CF8BB).copy(alpha = 0.4f)
+val PagadoBadgeText @Composable get() = if (MaterialTheme.colorScheme.surface == DarkSurface) Color(0xFF6CF8BB) else Color(0xFF00714D)
+val VencidoBadgeBg @Composable get() = if (MaterialTheme.colorScheme.surface == DarkSurface) Color(0xFF680003) else Color(0xFFFFDAD6)
+val VencidoBadgeText @Composable get() = if (MaterialTheme.colorScheme.surface == DarkSurface) Color(0xFFFFDAD6) else Color(0xFFBA1A1A)
+val PendienteBadgeBg @Composable get() = if (MaterialTheme.colorScheme.surface == DarkSurface) Color(0xFF003258) else Color(0xFFE3EEFF)
+val PendienteBadgeText @Composable get() = if (MaterialTheme.colorScheme.surface == DarkSurface) Color(0xFFD1E4FF) else Color(0xFF1976D2)
+val FuturoBadgeBg @Composable get() = if (MaterialTheme.colorScheme.surface == DarkSurface) Color(0xFF32353A) else Color(0xFFEEEEEE)
+val FuturoBadgeText @Composable get() = if (MaterialTheme.colorScheme.surface == DarkSurface) Color(0xFFC6C6CD) else Color(0xFF616161)
 
 // Cobros Ruta Screen
 val CollectionsSurface @Composable get() = SurfaceColor
