@@ -59,7 +59,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import androidx.compose.material.icons.filled.QrCodeScanner
+import android.net.Uri
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.components.DniScannerDialog
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.components.CameraScannerDialog
 import com.example.ap2_proyectofinal_angelraonel_joserafael.domain.model.FrecuenciaPago
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 
@@ -436,10 +438,7 @@ fun IdPhotoBox(
     photoPath: String?,
     onPhotoPicked: (String) -> Unit
 ) {
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri -> uri?.let { onPhotoPicked(it.toString()) } }
-    )
+    var showCamera by remember { mutableStateOf(false) }
 
     Column(modifier = modifier) {
         Box(
@@ -449,7 +448,7 @@ fun IdPhotoBox(
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
                 .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                .clickable { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                .clickable { showCamera = true },
             contentAlignment = Alignment.Center
         ) {
             if (photoPath != null) {
@@ -468,6 +467,16 @@ fun IdPhotoBox(
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+    }
+
+    if (showCamera) {
+        CameraScannerDialog(
+            onImageCaptured = { uri ->
+                onPhotoPicked(uri.toString())
+                showCamera = false
+            },
+            onDismiss = { showCamera = false }
         )
     }
 }
