@@ -50,7 +50,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_Proyect
 @Composable
 fun ActivationCodeScreen(
     email: String,
-    expectedCode: String, // Aunque lo recibe, usaremos el ViewModel para consistencia con el patrón
+    expectedCode: String,
     onActivationSuccess: () -> Unit,
     viewModel: ActivationCodeViewModel = hiltViewModel()
 ) {
@@ -202,7 +202,7 @@ fun ActivationCodeScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    TextButton(onClick = { /* Lógica para reenviar */ }) {
+                    TextButton(onClick = { }) {
                         Text(
                             text = "¿No recibiste el código? Reenviar",
                             style = MaterialTheme.typography.bodyMedium.copy(

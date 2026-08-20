@@ -30,123 +30,42 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBotto
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 
+data class AdminDashboardActions(
+    val onAddEmployee: () -> Unit = {},
+    val onNuevoCliente: () -> Unit = {},
+    val onRealizarCobro: () -> Unit = {},
+    val onAdjustTariffs: () -> Unit = {},
+    val onViewAllMovements: () -> Unit = {},
+    val onNavigateToLoans: () -> Unit = {},
+    val onNavigateToClients: () -> Unit = {},
+    val onNavigateToProfile: () -> Unit = {},
+    val onNavigateToRoutes: () -> Unit = {},
+    val onNavigateToNotifications: () -> Unit = {}
+)
+
 @Composable
 fun AdminDashboardScreen(
-    onAddEmployee: () -> Unit = {},
-    onNuevoCliente: () -> Unit = {},
-    onRealizarCobro: () -> Unit = {},
-    onAdjustTariffs: () -> Unit = {},
-    onViewAllMovements: () -> Unit = {},
-    onNavigateToLoans: () -> Unit = {},
-    onNavigateToClients: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {},
-    onNavigateToRoutes: () -> Unit = {},
-    onNavigateToNotifications: () -> Unit = {},
+    actions: AdminDashboardActions = AdminDashboardActions(),
     viewModel: AdminDashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     AdminDashboardContent(
         uiState = uiState,
-        onAddEmployee = onAddEmployee,
-        onNuevoCliente = onNuevoCliente,
-        onRealizarCobro = onRealizarCobro,
-        onAdjustTariffs = onAdjustTariffs,
-        onViewAllMovements = onViewAllMovements,
-        onNavigateToLoans = onNavigateToLoans,
-        onNavigateToClients = onNavigateToClients,
-        onNavigateToProfile = onNavigateToProfile,
-        onNavigateToRoutes = onNavigateToRoutes,
-        onNavigateToNotifications = onNavigateToNotifications
+        actions = actions
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardContent(
     uiState: AdminDashboardUiState,
-    onAddEmployee: () -> Unit = {},
-    onNuevoCliente: () -> Unit = {},
-    onRealizarCobro: () -> Unit = {},
-    onAdjustTariffs: () -> Unit = {},
-    onViewAllMovements: () -> Unit = {},
-    onNavigateToLoans: () -> Unit = {},
-    onNavigateToClients: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {},
-    onNavigateToRoutes: () -> Unit = {},
-    onNavigateToNotifications: () -> Unit = {},
+    actions: AdminDashboardActions
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (!uiState.businessLogoUrl.isNullOrBlank()) {
-                            AsyncImage(
-                                model = uiState.businessLogoUrl,
-                                contentDescription = "Logotipo del negocio",
-                                modifier = Modifier.size(30.dp).clip(RoundedCornerShape(8.dp)),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.AccountBalance,
-                                contentDescription = null,
-                                tint = colorScheme.primary
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = uiState.businessName,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = colorScheme.primary
-                        )
-                    }
-                },
-                actions = {
-                    BadgedBox(
-                        badge = {
-                            if (uiState.unreadNotifications > 0) {
-                                Badge { Text(uiState.unreadNotifications.toString()) }
-                            }
-                        }
-                    ) {
-                        IconButton(onClick = onNavigateToNotifications) {
-                            Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
-                        }
-                    }
-                    if (!uiState.adminAvatarUrl.isNullOrEmpty()) {
-                        AsyncImage(
-                            model = uiState.adminAvatarUrl,
-                            contentDescription = "Admin Avatar",
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .border(1.dp, colorScheme.outlineVariant, CircleShape)
-                                .clickable(onClick = onNavigateToProfile),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(colorScheme.outlineVariant)
-                                .clickable(onClick = onNavigateToProfile),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Admin Avatar",
-                                tint = colorScheme.surface
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surface)
+            AdminTopBar(
+                uiState = uiState,
+                onNavigateToNotifications = actions.onNavigateToNotifications,
+                onNavigateToProfile = actions.onNavigateToProfile
             )
         },
         bottomBar = {
@@ -154,174 +73,294 @@ fun AdminDashboardContent(
                 isAdmin = true,
                 selectedTab = PrimaryTab.HOME,
                 onHome = {},
-                onClients = onNavigateToClients,
-                onLoans = onNavigateToLoans,
-                onRoutes = onNavigateToRoutes,
-                onProfile = onNavigateToProfile
+                onClients = actions.onNavigateToClients,
+                onLoans = actions.onNavigateToLoans,
+                onRoutes = actions.onNavigateToRoutes,
+                onProfile = actions.onNavigateToProfile
             )
         },
-        containerColor = colorScheme.surface
+        containerColor = MaterialTheme.colorScheme.surface
     ) { paddingValues ->
         if (uiState.isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = colorScheme.secondary)
-            }
+            DashboardLoadingIndicator(paddingValues)
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                item {
-                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                        Text(
-                            text = "Dashboard Overview",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = colorScheme.primary
-                        )
-                        Text(
-                            text = "Resumen de operaciones en tiempo real.",
-                            fontSize = 14.sp,
-                            color = colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+            AdminDashboardList(uiState, paddingValues, actions)
+        }
+    }
+}
 
-                item {
-                    MetricCard(
-                        title = "Total Cobrado Hoy",
-                        value = uiState.totalCollectedToday,
-                        badge = uiState.collectedPercentage,
-                        icon = Icons.Default.AccountBalanceWallet,
-                        iconTint = colorScheme.secondary
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AdminTopBar(
+    uiState: AdminDashboardUiState,
+    onNavigateToNotifications: () -> Unit,
+    onNavigateToProfile: () -> Unit
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    TopAppBar(
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (!uiState.businessLogoUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = uiState.businessLogoUrl,
+                        contentDescription = "Logotipo del negocio",
+                        modifier = Modifier.size(30.dp).clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
                     )
-                }
-
-                item {
-                    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        MetricCardSmall(
-                            title = "Capital en la calle", value = uiState.capitalInStreet,
-                            subtitle = "Aprobado/activo", icon = Icons.Default.Payments
-                        )
-                        MetricCardSmall(
-                            title = "Cartera por cobrar", value = uiState.outstandingPortfolio,
-                            subtitle = "Saldo pendiente", icon = Icons.Default.AccountBalanceWallet
-                        )
-                    }
-                }
-
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            MetricCardSmall(
-                                title = "Empleados Activos",
-                                value = "${uiState.activeEmployees}",
-                                subtitle = "/ ${uiState.totalEmployees} total",
-                                icon = Icons.Default.Badge
-                            )
-                        }
-                        Box(modifier = Modifier.weight(1f)) {
-                            MetricCardSmall(
-                                title = "Aprobaciones Pendientes",
-                                value = String.format("%02d", uiState.pendingApprovals),
-                                subtitle = "",
-                                icon = Icons.Default.PendingActions,
-                                isError = uiState.pendingApprovals > 0
-                            )
-                        }
-                    }
-                }
-
-                item {
-                    Text(
-                        text = "Acciones Rápidas",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        QuickActionButton("Nuevo Empleado", Icons.Default.PersonAdd, Modifier.weight(1f), onAddEmployee)
-                        QuickActionButton("Ajustar Tarifas", Icons.Default.PriceChange, Modifier.weight(1f), onAdjustTariffs)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        QuickActionButton("Nuevo Cliente", Icons.Default.PersonAddAlt, Modifier.weight(1f), onNuevoCliente)
-                        QuickActionButton("Modo Cobrador", Icons.Default.Payments, Modifier.weight(1f), onRealizarCobro)
-                    }
-                }
-
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Movimientos Recientes",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = colorScheme.primary
-                        )
-                        if (uiState.recentMovements.isNotEmpty()) {
-                            TextButton(onClick = onViewAllMovements) {
-                                Text("Ver todo", color = colorScheme.onSecondaryContainer)
-                            }
-                        }
-                    }
-                }
-
-                if (uiState.recentMovements.isEmpty()) {
-                    item {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outlineVariant)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(24.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "No hay movimientos registrados hoy.",
-                                    fontSize = 14.sp,
-                                    color = colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
                 } else {
-                    items(uiState.recentMovements, key = { it.id }) { item ->
-                        MovementRow(item, onViewAllMovements)
+                    Icon(
+                        imageVector = Icons.Default.AccountBalance,
+                        contentDescription = null,
+                        tint = colorScheme.primary
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = uiState.businessName,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = colorScheme.primary
+                )
+            }
+        },
+        actions = {
+            BadgedBox(
+                badge = {
+                    if (uiState.unreadNotifications > 0) {
+                        Badge { Text(uiState.unreadNotifications.toString()) }
                     }
                 }
+            ) {
+                IconButton(onClick = onNavigateToNotifications) {
+                    Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
+                }
+            }
+            AdminAvatar(
+                adminAvatarUrl = uiState.adminAvatarUrl,
+                onNavigateToProfile = onNavigateToProfile
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.surface)
+    )
+}
 
-                item { Spacer(modifier = Modifier.height(16.dp)) }
+@Composable
+private fun AdminAvatar(
+    adminAvatarUrl: String?,
+    onNavigateToProfile: () -> Unit
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    if (!adminAvatarUrl.isNullOrEmpty()) {
+        AsyncImage(
+            model = adminAvatarUrl,
+            contentDescription = "Admin Avatar",
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .border(1.dp, colorScheme.outlineVariant, CircleShape)
+                .clickable(onClick = onNavigateToProfile),
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(colorScheme.outlineVariant)
+                .clickable(onClick = onNavigateToProfile),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = "Admin Avatar",
+                tint = colorScheme.surface
+            )
+        }
+    }
+}
+
+@Composable
+private fun DashboardLoadingIndicator(paddingValues: PaddingValues) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
+    }
+}
+
+@Composable
+private fun AdminDashboardList(
+    uiState: AdminDashboardUiState,
+    paddingValues: PaddingValues,
+    actions: AdminDashboardActions
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item { DashboardHeaderSection() }
+        item {
+            MetricCard(
+                title = "Total Cobrado Hoy",
+                value = uiState.totalCollectedToday,
+                badge = uiState.collectedPercentage,
+                icon = Icons.Default.AccountBalanceWallet,
+                iconTint = MaterialTheme.colorScheme.secondary
+            )
+        }
+        item { DashboardMetricsSection(uiState) }
+        item { QuickActionsSection(actions) }
+        RecentMovementsSection(uiState.recentMovements, actions.onViewAllMovements)
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+    }
+}
+
+@Composable
+private fun DashboardHeaderSection() {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(
+            text = "Dashboard Overview",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = "Resumen de operaciones en tiempo real.",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun DashboardMetricsSection(uiState: AdminDashboardUiState) {
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        MetricCardSmall(
+            title = "Capital en la calle", value = uiState.capitalInStreet,
+            subtitle = "Aprobado/activo", icon = Icons.Default.Payments
+        )
+        MetricCardSmall(
+            title = "Cartera por cobrar", value = uiState.outstandingPortfolio,
+            subtitle = "Saldo pendiente", icon = Icons.Default.AccountBalanceWallet
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                MetricCardSmall(
+                    title = "Empleados Activos",
+                    value = "${uiState.activeEmployees}",
+                    subtitle = "/ ${uiState.totalEmployees} total",
+                    icon = Icons.Default.Badge
+                )
+            }
+            Box(modifier = Modifier.weight(1f)) {
+                MetricCardSmall(
+                    title = "Aprobaciones Pendientes",
+                    value = String.format("%02d", uiState.pendingApprovals),
+                    subtitle = "",
+                    icon = Icons.Default.PendingActions,
+                    isError = uiState.pendingApprovals > 0
+                )
             }
         }
     }
 }
 
+@Composable
+private fun QuickActionsSection(actions: AdminDashboardActions) {
+    Column {
+        Text(
+            text = "Acciones Rápidas",
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            QuickActionButton("Nuevo Empleado", Icons.Default.PersonAdd, Modifier.weight(1f), actions.onAddEmployee)
+            QuickActionButton("Ajustar Tarifas", Icons.Default.PriceChange, Modifier.weight(1f), actions.onAdjustTariffs)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            QuickActionButton("Nuevo Cliente", Icons.Default.PersonAddAlt, Modifier.weight(1f), actions.onNuevoCliente)
+            QuickActionButton("Modo Cobrador", Icons.Default.Payments, Modifier.weight(1f), actions.onRealizarCobro)
+        }
+    }
+}
+
+private fun androidx.compose.foundation.lazy.LazyListScope.RecentMovementsSection(
+    movements: List<MovementItem>,
+    onViewAll: () -> Unit
+) {
+    item {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Movimientos Recientes",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+            if (movements.isNotEmpty()) {
+                TextButton(onClick = onViewAll) {
+                    Text("Ver todo", color = MaterialTheme.colorScheme.onSecondaryContainer)
+                }
+            }
+        }
+    }
+
+    if (movements.isEmpty()) {
+        item {
+            EmptyMovementsCard()
+        }
+    } else {
+        items(movements, key = { it.id }) { item ->
+            MovementRow(item, onViewAll)
+        }
+    }
+}
+
+@Composable
+private fun EmptyMovementsCard() {
+    val colorScheme = MaterialTheme.colorScheme
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outlineVariant)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "No hay movimientos registrados hoy.",
+                fontSize = 14.sp,
+                color = colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
 
 @Composable
 fun MetricCard(title: String, value: String, badge: String, icon: ImageVector, iconTint: Color) {
@@ -405,6 +444,12 @@ fun QuickActionButton(label: String, icon: ImageVector, modifier: Modifier, onCl
 @Composable
 fun MovementRow(item: MovementItem, onClick: () -> Unit = {}) {
     val colorScheme = MaterialTheme.colorScheme
+    
+    val containerColor = if (item.isAlert) colorScheme.errorContainer else colorScheme.secondaryContainer
+    val iconVector = if (item.isAlert) Icons.Default.ReportProblem else Icons.Default.Payments
+    val iconTint = if (item.isAlert) colorScheme.onErrorContainer else colorScheme.onSecondaryContainer
+    val amountColor = if (item.isAlert) colorScheme.error else colorScheme.secondary
+
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
@@ -423,15 +468,13 @@ fun MovementRow(item: MovementItem, onClick: () -> Unit = {}) {
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(
-                            if (item.isAlert) colorScheme.errorContainer else colorScheme.secondaryContainer
-                        ),
+                        .background(containerColor),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = if (item.isAlert) Icons.Default.ReportProblem else Icons.Default.Payments,
+                        imageVector = iconVector,
                         contentDescription = null,
-                        tint = if (item.isAlert) colorScheme.onErrorContainer else colorScheme.onSecondaryContainer
+                        tint = iconTint
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
@@ -445,7 +488,7 @@ fun MovementRow(item: MovementItem, onClick: () -> Unit = {}) {
                     text = item.amountOrStatus,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
-                    color = if (item.isAlert) colorScheme.error else colorScheme.secondary
+                    color = amountColor
                 )
                 Text(item.time, fontSize = 10.sp, color = colorScheme.onSurfaceVariant)
             }
@@ -471,7 +514,8 @@ fun AdminDashboardScreenPreview() {
                     MovementItem("1", "Cobro - Juan Perez", "Ruta A", "RD$ 500.00", "10:30 AM"),
                     MovementItem("2", "Nuevo Préstamo", "Maria Lopez", "RD$ 5,000.00", "09:45 AM", isAlert = true)
                 )
-            )
+            ),
+            actions = AdminDashboardActions()
         )
     }
 }

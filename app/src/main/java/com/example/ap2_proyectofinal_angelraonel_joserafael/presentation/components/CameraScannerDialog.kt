@@ -83,7 +83,6 @@ fun CameraScannerDialog(
 
             ScannerOverlay()
 
-            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -98,7 +97,6 @@ fun CameraScannerDialog(
                 }
             }
 
-            // Footer
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
