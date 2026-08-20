@@ -115,173 +115,41 @@ fun LoanApprovalContent(
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                item { DashboardHeaderSection() }
+
+                item { FilterTabsSection(uiState.selectedTab, onEvent) }
+
+                item { StatsCardsSection(uiState) }
+
                 item {
-                    Column(modifier = Modifier.padding(top = 8.dp)) {
-                        Text(
-                            text = "GESTIÓN DE PRÉSTAMOS",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            letterSpacing = 1.sp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Préstamos", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
-                        }
-                        Text(
-                            text = "Consulta préstamos activos, rechazados y solicitudes en espera.",
-                            fontSize = 14.sp,
-                            color = OnSurfaceVariant,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
+                    when {
+                        uiState.isLoading -> LoadingIndicator()
+                        uiState.errorMessage != null -> ErrorMessage(uiState.errorMessage)
+                        uiState.pendingPrestamos.isEmpty() -> EmptyListMessage(uiState.selectedTab)
+                        else -> LoanRequestsList(uiState, onEvent)
                     }
                 }
 
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        LoanListTab.entries.forEach { tab ->
-                            FilterChip(
-                                selected = uiState.selectedTab == tab,
-                                onClick = { onEvent(LoanApprovalUiEvent.SelectTab(tab)) },
-                                label = {
-                                    Text(
-                                        when (tab) {
-                                            LoanListTab.ACTIVOS -> "Activos"
-                                            LoanListTab.RECHAZADOS -> "Rechazados"
-                                            LoanListTab.EN_ESPERA -> "En espera"
-                                        },
-                                        fontSize = 12.sp
-                                    )
-                                },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            BentoStatCard("Total pendientes", uiState.totalPendingCount.toString(), PrimaryColor, Modifier.weight(1f))
-                            BentoStatCard("Volumen solicitado", String.format(Locale.US, "$ %,.0f", uiState.totalRequestedVolume), PrimaryColor, Modifier.weight(1f))
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            BentoStatCard("Interés promedio", "${uiState.avgInterestRate}%", SecondaryGreen, Modifier.weight(1f))
-                            BentoStatStatCard("Estado", "OPERATIVO", MaterialTheme.colorScheme.tertiary, Modifier.weight(1f))
-                        }
-                    }
-                }
-
-                item {
-                    if (uiState.isLoading) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().padding(36.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = SecondaryGreen)
-                        }
-                    } else if (uiState.errorMessage != null) {
-                        Text(
-                            uiState.errorMessage.orEmpty(),
-                            modifier = Modifier.fillMaxWidth().padding(20.dp),
-                            color = ErrorColor
-                        )
-                    } else if (uiState.pendingPrestamos.isEmpty()) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
-                        ) {
-                            Text(
-                                when (uiState.selectedTab) {
-                                    LoanListTab.ACTIVOS -> "No hay préstamos activos o aprobados."
-                                    LoanListTab.RECHAZADOS -> "No hay préstamos rechazados."
-                                    LoanListTab.EN_ESPERA -> "No hay solicitudes pendientes de revisión."
-                                },
-                                modifier = Modifier.fillMaxWidth().padding(24.dp),
-                                color = OnSurfaceVariant
-                            )
-                        }
-                    } else {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            uiState.pendingPrestamos.forEach { request ->
-                                LoanRequestCompactCard(
-                                    request = request,
-                                    client = uiState.clientSummaries[request.clienteId],
-                                    onDetailClick = { onEvent(LoanApprovalUiEvent.SelectPrestamo(request)) },
-                                    onRejectClick = { onEvent(LoanApprovalUiEvent.RejectPrestamo(request)) },
-                                    onApproveClick = { onEvent(LoanApprovalUiEvent.ApprovePrestamo(request)) }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Mostrando ${uiState.pendingPrestamos.size} de ${uiState.totalPendingCount} solicitudes",
-                            fontSize = 12.sp,
-                            color = OnSurfaceVariant
-                        )
-                    }
-                }
+                item { LoanFooterStatsSection(uiState) }
             }
 
-            if (uiState.isDetailOpen && uiState.selectedPrestamo != null) {
-                uiState.selectedPrestamo?.let { prestamo ->
-                    LoanDetailModal(
-                        request = prestamo,
-                        client = uiState.clientSummaries[prestamo.clienteId],
-                        history = uiState.historyByLoan[prestamo.id].orEmpty(),
-                        onClose = { onEvent(LoanApprovalUiEvent.CloseDetail) },
-                        onApprove = { onEvent(LoanApprovalUiEvent.ApprovePrestamo(prestamo)) },
-                        onReject = { onEvent(LoanApprovalUiEvent.RejectPrestamo(prestamo)) }
-                    )
-                }
+            val prestamo = uiState.selectedPrestamo
+            if (uiState.isDetailOpen && (prestamo != null)) {
+                LoanDetailModal(
+                    request = prestamo,
+                    client = uiState.clientSummaries[prestamo.clienteId],
+                    history = uiState.historyByLoan[prestamo.id].orEmpty(),
+                    onClose = { onEvent(LoanApprovalUiEvent.CloseDetail) },
+                    onApprove = { onEvent(LoanApprovalUiEvent.ApprovePrestamo(prestamo)) },
+                    onReject = { onEvent(LoanApprovalUiEvent.RejectPrestamo(prestamo)) }
+                )
             }
 
             uiState.ticketParaImprimir?.let { ticketTexto ->
                 AlertDialog(
                     onDismissRequest = { onEvent(LoanApprovalUiEvent.DismissTicket) },
                     title = { Text("Pagaré Generado (Térmico)", fontWeight = FontWeight.Bold) },
-                    text = {
-                        Column {
-                            Text("Ticket listo para enviar a la impresora portátil Bluetooth:")
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color(0xFFF0F0F0), shape = RoundedCornerShape(8.dp))
-                                    .padding(12.dp)
-                            ) {
-                                Text(
-                                    text = ticketTexto,
-                                    fontSize = 11.sp,
-                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                                    color = Color.Black
-                                )
-                            }
-                        }
-                    },
+                    text = { TicketPreview(ticketTexto) },
                     confirmButton = {
                         Button(
                             onClick = { onEvent(LoanApprovalUiEvent.PrintTicket) },
@@ -299,6 +167,163 @@ fun LoanApprovalContent(
                     }
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun DashboardHeaderSection() {
+    Column(modifier = Modifier.padding(top = 8.dp)) {
+        Text(
+            text = "GESTIÓN DE PRÉSTAMOS",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.tertiary,
+            letterSpacing = 1.sp
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text("Préstamos", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
+        Text(
+            text = "Consulta préstamos activos, rechazados y solicitudes en espera.",
+            fontSize = 14.sp,
+            color = OnSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp)
+        )
+    }
+}
+
+@Composable
+private fun FilterTabsSection(selectedTab: LoanListTab, onEvent: (LoanApprovalUiEvent) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        LoanListTab.entries.forEach { tab ->
+            FilterChip(
+                selected = selectedTab == tab,
+                onClick = { onEvent(LoanApprovalUiEvent.SelectTab(tab)) },
+                label = {
+                    Text(
+                        when (tab) {
+                            LoanListTab.ACTIVOS -> "Activos"
+                            LoanListTab.RECHAZADOS -> "Rechazados"
+                            LoanListTab.EN_ESPERA -> "En espera"
+                        },
+                        fontSize = 12.sp
+                    )
+                },
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatsCardsSection(uiState: LoanApprovalUiState) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            BentoStatCard("Total pendientes", uiState.totalPendingCount.toString(), PrimaryColor, Modifier.weight(1f))
+            BentoStatCard("Volumen solicitado", String.format(Locale.US, "$ %,.0f", uiState.totalRequestedVolume), PrimaryColor, Modifier.weight(1f))
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            BentoStatCard("Interés promedio", "${uiState.avgInterestRate}%", SecondaryGreen, Modifier.weight(1f))
+            BentoStatStatCard("Estado", "OPERATIVO", MaterialTheme.colorScheme.tertiary, Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun LoadingIndicator() {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(36.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = SecondaryGreen)
+    }
+}
+
+@Composable
+private fun ErrorMessage(message: String?) {
+    Text(
+        message.orEmpty(),
+        modifier = Modifier.fillMaxWidth().padding(20.dp),
+        color = ErrorColor
+    )
+}
+
+@Composable
+private fun EmptyListMessage(selectedTab: LoanListTab) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+    ) {
+        Text(
+            when (selectedTab) {
+                LoanListTab.ACTIVOS -> "No hay préstamos activos o aprobados."
+                LoanListTab.RECHAZADOS -> "No hay préstamos rechazados."
+                LoanListTab.EN_ESPERA -> "No hay solicitudes pendientes de revisión."
+            },
+            modifier = Modifier.fillMaxWidth().padding(24.dp),
+            color = OnSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun LoanRequestsList(uiState: LoanApprovalUiState, onEvent: (LoanApprovalUiEvent) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        uiState.pendingPrestamos.forEach { request ->
+            LoanRequestCompactCard(
+                request = request,
+                client = uiState.clientSummaries[request.clienteId],
+                onDetailClick = { onEvent(LoanApprovalUiEvent.SelectPrestamo(request)) },
+                onRejectClick = { onEvent(LoanApprovalUiEvent.RejectPrestamo(request)) },
+                onApproveClick = { onEvent(LoanApprovalUiEvent.ApprovePrestamo(request)) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoanFooterStatsSection(uiState: LoanApprovalUiState) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Mostrando ${uiState.pendingPrestamos.size} de ${uiState.totalPendingCount} solicitudes",
+            fontSize = 12.sp,
+            color = OnSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun TicketPreview(text: String) {
+    Column {
+        Text("Ticket listo para enviar a la impresora portátil Bluetooth:")
+        Spacer(modifier = Modifier.height(12.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFFF0F0F0), shape = RoundedCornerShape(8.dp))
+                .padding(12.dp)
+        ) {
+            Text(
+                text = text,
+                fontSize = 11.sp,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                color = Color.Black
+            )
         }
     }
 }
@@ -411,167 +436,215 @@ fun LoanDetailModal(
                     Column(
                         modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Detalle de Solicitud", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
-                            IconButton(onClick = onClose) {
-                                Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = OnSurfaceVariant)
-                            }
-                        }
+                        LoanDetailHeader(onClose)
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(60.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .background(SecondaryContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    client?.name?.split(" ")?.mapNotNull { it.firstOrNull() }
-                                        ?.joinToString("")?.take(2)?.uppercase() ?: "CL",
-                                    fontSize = 22.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = OnSecondaryContainer
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column {
-                                Text(client?.name ?: "Cliente #${request.clienteId}", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
-                                Text("Cédula: ${client?.dni?.ifBlank { "No registrada" } ?: "No registrada"}", fontSize = 13.sp, color = OnSurfaceVariant)
-                                Text(client?.phone?.ifBlank { "Teléfono no registrado" } ?: "Teléfono no registrado", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = SecondaryGreen)
-                            }
-                        }
+                        ClientHeaderSection(request, client)
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        client?.profilePhotoPath?.let { path ->
-                            AsyncImage(
-                                model = if (path.startsWith("/")) File(path) else path,
-                                contentDescription = "Foto del cliente",
-                                modifier = Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(12.dp))
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                        }
+                        ClientProfilePhoto(client)
 
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text("CONFIGURACIÓN DEL PRÉSTAMO", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Column {
-                                        Text("Monto", fontSize = 11.sp, color = OnSurfaceVariant)
-                                        Text("$${String.format(Locale.US, "%,.2f", request.montoSolicitado)}", fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                    Column {
-                                        Text("Tasa de Interés", fontSize = 11.sp, color = OnSurfaceVariant)
-                                        Text("${request.porcentajeInteres}%", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = SecondaryGreen)
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Column {
-                                        Text("Duración", fontSize = 11.sp, color = OnSurfaceVariant)
-                                        Text("${request.cantidadCuotas} Cuotas", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                                    }
-                                    Column(horizontalAlignment = Alignment.End) {
-                                        Text("Monto por cuota", fontSize = 11.sp, color = OnSurfaceVariant)
-                                        Text("$${request.montoCuota}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
-                                    }
-                                }
-                            }
-                        }
+                        LoanConfigurationSection(request)
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("METADATOS DE APLICACIÓN", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
-                            MetadataRow("Agente Cobrador", "Empleado #${request.empleadoId}")
-                            MetadataRow(
-                                "Fecha de envío",
-                                java.text.SimpleDateFormat("dd/MM/yyyy", Locale("es", "DO"))
-                                    .format(java.util.Date(request.fechaCreacion))
-                            )
-                            MetadataRow("Dirección", client?.address?.ifBlank { "No registrada" } ?: "No registrada")
-                            MetadataRow("Zona", client?.zone?.ifBlank { "Sin asignar" } ?: "Sin asignar")
-                            MetadataRow("Día de pago", request.diaPagoDescripcion ?: "Según frecuencia")
-                            MetadataRow("Estado", request.estado.displayName())
-                        }
+                        MetadataSection(request, client)
 
-                        if (client?.dniFrontPhotoPath != null || client?.dniBackPhotoPath != null) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("DOCUMENTOS DEL CLIENTE", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                listOf(client.dniFrontPhotoPath, client.dniBackPhotoPath).forEachIndexed { index, path ->
-                                    path?.let {
-                                        AsyncImage(
-                                            model = if (it.startsWith("/")) File(it) else it,
-                                            contentDescription = if (index == 0) "Cédula frontal" else "Cédula posterior",
-                                            modifier = Modifier.weight(1f).height(110.dp).clip(RoundedCornerShape(8.dp))
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                        ClientDocumentsSection(client)
 
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("HISTORIAL DE DECISIONES", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
-                        history.sortedByDescending { it.changedAt }.forEach { item ->
-                            MetadataRow(
-                                item.status.displayName(),
-                                SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("es", "DO")).format(Date(item.changedAt))
-                            )
-                            Text("Registrado por usuario #${item.changedByUserId}", fontSize = 11.sp, color = OnSurfaceVariant)
-                            item.note?.let { Text(it, fontSize = 12.sp, color = OnSurfaceVariant) }
-                        }
+                        DecisionHistorySection(history)
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text("NOTAS INTERNAS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text("\"${request.motivoRechazo ?: "Sin observaciones"}\"", fontSize = 12.sp, color = PrimaryColor)
-                            }
-                        }
+                        InternalNotesSection(request.motivoRechazo)
                     }
 
-                    if (request.estado == LoanStatus.PENDIENTE_REVISION) Row(
-                        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Button(
-                            onClick = onReject,
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(containerColor = ErrorColor.copy(alpha = 0.1f)),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text("Rechazar", color = ErrorColor, fontWeight = FontWeight.Bold)
-                        }
-                        Button(
-                            onClick = onApprove,
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(containerColor = SecondaryGreen),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text("Aprobar Préstamo", fontWeight = FontWeight.Bold)
-                        }
+                    if (request.estado == LoanStatus.PENDIENTE_REVISION) {
+                        ApprovalActions(onApprove, onReject)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun LoanDetailHeader(onClose: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("Detalle de Solicitud", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
+        IconButton(onClick = onClose) {
+            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = OnSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun ClientHeaderSection(request: PrestamoEntity, client: LoanClientSummary?) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(SecondaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                client?.name?.split(" ")?.mapNotNull { it.firstOrNull() }
+                    ?.joinToString("")?.take(2)?.uppercase() ?: "CL",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = OnSecondaryContainer
+            )
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(client?.name ?: "Cliente #${request.clienteId}", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
+            Text("Cédula: ${client?.dni?.ifBlank { "No registrada" } ?: "No registrada"}", fontSize = 13.sp, color = OnSurfaceVariant)
+            Text(client?.phone?.ifBlank { "Teléfono no registrado" } ?: "Teléfono no registrado", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = SecondaryGreen)
+        }
+    }
+}
+
+@Composable
+private fun ClientProfilePhoto(client: LoanClientSummary?) {
+    client?.profilePhotoPath?.let { path ->
+        AsyncImage(
+            model = if (path.startsWith("/")) File(path) else path,
+            contentDescription = "Foto del cliente",
+            modifier = Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(12.dp))
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+}
+
+@Composable
+private fun LoanConfigurationSection(request: PrestamoEntity) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("CONFIGURACIÓN DEL PRÉSTAMO", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Column {
+                    Text("Monto", fontSize = 11.sp, color = OnSurfaceVariant)
+                    Text("$${String.format(Locale.US, "%,.2f", request.montoSolicitado)}", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                }
+                Column {
+                    Text("Tasa de Interés", fontSize = 11.sp, color = OnSurfaceVariant)
+                    Text("${request.porcentajeInteres}%", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = SecondaryGreen)
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Column {
+                    Text("Duración", fontSize = 11.sp, color = OnSurfaceVariant)
+                    Text("${request.cantidadCuotas} Cuotas", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("Monto por cuota", fontSize = 11.sp, color = OnSurfaceVariant)
+                    Text("$${request.montoCuota}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MetadataSection(request: PrestamoEntity, client: LoanClientSummary?) {
+    val localeDo = Locale.forLanguageTag("es-DO")
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("METADATOS DE APLICACIÓN", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
+        MetadataRow("Agente Cobrador", "Empleado #${request.empleadoId}")
+        MetadataRow(
+            "Fecha de envío",
+            SimpleDateFormat("dd/MM/yyyy", localeDo).format(Date(request.fechaCreacion))
+        )
+        MetadataRow("Dirección", client?.address?.ifBlank { "No registrada" } ?: "No registrada")
+        MetadataRow("Zona", client?.zone?.ifBlank { "Sin asignar" } ?: "Sin asignar")
+        MetadataRow("Día de pago", request.diaPagoDescripcion ?: "Según frecuencia")
+        MetadataRow("Estado", request.estado.displayName())
+    }
+}
+
+@Composable
+private fun ClientDocumentsSection(client: LoanClientSummary?) {
+    if (client?.dniFrontPhotoPath != null || client?.dniBackPhotoPath != null) {
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("DOCUMENTOS DEL CLIENTE", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(client.dniFrontPhotoPath, client.dniBackPhotoPath).forEachIndexed { index, path ->
+                path?.let {
+                    AsyncImage(
+                        model = if (it.startsWith("/")) File(it) else it,
+                        contentDescription = if (index == 0) "Cédula frontal" else "Cédula posterior",
+                        modifier = Modifier.weight(1f).height(110.dp).clip(RoundedCornerShape(8.dp))
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DecisionHistorySection(history: List<LoanStatusHistory>) {
+    val localeDo = Locale.forLanguageTag("es-DO")
+    Spacer(modifier = Modifier.height(16.dp))
+    Text("HISTORIAL DE DECISIONES", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
+    history.sortedByDescending { it.changedAt }.forEach { item ->
+        MetadataRow(
+            item.status.displayName(),
+            SimpleDateFormat("dd/MM/yyyy HH:mm", localeDo).format(Date(item.changedAt))
+        )
+        Text("Registrado por usuario #${item.changedByUserId}", fontSize = 11.sp, color = OnSurfaceVariant)
+        item.note?.let { Text(it, fontSize = 12.sp, color = OnSurfaceVariant) }
+    }
+}
+
+@Composable
+private fun InternalNotesSection(motivoRechazo: String?) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text("NOTAS INTERNAS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("\"${motivoRechazo ?: "Sin observaciones"}\"", fontSize = 12.sp, color = PrimaryColor)
+        }
+    }
+}
+
+@Composable
+private fun ApprovalActions(onApprove: () -> Unit, onReject: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Button(
+            onClick = onReject,
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(containerColor = ErrorColor.copy(alpha = 0.1f)),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("Rechazar", color = ErrorColor, fontWeight = FontWeight.Bold)
+        }
+        Button(
+            onClick = onApprove,
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(containerColor = SecondaryGreen),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("Aprobar Préstamo", fontWeight = FontWeight.Bold)
         }
     }
 }
