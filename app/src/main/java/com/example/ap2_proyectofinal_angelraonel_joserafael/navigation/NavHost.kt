@@ -25,6 +25,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.t
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cliente.ClientesNavActions
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cliente.ClientesScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cobros.CobrosHistorialScreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cobros.CobrosRutaCallbacks
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cobros.CobrosRutaScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.cierre.CierreCajaScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.cobro.DetallePrestamoCobroScreen
@@ -274,13 +275,15 @@ private fun NavGraphBuilder.businessGraph(
         CobrosRutaScreen(
             isAdmin = true,
             routeOnly = false,
-            onBack = { navController.popBackStack() },
-            onOpenLoan = { openLoanNavigate(it, true) },
-            onHome = { adminNavigate(Routes.ADMIN_HOME) },
-            onClients = { adminNavigate(Routes.CLIENTES_ADMIN) },
-            onLoans = { adminNavigate(Routes.LOAN_APPROVAL) },
-            onRoutes = { adminNavigate(Routes.RUTAS_ADMIN) },
-            onProfile = { adminNavigate(Routes.ADMIN_PROFILE) }
+            callbacks = CobrosRutaCallbacks(
+                onBack = { navController.popBackStack() },
+                onOpenLoan = { openLoanNavigate(it, true) },
+                onHome = { adminNavigate(Routes.ADMIN_HOME) },
+                onClients = { adminNavigate(Routes.CLIENTES_ADMIN) },
+                onLoans = { adminNavigate(Routes.LOAN_APPROVAL) },
+                onRoutes = { adminNavigate(Routes.RUTAS_ADMIN) },
+                onProfile = { adminNavigate(Routes.ADMIN_PROFILE) }
+            )
         )
     }
 
@@ -288,13 +291,15 @@ private fun NavGraphBuilder.businessGraph(
         CobrosRutaScreen(
             isAdmin = true,
             routeOnly = true,
-            onBack = { navController.popBackStack() },
-            onOpenLoan = { openLoanNavigate(it, true) },
-            onHome = { adminNavigate(Routes.ADMIN_HOME) },
-            onClients = { adminNavigate(Routes.CLIENTES_ADMIN) },
-            onLoans = { adminNavigate(Routes.LOAN_APPROVAL) },
-            onRoutes = {},
-            onProfile = { adminNavigate(Routes.ADMIN_PROFILE) }
+            callbacks = CobrosRutaCallbacks(
+                onBack = { navController.popBackStack() },
+                onOpenLoan = { openLoanNavigate(it, true) },
+                onHome = { adminNavigate(Routes.ADMIN_HOME) },
+                onClients = { adminNavigate(Routes.CLIENTES_ADMIN) },
+                onLoans = { adminNavigate(Routes.LOAN_APPROVAL) },
+                onRoutes = {},
+                onProfile = { adminNavigate(Routes.ADMIN_PROFILE) }
+            )
         )
     }
 
@@ -302,13 +307,15 @@ private fun NavGraphBuilder.businessGraph(
         CobrosRutaScreen(
             isAdmin = false,
             routeOnly = false,
-            onBack = { navController.popBackStack() },
-            onOpenLoan = { openLoanNavigate(it, false) },
-            onHome = { employeeNavigate(Routes.EMPLEADO_HOME) },
-            onClients = { employeeNavigate(Routes.CLIENTES_EMPLEADO) },
-            onLoans = {},
-            onRoutes = { employeeNavigate(Routes.RUTAS_EMPLEADO) },
-            onProfile = { employeeNavigate(Routes.EMPLEADO_PERFIL) }
+            callbacks = CobrosRutaCallbacks(
+                onBack = { navController.popBackStack() },
+                onOpenLoan = { openLoanNavigate(it, false) },
+                onHome = { employeeNavigate(Routes.EMPLEADO_HOME) },
+                onClients = { employeeNavigate(Routes.CLIENTES_EMPLEADO) },
+                onLoans = {},
+                onRoutes = { employeeNavigate(Routes.RUTAS_EMPLEADO) },
+                onProfile = { employeeNavigate(Routes.EMPLEADO_PERFIL) }
+            )
         )
     }
 
@@ -316,13 +323,15 @@ private fun NavGraphBuilder.businessGraph(
         CobrosRutaScreen(
             isAdmin = false,
             routeOnly = true,
-            onBack = { navController.popBackStack() },
-            onOpenLoan = { openLoanNavigate(it, false) },
-            onHome = { employeeNavigate(Routes.EMPLEADO_HOME) },
-            onClients = { employeeNavigate(Routes.CLIENTES_EMPLEADO) },
-            onLoans = { employeeNavigate(Routes.COBROS_EMPLEADO) },
-            onRoutes = {},
-            onProfile = { employeeNavigate(Routes.EMPLEADO_PERFIL) }
+            callbacks = CobrosRutaCallbacks(
+                onBack = { navController.popBackStack() },
+                onOpenLoan = { openLoanNavigate(it, false) },
+                onHome = { employeeNavigate(Routes.EMPLEADO_HOME) },
+                onClients = { employeeNavigate(Routes.CLIENTES_EMPLEADO) },
+                onLoans = { employeeNavigate(Routes.COBROS_EMPLEADO) },
+                onRoutes = {},
+                onProfile = { employeeNavigate(Routes.EMPLEADO_PERFIL) }
+            )
         )
     }
 
