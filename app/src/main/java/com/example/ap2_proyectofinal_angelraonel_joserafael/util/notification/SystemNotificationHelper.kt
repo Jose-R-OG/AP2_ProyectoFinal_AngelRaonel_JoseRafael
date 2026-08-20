@@ -44,12 +44,9 @@ class SystemNotificationHelper @Inject constructor(
             .setAutoCancel(true)
 
         with(NotificationManagerCompat.from(context)) {
-            // No comprobamos el permiso aquí porque se asume que se solicitó en la UI
-            // En Android 13+ si no hay permiso, simplemente no se muestra.
             try {
                 notify(notificationId, builder.build())
             } catch (e: SecurityException) {
-                // Manejar error de permiso si fuera necesario
             }
         }
     }

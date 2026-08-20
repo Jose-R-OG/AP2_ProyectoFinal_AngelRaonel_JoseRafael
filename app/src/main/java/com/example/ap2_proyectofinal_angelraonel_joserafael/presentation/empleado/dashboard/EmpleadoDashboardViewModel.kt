@@ -101,7 +101,6 @@ class EmpleadoDashboardViewModel @Inject constructor(
                     return@launch
                 }
 
-                // Info estática inicial para que no se vea vacío mientras cargan los flujos
                 _uiState.update { state ->
                     state.copy(
                         userName = currentUser.nombreCompleto,

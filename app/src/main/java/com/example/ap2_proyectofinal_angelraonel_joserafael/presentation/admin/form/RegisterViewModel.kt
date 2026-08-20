@@ -100,7 +100,6 @@ class RegisterViewModel @Inject constructor(
             
             result.onSuccess { activationCode ->
                 _uiState.update { it.copy(registerState = RegisterState.Success(activationCode, currentState.email)) }
-                // Enviar correo de forma silenciosa
                 viewModelScope.launch {
                     EmailSenderUtil.sendActivationCode(
                         recipientEmail = currentState.email,

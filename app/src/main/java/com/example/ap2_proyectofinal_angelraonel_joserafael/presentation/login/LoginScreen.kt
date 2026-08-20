@@ -125,7 +125,6 @@ fun LoginContent(
                 .padding(20.dp),
             contentAlignment = Alignment.Center
         ) {
-            // Theme switcher icon
             IconButton(
                 onClick = { onEvent(LoginUiEvent.ShowThemeDialog) },
                 modifier = Modifier
