@@ -22,6 +22,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.f
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.loanApproval.LoanApprovalScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.profile.AdminProfileSettingsScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.admin.tarifa.AdjustTariffsScreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cliente.ClientesNavActions
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cliente.ClientesScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cobros.CobrosHistorialScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cobros.CobrosRutaScreen
@@ -244,24 +245,28 @@ private fun NavGraphBuilder.businessGraph(
     composable(Routes.CLIENTES_ADMIN) {
         ClientesScreen(
             isAdmin = true,
-            onNavigateHome = { adminNavigate(Routes.ADMIN_HOME) },
-            onNavigateLoans = { adminNavigate(Routes.LOAN_APPROVAL) },
-            onNavigateProfile = { adminNavigate(Routes.ADMIN_PROFILE) },
-            onNavigateRoutes = { adminNavigate(Routes.RUTAS_ADMIN) },
-            onAddCliente = { navController.navigate(Routes.REGISTRO_CLIENTE) },
-            onNewLoan = { clientId -> navController.navigate("${Routes.REGISTRO_CLIENTE}?clientId=$clientId") }
+            actions = ClientesNavActions(
+                onNavigateHome = { adminNavigate(Routes.ADMIN_HOME) },
+                onNavigateLoans = { adminNavigate(Routes.LOAN_APPROVAL) },
+                onNavigateProfile = { adminNavigate(Routes.ADMIN_PROFILE) },
+                onNavigateRoutes = { adminNavigate(Routes.RUTAS_ADMIN) },
+                onAddCliente = { navController.navigate(Routes.REGISTRO_CLIENTE) },
+                onNewLoan = { clientId -> navController.navigate("${Routes.REGISTRO_CLIENTE}?clientId=$clientId") }
+            )
         )
     }
 
     composable(Routes.CLIENTES_EMPLEADO) {
         ClientesScreen(
             isAdmin = false,
-            onNavigateHome = { employeeNavigate(Routes.EMPLEADO_HOME) },
-            onNavigateLoans = { employeeNavigate(Routes.COBROS_EMPLEADO) },
-            onNavigateProfile = { employeeNavigate(Routes.EMPLEADO_PERFIL) },
-            onNavigateRoutes = { employeeNavigate(Routes.RUTAS_EMPLEADO) },
-            onAddCliente = { navController.navigate(Routes.REGISTRO_CLIENTE) },
-            onNewLoan = { clientId -> navController.navigate("${Routes.REGISTRO_CLIENTE}?clientId=$clientId") }
+            actions = ClientesNavActions(
+                onNavigateHome = { employeeNavigate(Routes.EMPLEADO_HOME) },
+                onNavigateLoans = { employeeNavigate(Routes.COBROS_EMPLEADO) },
+                onNavigateProfile = { employeeNavigate(Routes.EMPLEADO_PERFIL) },
+                onNavigateRoutes = { employeeNavigate(Routes.RUTAS_EMPLEADO) },
+                onAddCliente = { navController.navigate(Routes.REGISTRO_CLIENTE) },
+                onNewLoan = { clientId -> navController.navigate("${Routes.REGISTRO_CLIENTE}?clientId=$clientId") }
+            )
         )
     }
 
