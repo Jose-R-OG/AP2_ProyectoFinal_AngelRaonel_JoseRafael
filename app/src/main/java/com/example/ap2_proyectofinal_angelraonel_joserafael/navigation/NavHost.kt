@@ -28,6 +28,7 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cobros.
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cobros.CobrosRutaCallbacks
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.cobros.CobrosRutaScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.cierre.CierreCajaScreen
+import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.cobro.DetalleCobroCallbacks
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.cobro.DetallePrestamoCobroScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.dashboard.EmpleadoDashboardScreen
 import com.example.ap2_proyectofinal_angelraonel_joserafael.presentation.empleado.form.RegistroClienteConCuotas
@@ -352,13 +353,15 @@ private fun NavGraphBuilder.businessGraph(
         val isAdmin = backStackEntry.arguments?.getBoolean("isAdmin") ?: false
         DetallePrestamoCobroScreen(
             isAdmin = isAdmin,
-            onNavigateBack = { navController.popBackStack() },
-            onNavigateHome = { if (isAdmin) adminNavigate(Routes.ADMIN_HOME) else employeeNavigate(Routes.EMPLEADO_HOME) },
-            onNavigateToClients = { if (isAdmin) adminNavigate(Routes.CLIENTES_ADMIN) else employeeNavigate(Routes.CLIENTES_EMPLEADO) },
-            onNavigateToLoans = { if (isAdmin) adminNavigate(Routes.LOAN_APPROVAL) else employeeNavigate(Routes.COBROS_EMPLEADO) },
-            onNavigateToRoutes = { if (isAdmin) adminNavigate(Routes.RUTAS_ADMIN) else employeeNavigate(Routes.RUTAS_EMPLEADO) },
-            onNavigateToProfile = { if (isAdmin) adminNavigate(Routes.ADMIN_PROFILE) else employeeNavigate(Routes.EMPLEADO_PERFIL) },
-            onNavigateToRegisterClient = { clientId -> navController.navigate("${Routes.REGISTRO_CLIENTE}?clientId=$clientId") }
+            callbacks = DetalleCobroCallbacks(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateHome = { if (isAdmin) adminNavigate(Routes.ADMIN_HOME) else employeeNavigate(Routes.EMPLEADO_HOME) },
+                onNavigateToClients = { if (isAdmin) adminNavigate(Routes.CLIENTES_ADMIN) else employeeNavigate(Routes.CLIENTES_EMPLEADO) },
+                onNavigateToLoans = { if (isAdmin) adminNavigate(Routes.LOAN_APPROVAL) else employeeNavigate(Routes.COBROS_EMPLEADO) },
+                onNavigateToRoutes = { if (isAdmin) adminNavigate(Routes.RUTAS_ADMIN) else employeeNavigate(Routes.RUTAS_EMPLEADO) },
+                onNavigateToProfile = { if (isAdmin) adminNavigate(Routes.ADMIN_PROFILE) else employeeNavigate(Routes.EMPLEADO_PERFIL) },
+                onNavigateToRegisterClient = { clientId -> navController.navigate("${Routes.REGISTRO_CLIENTE}?clientId=$clientId") }
+            )
         )
     }
 
