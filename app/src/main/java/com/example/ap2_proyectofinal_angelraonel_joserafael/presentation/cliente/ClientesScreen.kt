@@ -7,6 +7,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,16 +65,26 @@ import com.example.ap2_proyectofinal_angelraonel_joserafael.navigation.RoleBotto
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.AP2_ProyectoFinal_AngelRaonel_JoseRafaelTheme
 import com.example.ap2_proyectofinal_angelraonel_joserafael.ui.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+private const val ZONA_NORTE = "Zona Norte"
+private const val ZONA_SUR = "Zona Sur"
+private const val ZONA_ESTE = "Zona Este"
+
+data class ClientesNavActions(
+    val onNavigateHome: () -> Unit = {},
+    val onNavigateLoans: () -> Unit = {},
+    val onNavigateProfile: () -> Unit = {},
+    val onNavigateRoutes: () -> Unit = {},
+    val onAddCliente: () -> Unit = {},
+    val onNewLoan: (Long) -> Unit = {},
+    val onEdit: (Cliente) -> Unit = {},
+    val onDeactivate: (Cliente) -> Unit = {},
+    val onAssign: (Cliente) -> Unit = {}
+)
+
 @Composable
 fun ClientesScreen(
     isAdmin: Boolean,
-    onNavigateHome: () -> Unit,
-    onNavigateLoans: () -> Unit,
-    onNavigateProfile: () -> Unit,
-    onNavigateRoutes: () -> Unit,
-    onAddCliente: () -> Unit,
-    onNewLoan: (Long) -> Unit = {},
+    actions: ClientesNavActions,
     viewModel: ClientesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -81,12 +92,7 @@ fun ClientesScreen(
         isAdmin = isAdmin,
         uiState = uiState,
         onEvent = viewModel::onEvent,
-        onNavigateHome = onNavigateHome,
-        onNavigateLoans = onNavigateLoans,
-        onNavigateProfile = onNavigateProfile,
-        onNavigateRoutes = onNavigateRoutes,
-        onAddCliente = onAddCliente,
-        onNewLoan = onNewLoan
+        actions = actions
     )
 }
 
@@ -96,12 +102,7 @@ fun ClientesContent(
     isAdmin: Boolean,
     uiState: ClientesUiState,
     onEvent: (ClientesUiEvent) -> Unit,
-    onNavigateHome: () -> Unit,
-    onNavigateLoans: () -> Unit,
-    onNavigateProfile: () -> Unit,
-    onNavigateRoutes: () -> Unit,
-    onAddCliente: () -> Unit,
-    onNewLoan: (Long) -> Unit
+    actions: ClientesNavActions
 ) {
     val focusManager = LocalFocusManager.current
     val visibleClientes = uiState.filteredClientes(isAdmin)
@@ -118,39 +119,17 @@ fun ClientesContent(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.AccountBalance,
-                            contentDescription = null,
-                            tint = ClientesPrimary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        @Suppress("SpellCheckingInspection")
-                        Text(
-                            text = "TaCobrao",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = ClientesPrimary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = ClientesSurface)
-            )
+            ClientesTopBar()
         },
         bottomBar = {
             ClientesBottomBar(
                 isAdmin = isAdmin,
-                onNavigateHome = onNavigateHome,
-                onNavigateLoans = onNavigateLoans,
-                onNavigateProfile = onNavigateProfile,
-                onNavigateRoutes = onNavigateRoutes
+                actions = actions
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onAddCliente,
+                onClick = actions.onAddCliente,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = CircleShape
@@ -172,18 +151,7 @@ fun ClientesContent(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            Text(
-                text = "Clientes",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = ClientesPrimary
-            )
-            @Suppress("SpellCheckingInspection")
-            Text(
-                text = "Consulta, modifica o desactiva clientes sin perder su historial.",
-                fontSize = 14.sp,
-                color = ClientesTextSecondary
-            )
+            ClientesHeaderSection(isAdmin, visibleClientes.count { it.isActive }, visibleClientes.count { !it.isActive }, visibleClientes.size)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -200,19 +168,6 @@ fun ClientesContent(
                 keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = if (isAdmin) {
-                    "${visibleClientes.count { it.isActive }} activo(s) · ${visibleClientes.count { !it.isActive }} inactivo(s)"
-                } else {
-                    "${visibleClientes.size} cliente(s) asignado(s)"
-                },
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = ClientesGreen
-            )
-
             Spacer(modifier = Modifier.height(8.dp))
 
             when {
@@ -221,36 +176,17 @@ fun ClientesContent(
                         CircularProgressIndicator(color = ClientesGreen)
                     }
                 }
-
                 visibleClientes.isEmpty() -> {
                     EmptyClientesState(hasSearch = uiState.searchQuery.isNotBlank())
                 }
-
                 else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(visibleClientes, key = { it.id }) { cliente ->
-                            ClienteCard(
-                                cliente = cliente,
-                                enabled = !uiState.isMutating && cliente.isActive,
-                                isAdmin = isAdmin,
-                                canCreateLoans = uiState.canCreateLoans,
-                                onEdit = {
-                                    onEvent(ClientesUiEvent.EditRequested(cliente))
-                                },
-                                onDeactivate = {
-                                    onEvent(ClientesUiEvent.DeactivationRequested(cliente))
-                                },
-                                onAssign = {
-                                    onEvent(ClientesUiEvent.AssignmentRequested(cliente))
-                                },
-                                onNewLoan = { onNewLoan(cliente.id) }
-                            )
-                        }
-                        item { Spacer(modifier = Modifier.height(88.dp)) }
-                    }
+                    ClientesList(
+                        isAdmin = isAdmin,
+                        uiState = uiState,
+                        visibleClientes = visibleClientes,
+                        onEvent = onEvent,
+                        actions = actions
+                    )
                 }
             }
         }
@@ -264,18 +200,110 @@ fun ClientesContent(
         )
     }
 
-    uiState.pendingDeactivation?.let { cliente ->
-        AlertDialog(
-            onDismissRequest = {
-                onEvent(ClientesUiEvent.DismissDeactivation)
-            },
-            icon = {
+    DeactivationConfirmDialog(
+        pendingDeactivation = uiState.pendingDeactivation,
+        isMutating = uiState.isMutating,
+        onEvent = onEvent
+    )
+
+    AssignmentDialog(
+        pendingAssignment = uiState.pendingAssignment,
+        employeeOptions = uiState.employeeOptions,
+        onEvent = onEvent
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ClientesTopBar() {
+    TopAppBar(
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Outlined.PersonOff,
+                    imageVector = Icons.Default.AccountBalance,
                     contentDescription = null,
-                    tint = ClientesError
+                    tint = ClientesPrimary
                 )
-            },
+                Spacer(modifier = Modifier.width(8.dp))
+                @Suppress("SpellCheckingInspection")
+                Text(
+                    text = "TaCobrao",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = ClientesPrimary
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = ClientesSurface)
+    )
+}
+
+@Composable
+private fun ClientesHeaderSection(isAdmin: Boolean, activos: Int, inactivos: Int, total: Int) {
+    Text(
+        text = "Clientes",
+        fontSize = 26.sp,
+        fontWeight = FontWeight.Bold,
+        color = ClientesPrimary
+    )
+    @Suppress("SpellCheckingInspection")
+    Text(
+        text = "Consulta, modifica o desactiva clientes sin perder su historial.",
+        fontSize = 14.sp,
+        color = ClientesTextSecondary
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    Text(
+        text = if (isAdmin) {
+            "$activos activo(s) · $inactivos inactivo(s)"
+        } else {
+            "$total cliente(s) asignado(s)"
+        },
+        fontSize = 12.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = ClientesGreen
+    )
+}
+
+@Composable
+private fun ClientesList(
+    isAdmin: Boolean,
+    uiState: ClientesUiState,
+    visibleClientes: List<Cliente>,
+    onEvent: (ClientesUiEvent) -> Unit,
+    actions: ClientesNavActions
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(visibleClientes, key = { it.id }) { cliente ->
+            ClienteCard(
+                cliente = cliente,
+                enabled = !uiState.isMutating && cliente.isActive,
+                isAdmin = isAdmin,
+                canCreateLoans = uiState.canCreateLoans,
+                actions = actions.copy(
+                    onEdit = { onEvent(ClientesUiEvent.EditRequested(cliente)) },
+                    onDeactivate = { onEvent(ClientesUiEvent.DeactivationRequested(cliente)) },
+                    onAssign = { onEvent(ClientesUiEvent.AssignmentRequested(cliente)) }
+                )
+            )
+        }
+        item { Spacer(modifier = Modifier.height(88.dp)) }
+    }
+}
+
+@Composable
+private fun DeactivationConfirmDialog(
+    pendingDeactivation: Cliente?,
+    isMutating: Boolean,
+    onEvent: (ClientesUiEvent) -> Unit
+) {
+    pendingDeactivation?.let { cliente ->
+        AlertDialog(
+            onDismissRequest = { onEvent(ClientesUiEvent.DismissDeactivation) },
+            icon = { Icon(Icons.Outlined.PersonOff, null, tint = ClientesError) },
             title = { Text("Desactivar cliente") },
             text = {
                 Text(
@@ -286,14 +314,14 @@ fun ClientesContent(
             confirmButton = {
                 Button(
                     onClick = { onEvent(ClientesUiEvent.ConfirmDeactivation) },
-                    enabled = !uiState.isMutating,
+                    enabled = !isMutating,
                     colors = ButtonDefaults.buttonColors(containerColor = ClientesError)
                 ) {
-                    if (uiState.isMutating) {
+                    if (isMutating) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                            color = Color.White
+                            color = Color.White,
+                            strokeWidth = 2.dp
                         )
                     } else {
                         Text("Desactivar")
@@ -301,24 +329,28 @@ fun ClientesContent(
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = { onEvent(ClientesUiEvent.DismissDeactivation) },
-                    enabled = !uiState.isMutating
-                ) {
+                TextButton(onClick = { onEvent(ClientesUiEvent.DismissDeactivation) }, enabled = !isMutating) {
                     Text("Cancelar")
                 }
             }
         )
     }
+}
 
-    uiState.pendingAssignment?.let { cliente ->
+@Composable
+private fun AssignmentDialog(
+    pendingAssignment: Cliente?,
+    employeeOptions: List<ClientEmployeeOption>,
+    onEvent: (ClientesUiEvent) -> Unit
+) {
+    pendingAssignment?.let { cliente ->
         AlertDialog(
             onDismissRequest = { onEvent(ClientesUiEvent.DismissAssignment) },
             title = { Text("Asignar ${cliente.fullName}") },
             text = {
                 LazyColumn(modifier = Modifier.heightIn(max = 420.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (uiState.employeeOptions.isEmpty()) item { Text("No hay empleados activos disponibles.") }
-                    items(uiState.employeeOptions, key = { it.id }) { employee ->
+                    if (employeeOptions.isEmpty()) item { Text("No hay empleados activos disponibles.") }
+                    items(employeeOptions, key = { it.id }) { employee ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { onEvent(ClientesUiEvent.AssignToEmployee(employee.id)) },
@@ -340,19 +372,16 @@ fun ClientesContent(
 @Composable
 private fun ClientesBottomBar(
     isAdmin: Boolean,
-    onNavigateHome: () -> Unit,
-    onNavigateLoans: () -> Unit,
-    onNavigateProfile: () -> Unit,
-    onNavigateRoutes: () -> Unit
+    actions: ClientesNavActions
 ) {
     RoleBottomBar(
         isAdmin = isAdmin,
         selectedTab = PrimaryTab.CLIENTS,
-        onHome = onNavigateHome,
+        onHome = actions.onNavigateHome,
         onClients = {},
-        onLoans = onNavigateLoans,
-        onRoutes = onNavigateRoutes,
-        onProfile = onNavigateProfile
+        onLoans = actions.onNavigateLoans,
+        onRoutes = actions.onNavigateRoutes,
+        onProfile = actions.onNavigateProfile
     )
 }
 
@@ -361,11 +390,8 @@ private fun ClienteCard(
     cliente: Cliente,
     enabled: Boolean,
     isAdmin: Boolean,
-    canCreateLoans: Boolean = false,
-    onEdit: () -> Unit,
-    onDeactivate: () -> Unit,
-    onAssign: () -> Unit,
-    onNewLoan: () -> Unit
+    canCreateLoans: Boolean,
+    actions: ClientesNavActions
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -373,95 +399,116 @@ private fun ClienteCard(
         border = BorderStroke(1.dp, ClientesOutline.copy(alpha = 0.75f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                ClienteAvatar(cliente)
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = cliente.fullName,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = ClientesPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = "Cliente #${cliente.id}",
-                        fontSize = 12.sp,
-                        color = ClientesGreen
-                    )
-                }
-                Text(
-                    text = if (cliente.isActive) "ACTIVO" else "INACTIVO",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (cliente.isActive) ClientesGreen else ClientesTextSecondary,
-                    modifier = Modifier
-                        .background(
-                            if (cliente.isActive) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant,
-                            RoundedCornerShape(20.dp)
-                        )
-                        .padding(horizontal = 10.dp, vertical = 5.dp)
-                )
-            }
-
+            ClienteCardHeader(cliente)
             Spacer(modifier = Modifier.height(14.dp))
-            ClienteInfoRow(Icons.Outlined.Badge, "Cédula", cliente.dni)
-            ClienteInfoRow(Icons.Outlined.Phone, "Teléfono", cliente.phone)
-            ClienteInfoRow(
-                Icons.Outlined.LocationOn,
-                "Dirección",
-                cliente.address.ifBlank { "No registrada" }
-            )
-            ClienteInfoRow(Icons.Outlined.LocationOn, "Zona", cliente.zone)
-
+            ClienteCardBody(cliente)
             Spacer(modifier = Modifier.height(12.dp))
             HorizontalDivider(color = ClientesOutline.copy(alpha = 0.45f))
             Spacer(modifier = Modifier.height(12.dp))
+            ClienteCardActions(cliente, enabled, isAdmin, canCreateLoans, actions)
+        }
+    }
+}
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+@Composable
+private fun ClienteCardHeader(cliente: Cliente) {
+    val statusText = if (cliente.isActive) "ACTIVO" else "INACTIVO"
+    val statusColor = if (cliente.isActive) ClientesGreen else ClientesTextSecondary
+    val statusBg = if (cliente.isActive) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        ClienteAvatar(cliente)
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = cliente.fullName,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold,
+                color = ClientesPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = "Cliente #${cliente.id}",
+                fontSize = 12.sp,
+                color = ClientesGreen
+            )
+        }
+        Surface(color = statusBg, shape = RoundedCornerShape(20.dp)) {
+            Text(
+                text = statusText,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = statusColor,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ClienteCardBody(cliente: Cliente) {
+    Column {
+        ClienteInfoRow(Icons.Outlined.Badge, "Cédula", cliente.dni)
+        ClienteInfoRow(Icons.Outlined.Phone, "Teléfono", cliente.phone)
+        ClienteInfoRow(Icons.Outlined.LocationOn, "Dirección", cliente.address.ifBlank { "No registrada" })
+        ClienteInfoRow(Icons.Outlined.LocationOn, "Zona", cliente.zone)
+    }
+}
+
+@Composable
+private fun ClienteCardActions(
+    cliente: Cliente,
+    enabled: Boolean,
+    isAdmin: Boolean,
+    canCreateLoans: Boolean,
+    actions: ClientesNavActions
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                onClick = { actions.onEdit(cliente) },
+                enabled = enabled,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(10.dp)
             ) {
-                OutlinedButton(
-                    onClick = onEdit,
-                    enabled = enabled,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Modificar")
-                }
-                OutlinedButton(
-                    onClick = onDeactivate,
-                    enabled = enabled,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(1.dp, ClientesError),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = ClientesError)
-                ) {
-                    Icon(Icons.Outlined.PersonOff, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(if (cliente.isActive) "Desactivar" else "Inactivo")
+                Icon(Icons.Default.Edit, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Modificar")
+            }
+            OutlinedButton(
+                onClick = { actions.onDeactivate(cliente) },
+                enabled = enabled,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(1.dp, ClientesError),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = ClientesError)
+            ) {
+                val icon = if (cliente.isActive) Icons.Outlined.PersonOff else Icons.Default.Add
+                val label = if (cliente.isActive) "Desactivar" else "Inactivo"
+                Icon(icon, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(label)
+            }
+        }
+        if (cliente.isActive && (isAdmin || canCreateLoans)) {
+            if (isAdmin) {
+                OutlinedButton(onClick = { actions.onAssign(cliente) }, modifier = Modifier.fillMaxWidth(), enabled = enabled) {
+                    Icon(Icons.Default.Group, null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp)); Text("Asignar a empleado")
                 }
             }
-            if (cliente.isActive && (isAdmin || canCreateLoans)) {
-                if (isAdmin) {
-                    OutlinedButton(onClick = onAssign, modifier = Modifier.fillMaxWidth(), enabled = enabled) {
-                        Icon(Icons.Default.Group, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(6.dp)); Text("Asignar a empleado")
-                    }
-                }
-                Button(
-                    onClick = onNewLoan,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = enabled,
-                    colors = ButtonDefaults.buttonColors(containerColor = ClientesGreen)
-                ) {
-                    Icon(Icons.Default.Payments, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp)); Text("Nuevo préstamo / ampliar capital")
-                }
+            Button(
+                onClick = { actions.onNewLoan(cliente.id) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                colors = ButtonDefaults.buttonColors(containerColor = ClientesGreen)
+            ) {
+                Icon(Icons.Default.Payments, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp)); Text("Nuevo préstamo / ampliar capital")
             }
         }
     }
@@ -627,7 +674,7 @@ private fun EditClienteDialog(
                 )
                 Text("Zona de cobro", fontWeight = FontWeight.SemiBold)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    listOf("Zona Norte", "Zona Sur", "Zona Este").forEach { zone ->
+                    listOf(ZONA_NORTE, ZONA_SUR, ZONA_ESTE).forEach { zone ->
                         OutlinedButton(
                             onClick = { onEvent(ClientesUiEvent.EditorZoneChanged(zone)) },
                             modifier = Modifier.weight(1f),
@@ -653,8 +700,8 @@ private fun EditClienteDialog(
                 if (isSaving) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                        color = Color.White
+                        color = Color.White,
+                        strokeWidth = 2.dp
                     )
                 } else {
                     Text("Guardar cambios")
@@ -688,18 +735,13 @@ fun ClientesScreenPreview() {
             isAdmin = true,
             uiState = ClientesUiState(
                 clientes = listOf(
-                    Cliente(1, "Juan Perez", "12345678901", "8095551234", "Calle A", "Zona Norte"),
-                    Cliente(2, "Maria Garcia", "09876543210", "8095555678", "Calle B", "Zona Sur", isActive = false)
+                    Cliente(1, "Juan Perez", "12345678901", "8095551234", "Calle A", ZONA_NORTE),
+                    Cliente(2, "Maria Garcia", "09876543210", "8095555678", "Calle B", ZONA_SUR, isActive = false)
                 ),
                 isLoading = false
             ),
             onEvent = {},
-            onNavigateHome = {},
-            onNavigateLoans = {},
-            onNavigateProfile = {},
-            onNavigateRoutes = {},
-            onAddCliente = {},
-            onNewLoan = {}
+            actions = ClientesNavActions()
         )
     }
 }
@@ -712,19 +754,14 @@ fun ClientesScreenNonAdminPreview() {
             isAdmin = false,
             uiState = ClientesUiState(
                 clientes = listOf(
-                    Cliente(1, "Juan Perez", "12345678901", "8095551234", "Calle A", "Zona Norte"),
-                    Cliente(2, "Maria Garcia", "09876543210", "8095555678", "Calle B", "Zona Sur", isActive = false)
+                    Cliente(1, "Juan Perez", "12345678901", "8095551234", "Calle A", ZONA_NORTE),
+                    Cliente(2, "Maria Garcia", "09876543210", "8095555678", "Calle B", ZONA_SUR, isActive = false)
                 ),
                 assignedClientIds = setOf(1),
                 isLoading = false
             ),
             onEvent = {},
-            onNavigateHome = {},
-            onNavigateLoans = {},
-            onNavigateProfile = {},
-            onNavigateRoutes = {},
-            onAddCliente = {},
-            onNewLoan = {}
+            actions = ClientesNavActions()
         )
     }
 }
