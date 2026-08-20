@@ -13,51 +13,77 @@ class GuardarPrestamoUseCase @Inject constructor(
 ) {
     suspend fun execute(prestamo: Prestamo) {
         val loanId = repository.guardarPrestamo(prestamo)
-
-        val cuotas = mutableListOf<Cuota>()
-        val calendar = Calendar.getInstance()
-        prestamo.fechaInicio?.let { calendar.timeInMillis = it }
-            ?: run { calendar.timeInMillis = System.currentTimeMillis() }
-
-        var fechaFinCalculada = calendar.timeInMillis
-
-        for (i in 1..prestamo.cantidadCuotas) {
-            when (prestamo.frecuenciaPago) {
-                FrecuenciaPago.DIARIO -> calendar.add(Calendar.DAY_OF_YEAR, 1)
-                FrecuenciaPago.SEMANAL -> calendar.add(Calendar.WEEK_OF_YEAR, 1)
-                FrecuenciaPago.QUINCENAL -> calendar.add(Calendar.DAY_OF_YEAR, 15)
-                FrecuenciaPago.MENSUAL -> calendar.add(Calendar.MONTH, 1)
-            }
-
-            if (i == 1 && prestamo.diaPagoPreferido != null) {
-                if (prestamo.frecuenciaPago == FrecuenciaPago.SEMANAL) {
-                    calendar.set(Calendar.DAY_OF_WEEK, prestamo.diaPagoPreferido)
-                    if (calendar.timeInMillis < System.currentTimeMillis()) {
-                        calendar.add(Calendar.WEEK_OF_YEAR, 1)
-                    }
-                } else if (prestamo.frecuenciaPago == FrecuenciaPago.QUINCENAL || prestamo.frecuenciaPago == FrecuenciaPago.MENSUAL) {
-                    calendar.set(Calendar.DAY_OF_MONTH, prestamo.diaPagoPreferido)
-                    if (calendar.timeInMillis < System.currentTimeMillis()) {
-                        calendar.add(Calendar.MONTH, 1)
-                    }
-                }
-            }
-
-            cuotas.add(
-                Cuota(
-                    prestamoId = loanId,
-                    numeroCuota = i,
-                    fechaVencimiento = calendar.timeInMillis,
-                    montoEsperado = prestamo.montoCuota,
-                    montoPagado = BigDecimal.ZERO,
-                    estaPagada = false
-                )
-            )
-            fechaFinCalculada = calendar.timeInMillis
-        }
+        val cuotas = generarCuotas(loanId, prestamo)
 
         repository.guardarCuotas(cuotas)
 
+        val fechaFinCalculada = cuotas.lastOrNull()?.fechaVencimiento ?: System.currentTimeMillis()
         repository.guardarPrestamo(prestamo.copy(id = loanId, fechaFin = fechaFinCalculada))
     }
+
+    private fun generarCuotas(loanId: Long, prestamo: Prestamo): List<Cuota> {
+        val cuotas = mutableListOf<Cuota>()
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = prestamo.fechaInicio ?: System.currentTimeMillis()
+        }
+
+        for (i in 1..prestamo.cantidadCuotas) {
+            avanzarCalendarioSegunFrecuencia(calendar, prestamo.frecuenciaPago)
+
+            if (i == 1) {
+                aplicarPreferenciaDiaPago(calendar, prestamo)
+            }
+
+            cuotas.add(
+                buildCuota(loanId, i, calendar.timeInMillis, prestamo.montoCuota)
+            )
+        }
+        return cuotas
+    }
+
+    private fun avanzarCalendarioSegunFrecuencia(calendar: Calendar, frecuencia: FrecuenciaPago) {
+        when (frecuencia) {
+            FrecuenciaPago.DIARIO -> calendar.add(Calendar.DAY_OF_YEAR, 1)
+            FrecuenciaPago.SEMANAL -> calendar.add(Calendar.WEEK_OF_YEAR, 1)
+            FrecuenciaPago.QUINCENAL -> calendar.add(Calendar.DAY_OF_YEAR, 15)
+            FrecuenciaPago.MENSUAL -> calendar.add(Calendar.MONTH, 1)
+        }
+    }
+
+    private fun aplicarPreferenciaDiaPago(calendar: Calendar, prestamo: Prestamo) {
+        val diaPreferido = prestamo.diaPagoPreferido ?: return
+
+        when (prestamo.frecuenciaPago) {
+            FrecuenciaPago.SEMANAL -> {
+                ajustarDiaSemana(calendar, diaPreferido)
+            }
+            FrecuenciaPago.QUINCENAL, FrecuenciaPago.MENSUAL -> {
+                ajustarDiaMes(calendar, diaPreferido)
+            }
+            else -> {}
+        }
+    }
+
+    private fun ajustarDiaSemana(calendar: Calendar, dia: Int) {
+        calendar.set(Calendar.DAY_OF_WEEK, dia)
+        if (calendar.timeInMillis < System.currentTimeMillis()) {
+            calendar.add(Calendar.WEEK_OF_YEAR, 1)
+        }
+    }
+
+    private fun ajustarDiaMes(calendar: Calendar, dia: Int) {
+        calendar.set(Calendar.DAY_OF_MONTH, dia)
+        if (calendar.timeInMillis < System.currentTimeMillis()) {
+            calendar.add(Calendar.MONTH, 1)
+        }
+    }
+
+    private fun buildCuota(loanId: Long, numero: Int, fecha: Long, monto: BigDecimal) = Cuota(
+        prestamoId = loanId,
+        numeroCuota = numero,
+        fechaVencimiento = fecha,
+        montoEsperado = monto,
+        montoPagado = BigDecimal.ZERO,
+        estaPagada = false
+    )
 }
